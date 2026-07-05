@@ -1,0 +1,48 @@
+﻿# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+# ASP.NET
+*.Cache
+ClientBin/
+_ReSharper*/
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NuGet
+packages/
+*.nupkg
+.nuget/
+
+# SQL Server local database files
+*.mdf
+*.ldf
+
+# Logs
+*.log
+logs/
+
+# Uploaded files in runtime
+Uploads/
+ATSMiniProject/Uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets / local config backup
+*.pubxml
+*.publishsettings
+Web.Debug.config.user
+Web.Release.config.user
