@@ -38,9 +38,34 @@ Nhóm chia theo **module nghiệp vụ dọc**, mỗi người tự làm trọn 
 
 ## 4. Phân công công việc
 
+### 4.1. Nguyên tắc hiểu đúng khi làm trang web
+
+Dự án này là **website ASP.NET MVC để người dùng thao tác trực tiếp trên trình duyệt**, không phải chỉ làm database hoặc viết báo cáo. Mỗi thành viên cần làm trọn phần của mình gồm:
+
+- Controller xử lý chức năng.
+- View/Razor để người dùng thao tác trên web.
+- ViewModel/validation nếu có form nhập liệu.
+- Kết nối Entity Framework tới các bảng liên quan.
+- Dữ liệu mẫu để tự test module.
+- Giao diện bám theo layout Bootstrap chung của nhóm.
+
+Mỗi người làm theo một nhánh riêng trên GitHub:
+
+| Thành viên | Nhánh GitHub | Cụm trang phụ trách |
+|---|---|---|
+| Thành viên 1 | `auth-layout1` | Đăng nhập, phân quyền, dashboard, layout chung |
+| Thành viên 2 | `jobs2` | Tin tuyển dụng, phòng ban, vị trí tuyển dụng |
+| Thành viên 3 | `applications3` | Hồ sơ ứng tuyển, upload CV, trạng thái, phỏng vấn |
+
+Luồng website cuối cùng cần chạy được:
+
+`Đăng nhập -> tạo tin tuyển dụng -> ứng viên nộp hồ sơ -> HR xem hồ sơ -> đổi trạng thái -> tạo lịch phỏng vấn -> nhập kết quả`
+
 ### Thành viên 1: Leader, tài khoản, phân quyền, giao diện mẫu, tích hợp
 
 **Người phụ trách:** ....................................
+
+**Nhánh làm việc:** `auth-layout1`
 
 **Phạm vi chính:**
 
@@ -49,6 +74,17 @@ Nhóm chia theo **module nghiệp vụ dọc**, mỗi người tự làm trọn 
 - Làm chức năng đăng nhập, đăng xuất, phân quyền.
 - Quản lý tài khoản người dùng cơ bản.
 - Tích hợp source của cả nhóm, kiểm tra lỗi khi ghép module.
+
+**Trang web cần làm:**
+
+| Trang | Đường dẫn gợi ý | Mục đích |
+|---|---|---|
+| Đăng nhập | `/Account/Login` | Người dùng nhập tài khoản/mật khẩu để vào hệ thống |
+| Đăng xuất | `/Account/Logout` | Thoát khỏi phiên đăng nhập |
+| Dashboard | `/Dashboard/Index` hoặc `/Admin/Index` | Trang đầu sau khi đăng nhập, hiển thị tổng quan hệ thống |
+| Không có quyền | `/Account/AccessDenied` | Thông báo khi người dùng truy cập sai quyền |
+| Quản lý tài khoản | `/Admin/Users` | Admin xem/thêm/sửa tài khoản nếu đủ thời gian |
+| Thông tin cá nhân | `/Profile/Index` | Người dùng xem/cập nhật thông tin cá nhân cơ bản |
 
 **Chức năng cần code:**
 
@@ -60,14 +96,17 @@ Nhóm chia theo **module nghiệp vụ dọc**, mỗi người tự làm trọn 
 - Menu hiển thị theo vai trò.
 - Layout chung cho website.
 - Layout riêng cho khu vực quản trị nếu cần.
+- Tạo mẫu giao diện cho bảng danh sách, form thêm/sửa, trang chi tiết và thông báo.
 
 **Controller/View gợi ý:**
 
 - `AccountController`
 - `AdminController`
+- `DashboardController` nếu tách dashboard riêng
 - `ProfileController` nếu cần tách riêng hồ sơ cá nhân
 - `Views/Account/`
 - `Views/Admin/`
+- `Views/Dashboard/`
 - `Views/Shared/_Layout.cshtml`
 - `Views/Shared/_AdminLayout.cshtml` nếu có khu vực quản trị riêng
 
@@ -83,10 +122,13 @@ Nhóm chia theo **module nghiệp vụ dọc**, mỗi người tự làm trọn 
 - Mỗi vai trò vào đúng màn hình của mình.
 - Thành viên khác có thể đưa View của mình vào layout chung.
 - Có đủ tài khoản mẫu để test: Admin, HR, Ứng viên.
+- Có giao diện mẫu để Thành viên 2 và Thành viên 3 áp dụng thống nhất.
 
 ### Thành viên 2: Quản lý tuyển dụng
 
 **Người phụ trách:** ....................................
+
+**Nhánh làm việc:** `jobs2`
 
 **Phạm vi chính:**
 
@@ -94,6 +136,19 @@ Nhóm chia theo **module nghiệp vụ dọc**, mỗi người tự làm trọn 
 - Quản lý phòng ban, vị trí tuyển dụng, yêu cầu công việc.
 - Cho HR/Admin tạo, sửa, xóa, ẩn/hiện tin tuyển dụng.
 - Cho ứng viên xem danh sách tin đang mở.
+
+**Trang web cần làm:**
+
+| Trang | Đường dẫn gợi ý | Mục đích |
+|---|---|---|
+| Danh sách tin tuyển dụng | `/Jobs/Index` | HR/Admin xem toàn bộ tin, tìm kiếm/lọc |
+| Chi tiết tin tuyển dụng | `/Jobs/Details/{id}` | Xem đầy đủ mô tả, yêu cầu, số lượng, trạng thái |
+| Thêm tin tuyển dụng | `/Jobs/Create` | HR/Admin tạo tin mới |
+| Sửa tin tuyển dụng | `/Jobs/Edit/{id}` | HR/Admin cập nhật nội dung tin |
+| Đóng/mở tin tuyển dụng | `/Jobs/Close/{id}` hoặc nút trong danh sách | Chuyển trạng thái đang mở/đã đóng |
+| Tin tuyển dụng công khai | `/Jobs/Public` hoặc `/Jobs/Openings` | Ứng viên xem các tin đang mở |
+| Quản lý phòng ban | `/Departments/Index` | Thêm/sửa/xóa phòng ban |
+| Quản lý vị trí | `/JobPositions/Index` | Thêm/sửa/xóa vị trí tuyển dụng |
 
 **Chức năng cần code:**
 
@@ -128,10 +183,13 @@ Nhóm chia theo **module nghiệp vụ dọc**, mỗi người tự làm trọn 
 - Ứng viên xem được tin đang mở.
 - Tin tuyển dụng có đủ thông tin để ứng viên nộp hồ sơ.
 - Có đủ dữ liệu mẫu để test danh sách, tìm kiếm và lọc.
+- Các trang dùng đúng layout chung, không tự thiết kế giao diện riêng khác phong cách nhóm.
 
 ### Thành viên 3: Ứng tuyển, upload CV, theo dõi ứng viên, lịch phỏng vấn
 
 **Người phụ trách:** ....................................
+
+**Nhánh làm việc:** `applications3`
 
 **Phạm vi chính:**
 
@@ -141,6 +199,19 @@ Nhóm chia theo **module nghiệp vụ dọc**, mỗi người tự làm trọn 
 - HR cập nhật trạng thái ứng viên.
 - Quản lý lịch phỏng vấn cơ bản.
 - Áp dụng AJAX / Partial View cho cập nhật trạng thái hoặc lọc danh sách nếu làm kịp.
+
+**Trang web cần làm:**
+
+| Trang | Đường dẫn gợi ý | Mục đích |
+|---|---|---|
+| Form nộp hồ sơ | `/Applications/Create?jobId=...` | Ứng viên nhập thông tin và upload CV |
+| Danh sách hồ sơ | `/Applications/Index` | HR xem danh sách hồ sơ, tìm kiếm/lọc theo trạng thái |
+| Chi tiết hồ sơ | `/Applications/Details/{id}` | HR xem thông tin ứng viên, CV, ghi chú, trạng thái |
+| Cập nhật trạng thái | `/Applications/UpdateStatus/{id}` | HR đổi trạng thái hồ sơ |
+| Lịch sử trạng thái | `/Applications/StatusHistory/{id}` | Xem quá trình xử lý hồ sơ |
+| Danh sách phỏng vấn | `/Interviews/Index` | HR xem các lịch phỏng vấn |
+| Tạo lịch phỏng vấn | `/Interviews/Create?applicationId=...` | HR đặt lịch phỏng vấn cho ứng viên |
+| Cập nhật kết quả phỏng vấn | `/Interviews/Edit/{id}` | Ghi kết quả, nhận xét sau phỏng vấn |
 
 **Chức năng cần code:**
 
@@ -191,6 +262,7 @@ Nhóm chia theo **module nghiệp vụ dọc**, mỗi người tự làm trọn 
 - HR xem và cập nhật trạng thái hồ sơ được.
 - Tạo/xem lịch phỏng vấn được.
 - Có đủ dữ liệu mẫu để demo luồng xử lý ứng viên.
+- Nếu làm AJAX, ưu tiên cập nhật trạng thái hồ sơ hoặc lọc danh sách hồ sơ, không làm lan man.
 
 ## 5. Database dùng chung
 
