@@ -4,13 +4,13 @@
 
   Cong nghe du kien:
   - ASP.NET MVC 5 / .NET Framework
-  - Entity Framework 6 Database First
+  - Entity Framework 6 Code First from database
   - SQL Server
 
   Cach dung:
   1. Mo SQL Server Management Studio.
   2. Chay toan bo script nay.
-  3. Trong Visual Studio, tao EF Database First model tu database ATSMiniDB_StudentPlus.
+  3. Trong Visual Studio, dung Code First from database de sinh DbContext va entity classes tu database ATSMiniDB_StudentPlus.
 
   Luu y quan trong ve mat khau:
   - Script nay khong luu mat khau ro.
