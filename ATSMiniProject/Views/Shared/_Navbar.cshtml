@@ -1,4 +1,10 @@
-﻿<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+﻿@{
+    var isLoggedIn = Session["AuthUserID"] != null;
+    var fullName = Session["AuthFullName"] as string;
+    var roleName = Session["AuthRoleName"] as string;
+}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
     <div class="container-fluid px-4">
         <a class="navbar-brand fw-semibold text-primary" href="@Url.Action("Index", "Home")">ATS Mini</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Mo menu">
@@ -8,9 +14,25 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Home")">Trang chu</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Viec lam</a></li>
+                @if (isLoggedIn)
+                {
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Dashboard")">Dashboard</a></li>
+                }
             </ul>
-            <div class="d-flex gap-2">
-                <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Login", "Account")">Dang nhap</a>
+            <div class="d-flex align-items-center gap-2">
+                @if (isLoggedIn)
+                {
+                    <span class="navbar-text small text-muted">@fullName (@roleName)</span>
+                    using (Html.BeginForm("Logout", "Account", FormMethod.Post, new { @class = "d-inline" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-outline-secondary btn-sm" type="submit">Dang xuat</button>
+                    }
+                }
+                else
+                {
+                    <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Login", "Account")">Dang nhap</a>
+                }
             </div>
         </div>
     </div>
