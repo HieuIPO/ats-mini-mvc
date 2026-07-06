@@ -12,7 +12,7 @@
 - C#
 - Entity Framework 6
 - SQL Server
-- Database-first: thiết kế database trước, sau đó sinh Entity Framework model
+- Database-first về quy trình thiết kế: thiết kế database trước, sau đó dùng Code First from database để sinh DbContext và entity classes
 - Razor View, HTML Helper, ViewModel, Validation
 - Bootstrap cho giao diện chung
 - AJAX / Partial View cho một số chức năng cập nhật động
@@ -333,7 +333,7 @@ Thành viên khác khi code View cần bám theo layout và class Bootstrap chun
 
 - Chốt database ban đầu.
 - Tạo project ASP.NET MVC 5.
-- Kết nối SQL Server và Entity Framework Database First.
+- Kết nối SQL Server và Entity Framework Code First from database.
 - Tạo layout chung.
 - Mỗi thành viên tạo khung Controller/View cho module của mình.
 
@@ -431,7 +431,7 @@ Các lỗi nhập liệu cần chặn:
 Trong báo cáo, nhóm nên có một phần riêng tên là **Kiến thức MVC đã áp dụng**. Nội dung nên nêu rõ:
 
 - MVC: Controller xử lý yêu cầu, Model/Entity biểu diễn dữ liệu, View hiển thị giao diện.
-- Entity Framework 6 Database First: thiết kế SQL Server trước, sinh model từ database.
+- Entity Framework 6 Code First from database: thiết kế SQL Server trước, sinh DbContext và entity classes từ database.
 - Razor View và Layout: dùng layout chung để giao diện đồng nhất.
 - Validation: kiểm tra dữ liệu đầu vào ở form.
 - Authentication/Authorization: đăng nhập và phân quyền theo vai trò.
