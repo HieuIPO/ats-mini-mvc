@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --ats-primary: #2563eb;
     --ats-primary-dark: #1e3a8a;
     --ats-bg: #f5f7fb;
@@ -94,6 +94,27 @@ body {
     padding: 28px;
 }
 
+.access-denied-section {
+    min-height: calc(100vh - 120px);
+    display: grid;
+    place-items: center;
+    padding: 40px 16px;
+}
+
+.access-denied-card {
+    width: min(100%, 560px);
+    padding: 28px;
+    background: var(--ats-surface);
+    border: 1px solid var(--ats-border);
+    border-radius: 8px;
+}
+
+.access-denied-card h1 {
+    margin-bottom: 10px;
+    font-size: 1.8rem;
+    font-weight: 750;
+}
+
 .admin-shell {
     min-height: 100vh;
     display: flex;
@@ -108,9 +129,24 @@ body {
 }
 
 .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-size: 1.1rem;
     font-weight: 750;
     margin-bottom: 22px;
+}
+
+.brand-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    color: #ffffff;
+    background: var(--ats-primary);
+    font-size: 0.82rem;
+    letter-spacing: 0;
 }
 
 .sidebar-nav {
@@ -119,6 +155,7 @@ body {
 }
 
 .sidebar-link {
+    display: block;
     color: #cbd5e1;
     text-decoration: none;
     padding: 10px 12px;
@@ -126,9 +163,14 @@ body {
 }
 
 .sidebar-link:hover,
-.sidebar-link:focus {
+.sidebar-link:focus,
+.sidebar-link.active {
     color: #ffffff;
     background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-link.active {
+    background: rgba(37, 99, 235, 0.32);
 }
 
 .admin-main {

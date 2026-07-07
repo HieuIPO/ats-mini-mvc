@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Web.Mvc;
 using ATSMiniProject.Helpers;
@@ -39,7 +39,13 @@ namespace ATSMiniProject.Filters
 
                 if (!isAllowed)
                 {
-                    filterContext.Result = new HttpStatusCodeResult(403, "Ban khong co quyen truy cap chuc nang nay.");
+                    filterContext.Result = new RedirectToRouteResult(
+                        new System.Web.Routing.RouteValueDictionary
+                        {
+                            { "controller", "Account" },
+                            { "action", "AccessDenied" },
+                            { "returnUrl", filterContext.HttpContext.Request.RawUrl }
+                        });
                     return;
                 }
             }

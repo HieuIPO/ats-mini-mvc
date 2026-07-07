@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
@@ -89,6 +89,14 @@ namespace ATSMiniProject.Controllers
             Session.Abandon();
             TempData["Success"] = "Da dang xuat.";
             return RedirectToAction("Login", "Account");
+        }
+
+        [HttpGet]
+        public ActionResult AccessDenied(string returnUrl)
+        {
+            Response.StatusCode = 403;
+            ViewBag.ReturnUrl = returnUrl;
+            return View();
         }
 
         private void SignIn(UserEntity user)

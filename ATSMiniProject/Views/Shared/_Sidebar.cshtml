@@ -1,10 +1,29 @@
-﻿<aside class="admin-sidebar">
-    <div class="sidebar-brand">ATS Mini</div>
+﻿@{
+    var controllerName = ViewContext.RouteData.Values["controller"] == null
+        ? string.Empty
+        : ViewContext.RouteData.Values["controller"].ToString();
+    var roleName = Session["AuthRoleName"] as string;
+    var isAdmin = string.Equals(roleName, "Admin", System.StringComparison.OrdinalIgnoreCase);
+
+    System.Func<string, string> activeClass = controller =>
+        string.Equals(controllerName, controller, System.StringComparison.OrdinalIgnoreCase)
+            ? "sidebar-link active"
+            : "sidebar-link";
+}
+
+<aside class="admin-sidebar">
+    <div class="sidebar-brand">
+        <span class="brand-mark">ATS</span>
+        <span>Mini</span>
+    </div>
     <nav class="sidebar-nav" aria-label="Menu quan tri">
-        <a href="@Url.Action("Index", "Dashboard")" class="sidebar-link">Dashboard</a>
-        <a href="#" class="sidebar-link">Tin tuyen dung</a>
-        <a href="#" class="sidebar-link">Ho so ung vien</a>
-        <a href="#" class="sidebar-link">Phong van</a>
-        <a href="#" class="sidebar-link">Tai khoan</a>
+        <a href="@Url.Action("Index", "Dashboard")" class="@activeClass("Dashboard")">Dashboard</a>
+        <a href="@Url.Action("Index", "Jobs")" class="@activeClass("Jobs")">Tin tuyen dung</a>
+        <a href="@Url.Action("Index", "Applications")" class="@activeClass("Applications")">Ho so ung vien</a>
+        <a href="@Url.Action("Index", "Interviews")" class="@activeClass("Interviews")">Phong van</a>
+        @if (isAdmin)
+        {
+            <a href="@Url.Action("Users", "Admin")" class="@activeClass("Admin")">Tai khoan</a>
+        }
     </nav>
 </aside>
