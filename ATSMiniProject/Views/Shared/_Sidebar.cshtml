@@ -14,16 +14,40 @@
 <aside class="admin-sidebar">
     <div class="sidebar-brand">
         <span class="brand-mark">ATS</span>
-        <span>Mini</span>
+        <span class="brand-copy">
+            <strong>ATS Mini</strong>
+            <small>Recruitment system</small>
+        </span>
     </div>
+
     <nav class="sidebar-nav" aria-label="Menu quan tri">
-        <a href="@Url.Action("Index", "Dashboard")" class="@activeClass("Dashboard")">Dashboard</a>
-        <a href="@Url.Action("Index", "Jobs")" class="@activeClass("Jobs")">Tin tuyen dung</a>
-        <a href="@Url.Action("Index", "Applications")" class="@activeClass("Applications")">Ho so ung vien</a>
-        <a href="@Url.Action("Index", "Interviews")" class="@activeClass("Interviews")">Phong van</a>
+        <div class="sidebar-section-label">Overview</div>
+        <a href="@Url.Action("Index", "Dashboard")" class="@activeClass("Dashboard")">
+            <span class="sidebar-icon">D</span>
+            <span>Dashboard</span>
+        </a>
+
+        <div class="sidebar-section-label">Recruitment</div>
+        <a href="@Url.Action("Index", "Jobs")" class="@activeClass("Jobs")">
+            <span class="sidebar-icon">J</span>
+            <span>Tin tuyen dung</span>
+        </a>
+        <a href="@Url.Action("Index", "Applications")" class="@activeClass("Applications")">
+            <span class="sidebar-icon">A</span>
+            <span>Ho so ung vien</span>
+        </a>
+        <a href="@Url.Action("Index", "Interviews")" class="@activeClass("Interviews")">
+            <span class="sidebar-icon">I</span>
+            <span>Phong van</span>
+        </a>
+
         @if (isAdmin)
         {
-            <a href="@Url.Action("Users", "Admin")" class="@activeClass("Admin")">Tai khoan</a>
+            <div class="sidebar-section-label">System</div>
+            <a href="@Url.Action("Users", "Admin")" class="@activeClass("Admin")">
+                <span class="sidebar-icon">U</span>
+                <span>Tai khoan</span>
+            </a>
         }
     </nav>
 </aside>

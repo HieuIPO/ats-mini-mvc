@@ -9,12 +9,11 @@
 </head>
 <body class="public-body">
     @Html.Partial("_Navbar")
-    <main>
+    <main class="public-main">
+        @Html.Partial("_Alert")
         @RenderBody()
     </main>
-    <footer class="public-footer border-top">
-        <div class="container py-3 text-muted small">ATS Mini - He thong quan ly tuyen dung va theo doi ung vien</div>
-    </footer>
+    @Html.Partial("_PublicFooter")
     <script src="~/Scripts/bootstrap/bootstrap.bundle.min.js"></script>
     @RenderSection("scripts", required: false)
 </body>
