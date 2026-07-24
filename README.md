@@ -1,6 +1,6 @@
 # ATS Careers - Hệ thống quản lý tuyển dụng
 
-Ứng dụng tuyển dụng nội bộ cho một công ty, được xây dựng bằng ASP.NET MVC 5 cho bài tập nhóm môn Lập trình Web MVC. Hệ thống có hai khu vực: giao diện công khai cho ứng viên và giao diện quản trị dành cho Nhân sự/Quản trị viên.
+Ứng dụng tuyển dụng nội bộ cho một công ty, được xây dựng bằng ASP.NET MVC 5 cho bài tập nhóm môn Lập trình Web MVC. Hệ thống có hai khu vực chính: giao diện công khai cho ứng viên và giao diện quản trị dành cho Nhân sự/Quản trị viên.
 
 ## Công nghệ
 
@@ -11,14 +11,26 @@
 - Bootstrap, CSS responsive
 - PBKDF2-SHA256, phân quyền theo vai trò và anti-forgery token
 
-## Cấu trúc chính
+## Cấu trúc thư mục
 
 ```text
-ATSMiniProject/      Mã nguồn ASP.NET MVC 5
-database/            Script tạo cấu trúc và dữ liệu mẫu
-docs/                Tài liệu kiến trúc, phân công và hướng dẫn demo
-packages/            Các gói NuGet phục vụ dự án
+ATSMiniProject/          Mã nguồn ASP.NET MVC 5
+  App_Start/             Cấu hình route, bundle và filter
+  Content/               CSS, Bootstrap và hình ảnh giao diện
+  Controllers/           Controller xử lý request theo từng module
+  Filters/               Attribute phân quyền/tái sử dụng
+  Helpers/               Hàm hỗ trợ xử lý file, mật khẩu và session
+  Models/                Entity Framework models và DbContext
+  Scripts/               JavaScript của giao diện
+  Uploads/               Thư mục runtime cho CV/avatar, chỉ giữ file cấu hình và .gitkeep
+  ViewModels/            Model riêng cho form, validation và màn hình
+  Views/                 Razor views theo từng controller
+database/                Script tạo cấu trúc và dữ liệu mẫu
+docs/                    Tài liệu kiến trúc, phân công, setup GitHub và style guide
+packages/                Gói NuGet khôi phục cục bộ, không commit lên Git
 ```
+
+Chi tiết cấu trúc và quy ước sắp xếp file nằm tại `docs/PROJECT_STRUCTURE.md`.
 
 ## Khởi tạo cơ sở dữ liệu
 
@@ -53,7 +65,7 @@ Nhánh `applications3` phụ trách trọn luồng Hồ sơ ứng tuyển và Ph
 - HR/Admin tìm kiếm, lọc, phân trang và xem chi tiết hồ sơ.
 - HR/Admin cập nhật trạng thái, ghi chú nội bộ và theo dõi lịch sử thay đổi.
 - HR/Admin tạo, sửa, hủy lịch phỏng vấn và cập nhật kết quả.
-- Kết quả “Đạt”/“Không đạt” tự đồng bộ trạng thái hồ sơ.
+- Kết quả "Đạt"/"Không đạt" tự động đồng bộ trạng thái hồ sơ.
 - Phân quyền, anti-forgery, transaction và audit log được áp dụng cho các thao tác ghi.
 - Giao diện tiếng Việt có dấu, hero carousel ba ảnh tự chuyển có nút tạm dừng, ảnh đăng nhập, scroll reveal và responsive trên desktop/mobile.
 
@@ -95,4 +107,4 @@ Nếu Visual Studio đang mở trong lúc thay đổi cổng, hãy đóng và m�
 | `jobs2` | Quản lý tin tuyển dụng |
 | `applications3` | Ứng tuyển, CV, trạng thái và phỏng vấn |
 
-Quy trình đề nghị: cập nhật từ `develop`, làm việc trên nhánh riêng, tạo Pull Request, kiểm thử rồi mới hợp nhất.
+Quy trình đề nghị: cập nhật từ `develop`, làm việc trên nhánh riêng, tạo Pull Request vào `develop`, kiểm thử rồi mới hợp nhất.
