@@ -1,30 +1,33 @@
-<footer class="public-footer">
+﻿<footer class="public-footer">
     <div class="container">
         <div class="row gy-4 align-items-start">
             <div class="col-lg-5">
-                <div class="public-footer-brand">
+                <a class="public-footer-brand" href="@Url.Action("Index", "Home")">
                     <span class="public-brand-mark">A</span>
-                    <span>ATS Mini</span>
-                </div>
-                <p class="public-footer-text">He thong tuyen dung noi bo giup ung vien xem viec lam, nop ho so va theo doi tien trinh ung tuyen.</p>
+                    <span>ATS Careers</span>
+                </a>
+                <p class="public-footer-text">Nơi ứng viên khám phá cơ hội, nộp hồ sơ an toàn và theo dõi hành trình tuyển dụng một cách minh bạch.</p>
             </div>
             <div class="col-6 col-lg-2">
-                <h2>Dieu huong</h2>
-                <a href="@Url.Action("Index", "Home")">Trang chu</a>
-                <a href="@Url.Action("Index", "Jobs")">Viec lam</a>
-                <a href="@Url.Action("Status", "Applications")">Theo doi ho so</a>
+                <h2>Khám phá</h2>
+                <a href="@Url.Action("Index", "Home")">Trang chủ</a>
+                <a href="@Url.Action("Index", "Jobs")">Việc làm đang tuyển</a>
+                <a href="@Url.Action("Login", "Account", new { returnUrl = Url.Action("Status", "Applications") })">Theo dõi hồ sơ</a>
             </div>
             <div class="col-6 col-lg-2">
-                <h2>Ung vien</h2>
-                <a href="@Url.Action("Index", "Jobs")">Nop ho so</a>
-                <a href="@Url.Action("Login", "Account")">Dang nhap</a>
-                <a href="@Url.Action("AccessDenied", "Account")">Ho tro truy cap</a>
+                <h2>Ứng viên</h2>
+                <a href="@Url.Action("Register", "Account")">Tạo tài khoản</a>
+                <a href="@Url.Action("Login", "Account")">Đăng nhập</a>
+                <a href="@Url.Action("Profile", "Candidate")">Hồ sơ cá nhân</a>
             </div>
             <div class="col-lg-3">
-                <h2>Lien he</h2>
-                <p class="public-footer-text mb-0">Phong nhan su ATS Mini<br />Email: hr@ats.local</p>
+                <h2>Liên hệ tuyển dụng</h2>
+                <p class="public-footer-text mb-0">Phòng Nhân sự ATS Careers<br />hr@ats.local<br />Thứ Hai - Thứ Sáu, 08:00 - 17:00</p>
             </div>
         </div>
-        <div class="public-footer-bottom">ATS Mini - He thong quan ly tuyen dung va theo doi ung vien</div>
+        <div class="public-footer-bottom">
+            <span>© @DateTime.Now.Year ATS Careers</span>
+            <span>Hệ thống quản lý tuyển dụng và ứng viên</span>
+        </div>
     </div>
 </footer>

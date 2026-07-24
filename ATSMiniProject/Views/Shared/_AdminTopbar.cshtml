@@ -1,26 +1,31 @@
 ﻿@{
     var fullName = Session["AuthFullName"] as string;
     var roleName = Session["AuthRoleName"] as string;
+    var displayRole = string.Equals(roleName, "Admin", System.StringComparison.OrdinalIgnoreCase)
+        ? "Quản trị viên"
+        : string.Equals(roleName, "HR", System.StringComparison.OrdinalIgnoreCase)
+            ? "Nhân sự"
+            : "Người dùng";
 }
 
 <header class="admin-topbar">
     <div class="admin-topbar-search" role="search">
         <span class="search-dot"></span>
-        <input type="search" class="form-control" placeholder="Tim kiem nhanh..." aria-label="Tim kiem nhanh" />
+        <input type="search" class="form-control" placeholder="Tìm kiếm nhanh..." aria-label="Tìm kiếm nhanh" />
     </div>
     <div class="admin-topbar-actions">
-        <button type="button" class="icon-btn" aria-label="Thong bao">!</button>
+        <button type="button" class="icon-btn" aria-label="Thông báo">!</button>
         <div class="admin-user-chip">
             <span class="admin-avatar">@((string.IsNullOrWhiteSpace(fullName) ? "U" : fullName.Substring(0, 1)).ToUpperInvariant())</span>
             <span class="admin-user-meta">
-                <strong>@(string.IsNullOrWhiteSpace(fullName) ? "Nguoi dung" : fullName)</strong>
-                <small>@(string.IsNullOrWhiteSpace(roleName) ? "User" : roleName)</small>
+                <strong>@(string.IsNullOrWhiteSpace(fullName) ? "Người dùng" : fullName)</strong>
+                <small>@displayRole</small>
             </span>
         </div>
         @using (Html.BeginForm("Logout", "Account", FormMethod.Post, new { @class = "d-inline" }))
         {
             @Html.AntiForgeryToken()
-            <button class="btn btn-outline-secondary btn-sm" type="submit">Dang xuat</button>
+            <button class="btn btn-outline-secondary btn-sm" type="submit">Đăng xuất</button>
         }
     </div>
 </header>

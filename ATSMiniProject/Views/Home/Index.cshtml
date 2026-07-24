@@ -1,35 +1,93 @@
-﻿@{
-    ViewBag.Title = "Trang chu";
+﻿@model ATSMiniProject.ViewModels.Home.HomeIndexViewModel
+
+@{
+    ViewBag.Title = "Cơ hội nghề nghiệp";
 }
 
-<section class="hero-section">
-    <div class="container">
-        <div class="row align-items-center g-4">
-            <div class="col-lg-7">
-                <span class="eyebrow">ATS Mini</span>
-                <h1 class="hero-title">Quan ly tuyen dung va theo doi ung vien ro rang hon</h1>
-                <p class="hero-text">He thong ho tro dang tin tuyen dung, tiep nhan CV, theo doi trang thai ung vien va quan ly lich phong van trong mot quy trinh gon nhe.</p>
-                <div class="d-flex flex-wrap gap-2">
-                    <a class="btn btn-primary" href="#">Xem viec dang tuyen</a>
-                    <a class="btn btn-outline-primary" href="@Url.Action("Login", "Account")">Dang nhap HR/Admin</a>
-                </div>
+<section class="career-hero" data-hero-carousel>
+    <div class="career-hero-media" aria-hidden="true">
+        <div class="career-hero-slide is-active"
+             style="background-image: url('@Url.Content("~/Content/images/career-hero-interview.jpg")')"></div>
+        <div class="career-hero-slide"
+             style="background-image: url('@Url.Content("~/Content/images/career-hero-teamwork.jpg")')"></div>
+        <div class="career-hero-slide"
+             style="background-image: url('@Url.Content("~/Content/images/career-hero-welcome.jpg")')"></div>
+    </div>
+    <div class="container career-hero-inner">
+        <div class="career-hero-copy">
+            <span class="hero-kicker">Cơ hội mới đang chờ bạn</span>
+            <h1>ATS Careers</h1>
+            <p class="hero-lead">Tìm đúng vị trí, nộp hồ sơ trong vài phút và chủ động theo dõi từng bước trong hành trình tuyển dụng.</p>
+            <div class="hero-actions">
+                <a class="btn btn-primary btn-lg" href="@Url.Action("Index", "Jobs")">Khám phá việc làm</a>
+                <a class="btn btn-light btn-lg" href="@Url.Action("Register", "Account")">Tạo hồ sơ ứng viên</a>
             </div>
-            <div class="col-lg-5">
-                <div class="hero-panel">
-                    <div class="metric-card">
-                        <span>Tin dang mo</span>
-                        <strong>03</strong>
-                    </div>
-                    <div class="metric-card">
-                        <span>Ho so moi</span>
-                        <strong>12</strong>
-                    </div>
-                    <div class="metric-card">
-                        <span>Lich phong van</span>
-                        <strong>04</strong>
-                    </div>
-                </div>
+            <div class="hero-trust">
+                <span><strong>01</strong> hồ sơ duy nhất</span>
+                <span><strong>24/7</strong> theo dõi trạng thái</span>
+                <span><strong>5 MB</strong> CV an toàn</span>
             </div>
         </div>
+    </div>
+    <div class="hero-carousel-controls" aria-label="Chọn ảnh đầu trang">
+        <button class="is-active" type="button" data-hero-index="0" aria-label="Ảnh phỏng vấn" aria-current="true"></button>
+        <button type="button" data-hero-index="1" aria-label="Ảnh làm việc nhóm"></button>
+        <button type="button" data-hero-index="2" aria-label="Ảnh chào đón nhân viên mới"></button>
+        <button class="hero-carousel-toggle"
+                type="button"
+                data-hero-toggle
+                aria-label="Tạm dừng trình chiếu ảnh"
+                title="Tạm dừng trình chiếu ảnh"></button>
+    </div>
+</section>
+
+<section class="career-stats" aria-label="Tổng quan tuyển dụng">
+    <div class="container career-stats-grid">
+        <div><strong>@Model.ActiveJobs.ToString("D2")</strong><span>Vị trí đang mở</span></div>
+        <div><strong>@Model.ActiveDepartments.ToString("D2")</strong><span>Phòng ban tuyển dụng</span></div>
+        <div><strong>@Model.JobLocations.ToString("D2")</strong><span>Địa điểm làm việc</span></div>
+        <a href="@Url.Action("Index", "Jobs")">Xem tất cả cơ hội <span aria-hidden="true">→</span></a>
+    </div>
+</section>
+
+<section class="featured-jobs-section">
+    <div class="container">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">Việc làm nổi bật</span>
+                <h2>Bắt đầu từ cơ hội phù hợp</h2>
+                <p>Các vị trí còn hạn nhận hồ sơ và được cập nhật trực tiếp từ đội ngũ tuyển dụng.</p>
+            </div>
+            <a class="section-link" href="@Url.Action("Index", "Jobs")">Tất cả việc làm <span aria-hidden="true">→</span></a>
+        </div>
+
+        <div class="featured-jobs-grid">
+            @foreach (var job in Model.FeaturedJobs)
+            {
+                <article class="featured-job">
+                    <div class="featured-job-top">
+                        <span class="job-type">@job.JobType</span>
+                        <span class="job-deadline">@(job.Deadline.HasValue ? "Hạn " + job.Deadline.Value.ToString("dd/MM") : "Không giới hạn")</span>
+                    </div>
+                    <p class="featured-job-department">@job.DepartmentName</p>
+                    <h3><a href="@Url.Action("Details", "Jobs", new { id = job.JobId })">@job.Title</a></h3>
+                    <div class="featured-job-meta">
+                        <span>@(job.Location ?? "Thỏa thuận")</span>
+                        <span>@(job.SalaryRange ?? "Thỏa thuận")</span>
+                    </div>
+                    <a class="featured-job-action" href="@Url.Action("Details", "Jobs", new { id = job.JobId })" aria-label="Xem chi tiết @job.Title">Xem vị trí <span aria-hidden="true">→</span></a>
+                </article>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="career-cta-band">
+    <div class="container career-cta-inner">
+        <div>
+            <span>Sẵn sàng cho bước tiến tiếp theo?</span>
+            <h2>Một hồ sơ tốt bắt đầu từ thông tin chính xác.</h2>
+        </div>
+        <a class="btn btn-dark btn-lg" href="@Url.Action("Register", "Account")">Tạo hồ sơ ngay</a>
     </div>
 </section>

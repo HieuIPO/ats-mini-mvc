@@ -1,0 +1,58 @@
+﻿@model ATSMiniProject.ViewModels.Jobs.JobDetailsViewModel
+
+@{
+    ViewBag.Title = Model.Title;
+}
+
+<section class="candidate-section job-detail-section">
+    <div class="container">
+        <a class="candidate-back-link" href="@Url.Action("Index", "Jobs")"><span aria-hidden="true">←</span> Tất cả việc làm</a>
+        <div class="job-detail-layout">
+            <article class="job-detail-main">
+                <div class="job-detail-title-row">
+                    <div>
+                        <span class="eyebrow">@Model.DepartmentName</span>
+                        <h1>@Model.Title</h1>
+                        <p class="job-detail-position">@Model.PositionName</p>
+                    </div>
+                    <span class="job-type">@Model.JobType</span>
+                </div>
+
+                <div class="job-detail-facts">
+                    <div><span>Địa điểm</span><strong>@(Model.Location ?? "Thỏa thuận")</strong></div>
+                    <div><span>Mức lương</span><strong>@(Model.SalaryRange ?? "Thỏa thuận")</strong></div>
+                    <div><span>Lĩnh vực</span><strong>@(Model.Industry ?? "Đang cập nhật")</strong></div>
+                    <div><span>Hạn nộp</span><strong>@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("dd/MM/yyyy") : "Không giới hạn")</strong></div>
+                </div>
+
+                <section class="job-copy">
+                    <h2>Mô tả công việc</h2>
+                    <p>@(Model.Description ?? "Thông tin đang được cập nhật.")</p>
+                </section>
+                <section class="job-copy">
+                    <h2>Yêu cầu ứng viên</h2>
+                    <p>@(Model.Requirements ?? "Thông tin đang được cập nhật.")</p>
+                </section>
+            </article>
+
+            <aside class="job-apply-panel">
+                <span class="apply-panel-label">Ứng tuyển ngay</span>
+                <h2>Sẵn sàng cho vị trí này?</h2>
+                <p>Chuẩn bị CV định dạng PDF, DOC hoặc DOCX, dung lượng tối đa 5 MB.</p>
+                @if (Model.AlreadyApplied)
+                {
+                    <div class="applied-confirmation">
+                        <strong>Hồ sơ đã được gửi</strong>
+                        <span>Bạn có thể theo dõi tiến trình bất cứ lúc nào.</span>
+                    </div>
+                    <a class="btn btn-outline-primary w-100" href="@Url.Action("Details", "Applications", new { id = Model.ExistingApplicationId })">Xem hồ sơ đã nộp</a>
+                }
+                else
+                {
+                    <a class="btn btn-primary btn-lg w-100" href="@Url.Action("Apply", "Jobs", new { id = Model.JobId })">Nộp hồ sơ</a>
+                }
+                <small>Thông tin của bạn chỉ được sử dụng cho mục đích tuyển dụng.</small>
+            </aside>
+        </div>
+    </div>
+</section>

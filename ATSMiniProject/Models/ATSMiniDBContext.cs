@@ -5,7 +5,7 @@ namespace ATSMiniProject.Models
     public partial class ATSMiniDBContext : DbContext
     {
         public ATSMiniDBContext()
-            : base("name=ATSMiniDBContext")
+            : base("name=ModelDB")
         {
         }
 

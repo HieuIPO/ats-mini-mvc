@@ -34,11 +34,15 @@ packages/
 logs/
 
 # Uploaded files in runtime
-Uploads/
+/Uploads/
 ATSMiniProject/Uploads/*
+!ATSMiniProject/Uploads/Web.config
 !ATSMiniProject/Uploads/CVs/
 ATSMiniProject/Uploads/CVs/*
 !ATSMiniProject/Uploads/CVs/.gitkeep
+!ATSMiniProject/Uploads/Avatars/
+ATSMiniProject/Uploads/Avatars/*
+!ATSMiniProject/Uploads/Avatars/.gitkeep
 
 # OS files
 .DS_Store

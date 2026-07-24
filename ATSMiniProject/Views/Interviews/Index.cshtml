@@ -1,0 +1,129 @@
+﻿@model ATSMiniProject.ViewModels.Interviews.InterviewListViewModel
+
+@{
+    ViewBag.Title = "Quản lý phỏng vấn";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <div>
+        <span class="admin-eyebrow">Quản lý tuyển dụng</span>
+        <h1>Lịch phỏng vấn</h1>
+        <p>Lập lịch, phân công người phỏng vấn và cập nhật kết quả theo từng hồ sơ.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create", "Interviews")">Tạo lịch mới</a>
+</div>
+
+<section class="admin-filter-panel" aria-label="Bộ lọc lịch phỏng vấn">
+    @using (Html.BeginForm("Index", "Interviews", FormMethod.Get, new { @class = "admin-filter-grid interview-filter-grid" }))
+    {
+        <div class="filter-field filter-field-wide">
+            <label for="keyword">Từ khóa</label>
+            <input id="keyword" name="keyword" class="form-control" value="@Model.Keyword" placeholder="Ứng viên, email, vị trí hoặc địa điểm" />
+        </div>
+        <div class="filter-field">
+            <label for="result">Kết quả</label>
+            @Html.DropDownList("result", Model.ResultOptions, "Tất cả kết quả", new { @class = "form-select", id = "result" })
+        </div>
+        <div class="filter-field">
+            <label for="fromDate">Từ ngày</label>
+            <input id="fromDate" name="fromDate" type="date" class="form-control" value="@(Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : null)" />
+        </div>
+        <div class="filter-field">
+            <label for="toDate">Đến ngày</label>
+            <input id="toDate" name="toDate" type="date" class="form-control" value="@(Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : null)" />
+        </div>
+        <div class="filter-actions">
+            <button class="btn btn-primary" type="submit">Áp dụng</button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Interviews")">Đặt lại</a>
+        </div>
+    }
+</section>
+
+<section class="ats-table-card">
+    <div class="ats-table-toolbar">
+        <div>
+            <strong>@Model.TotalItems lịch phỏng vấn</strong>
+            <span class="admin-toolbar-note">Bao gồm lịch sắp tới và lịch đã hoàn thành</span>
+        </div>
+        <span class="admin-page-count">Trang @Model.Page / @Model.TotalPages</span>
+    </div>
+
+    @if (!Model.Interviews.Any())
+    {
+        <div class="admin-empty-state">
+            <strong>Chưa có lịch phỏng vấn phù hợp</strong>
+            <span>Tạo lịch mới từ hồ sơ ứng viên hoặc thay đổi điều kiện lọc.</span>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table ats-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Ứng viên</th>
+                        <th>Vị trí</th>
+                        <th>Địa điểm</th>
+                        <th>Người phỏng vấn</th>
+                        <th>Kết quả</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Interviews)
+                    {
+                        var resultClass = item.Result == "Đạt"
+                            ? "badge-soft-success"
+                            : item.Result == "Không đạt" || item.Result == "Đã hủy"
+                                ? "badge-soft-danger"
+                                : item.IsUpcoming ? "badge-soft-warning" : "badge-soft-neutral";
+                        <tr>
+                            <td>
+                                <strong>@item.InterviewDate.ToString("dd/MM/yyyy")</strong>
+                                <small class="table-subtitle">@item.InterviewDate.ToString("HH:mm")</small>
+                            </td>
+                            <td>
+                                <strong class="table-title">@item.CandidateName</strong>
+                                <a class="table-subtitle table-link" href="@Url.Action("Review", "Applications", new { id = item.ApplicationId })">Hồ sơ #@item.ApplicationId.ToString("D4")</a>
+                            </td>
+                            <td><span>@item.JobTitle</span></td>
+                            <td><span>@(item.Location ?? "Chưa cập nhật")</span></td>
+                            <td><span>@item.InterviewerName</span></td>
+                            <td><span class="@resultClass">@(item.Result ?? "Chưa có kết quả")</span></td>
+                            <td class="text-end">
+                                <div class="table-actions">
+                                    <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Edit", "Interviews", new { id = item.InterviewId })">Cập nhật</a>
+                                    @using (Html.BeginForm("Cancel", "Interviews", new { id = item.InterviewId }, FormMethod.Post, new { @class = "d-inline" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('Hủy lịch phỏng vấn này?');">Hủy</button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="admin-pagination" aria-label="Phân trang lịch phỏng vấn">
+            @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+            {
+                <a class="@(pageNumber == Model.Page ? "active" : null)"
+                   href="@Url.Action("Index", "Interviews", new
+                   {
+                       keyword = Model.Keyword,
+                       result = Model.Result,
+                       fromDate = Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : null,
+                       toDate = Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : null,
+                       page = pageNumber
+                   })">@pageNumber</a>
+            }
+        </nav>
+    }
+</section>

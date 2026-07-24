@@ -1,5 +1,5 @@
-@{
-    ViewBag.Title = "Khong co quyen";
+﻿@{
+    ViewBag.Title = "Không có quyền truy cập";
     var returnUrl = ViewBag.ReturnUrl as string;
     var roleName = Session["AuthRoleName"] as string;
     var isBackOfficeUser = string.Equals(roleName, "Admin", System.StringComparison.OrdinalIgnoreCase)
@@ -8,28 +8,24 @@
 
 <section class="access-denied-section">
     <div class="access-denied-card">
-        <span class="eyebrow">403</span>
-        <h1>Khong co quyen truy cap</h1>
-        <p class="text-muted">
-            Tai khoan hien tai khong duoc phep mo chuc nang nay. Neu day la nham lan,
-            vui long dang nhap bang tai khoan co vai tro phu hop.
-        </p>
-
+        <span class="access-code">403</span>
+        <span class="eyebrow">Quyền truy cập bị giới hạn</span>
+        <h1>Bạn không thể mở trang này</h1>
+        <p>Tài khoản hiện tại không có quyền sử dụng chức năng được yêu cầu. Hãy quay lại khu vực phù hợp với vai trò của bạn.</p>
         @if (!string.IsNullOrWhiteSpace(returnUrl))
         {
-            <p class="small text-muted mb-3">Duong dan bi chan: <code>@returnUrl</code></p>
+            <p class="blocked-path">Đường dẫn bị chặn: <code>@returnUrl</code></p>
         }
-
         <div class="d-flex flex-wrap gap-2">
             @if (isBackOfficeUser)
             {
-                <a class="btn btn-primary" href="@Url.Action("Index", "Dashboard")">Ve Dashboard</a>
+                <a class="btn btn-primary" href="@Url.Action("Index", "Dashboard")">Về trang quản trị</a>
             }
             else
             {
-                <a class="btn btn-primary" href="@Url.Action("Login", "Account")">Dang nhap lai</a>
+                <a class="btn btn-primary" href="@Url.Action("Index", "Candidate")">Về tổng quan ứng viên</a>
             }
-            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Home")">Ve trang chu</a>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Home")">Về trang chủ</a>
         </div>
     </div>
 </section>
