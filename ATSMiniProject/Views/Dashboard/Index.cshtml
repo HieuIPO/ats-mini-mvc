@@ -1,26 +1,158 @@
-﻿@{
+@model ATSMiniProject.ViewModels.Dashboard.DashboardViewModel
+@{
     ViewBag.Title = "Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="page-header">
+<div class="page-header dashboard-header">
     <div>
-        <h1>Dashboard</h1>
-        <p>Tong quan nhanh ve tinh hinh tuyen dung.</p>
+        <h1>Dashboard tuyển dụng</h1>
+        <p>Tổng quan dữ liệu việc làm, hồ sơ ứng tuyển và lịch phỏng vấn trong hệ thống.</p>
     </div>
+    <a class="btn btn-primary" href="@Url.Action("Create", "Jobs")">Tạo tin tuyển dụng</a>
 </div>
 
 <div class="row g-3">
     <div class="col-md-3">
-        <div class="stat-card"><span>Tin tuyen dung</span><strong>03</strong></div>
+        <div class="stat-card metric-blue">
+            <span>Tổng tin tuyển dụng</span>
+            <strong>@Model.TotalJobs</strong>
+            <small>@Model.OpenJobs tin đang mở</small>
+            <a class="stat-card-link" href="@Url.Action("Index", "Jobs")">Xem chi tiết</a>
+        </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card"><span>Ho so ung vien</span><strong>12</strong></div>
+        <div class="stat-card metric-green">
+            <span>Hồ sơ ứng viên</span>
+            <strong>@Model.TotalApplications</strong>
+            <small>Dữ liệu từ Applications</small>
+        </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card"><span>Dang xem xet</span><strong>06</strong></div>
+        <div class="stat-card metric-amber">
+            <span>Sắp hết hạn</span>
+            <strong>@Model.ExpiringJobs</strong>
+            <small>Deadline trong 7 ngày</small>
+            <a class="stat-card-link" href="@Url.Action("Index", "Jobs", new { status = "open" })">Xem chi tiết</a>
+        </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card"><span>Phong van</span><strong>04</strong></div>
+        <div class="stat-card metric-purple">
+            <span>Phỏng vấn sắp tới</span>
+            <strong>@Model.UpcomingInterviews</strong>
+            <small>@Model.TotalInterviews lịch phỏng vấn</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-lg-7">
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <div>
+                    <h2>Hồ sơ theo trạng thái</h2>
+                    <p>Biểu đồ thanh ngang dựa trên bảng ApplicationStatuses.</p>
+                </div>
+                <span class="badge-soft-primary">@Model.TotalApplications hồ sơ</span>
+            </div>
+
+            <div class="status-chart">
+                @foreach (var item in Model.ApplicationStatuses)
+                {
+                    <div class="chart-row">
+                        <div class="chart-row-label">
+                            <strong>@item.Name</strong>
+                            <span>@item.Count hồ sơ</span>
+                        </div>
+                        <div class="chart-track">
+                            <span class="chart-bar @item.CssClass" style="width:@item.Percent%"></span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <div>
+                    <h2>Tình trạng tin tuyển dụng</h2>
+                    <p>So sánh tin đang mở, đã đóng và sắp hết hạn.</p>
+                </div>
+                <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index", "Jobs")">Xem chi tiết</a>
+            </div>
+            <div class="donut-wrap">
+                @{
+                    var openPercent = Model.TotalJobs == 0 ? 0 : (int)Math.Round((double)Model.OpenJobs * 100 / Model.TotalJobs);
+                    var closedPercent = Model.TotalJobs == 0 ? 0 : (int)Math.Round((double)Model.ClosedJobs * 100 / Model.TotalJobs);
+                }
+                <div class="donut" style="--open:@openPercent; --closed:@closedPercent;">
+                    <div>
+                        <strong>@openPercent%</strong>
+                        <span>đang mở</span>
+                    </div>
+                </div>
+                <div class="donut-legend">
+                    <span><i class="legend-open"></i>Đang mở: @Model.OpenJobs</span>
+                    <span><i class="legend-closed"></i>Đã đóng/hết hạn: @Model.ClosedJobs</span>
+                    <span><i class="legend-expiring"></i>Sắp hết hạn: @Model.ExpiringJobs</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-lg-7">
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <div>
+                    <h2>Top tin có hồ sơ</h2>
+                    <p>Giúp HR ưu tiên xử lý các tin có nhiều ứng viên.</p>
+                </div>
+                <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index", "Jobs")">Xem chi tiết</a>
+            </div>
+            <div class="job-chart">
+                @foreach (var job in Model.JobApplications)
+                {
+                    <div class="job-chart-row">
+                        <span title="@job.Title">@job.Title</span>
+                        <div class="chart-track"><i style="width:@job.Percent%"></i></div>
+                        <strong>@job.Count</strong>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <div>
+                    <h2>Lịch phỏng vấn gần nhất</h2>
+                    <p>Các lịch sắp diễn ra để HR theo dõi nhanh.</p>
+                </div>
+            </div>
+            <div class="interview-list">
+                @if (!Model.UpcomingInterviewItems.Any())
+                {
+                    <p class="text-muted mb-0">Chưa có lịch phỏng vấn sắp tới.</p>
+                }
+                else
+                {
+                    foreach (var item in Model.UpcomingInterviewItems)
+                    {
+                        <div class="interview-item">
+                            <div class="interview-date">@item.InterviewTime</div>
+                            <div>
+                                <strong>@item.CandidateName</strong>
+                                <span>@item.JobTitle</span>
+                                <small>@item.Location</small>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
     </div>
 </div>

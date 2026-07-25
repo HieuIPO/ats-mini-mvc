@@ -1,0 +1,110 @@
+﻿@model ATSMiniProject.ViewModels.Jobs.JobSearchViewModel
+
+@{
+    ViewBag.Title = "Việc làm";
+}
+
+<section class="jobs-heading">
+    <div class="container jobs-heading-inner">
+        <div>
+            <span class="eyebrow">Cơ hội nghề nghiệp</span>
+            <h1>Tìm công việc dành cho bạn</h1>
+            <p>Khám phá các vị trí đang tuyển, còn hạn nhận hồ sơ và phù hợp với định hướng tiếp theo của bạn.</p>
+        </div>
+        <div class="jobs-heading-count">
+            <strong>@Model.TotalItems.ToString("D2")</strong>
+            <span>vị trí đang mở</span>
+        </div>
+    </div>
+</section>
+
+<section class="candidate-section pt-0">
+    <div class="container">
+        @using (Html.BeginForm("Index", "Jobs", FormMethod.Get, new { @class = "job-filter" }))
+        {
+            <div class="row g-2">
+                <div class="col-lg-4">
+                    <label class="visually-hidden" for="keyword">Từ khóa</label>
+                    <input id="keyword" class="form-control" name="keyword" value="@Model.Keyword" placeholder="Vị trí, chức danh hoặc lĩnh vực" />
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label class="visually-hidden" for="location">Địa điểm</label>
+                    <input id="location" class="form-control" name="location" value="@Model.Location" placeholder="Địa điểm" />
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <label class="visually-hidden" for="jobType">Loại hình</label>
+                    <select id="jobType" class="form-select" name="jobType">
+                        <option value="">Mọi loại hình</option>
+                        <option value="Toàn thời gian" selected="@(Model.JobType == "Toàn thời gian" ? "selected" : null)">Toàn thời gian</option>
+                        <option value="Bán thời gian" selected="@(Model.JobType == "Bán thời gian" ? "selected" : null)">Bán thời gian</option>
+                        <option value="Thực tập" selected="@(Model.JobType == "Thực tập" ? "selected" : null)">Thực tập</option>
+                        <option value="Hợp đồng" selected="@(Model.JobType == "Hợp đồng" ? "selected" : null)">Hợp đồng</option>
+                    </select>
+                </div>
+                <div class="col-sm-8 col-lg-3">
+                    <label class="visually-hidden" for="departmentId">Phòng ban</label>
+                    @Html.DropDownListFor(model => model.DepartmentId, Model.Departments, "Mọi phòng ban", new { @class = "form-select", id = "departmentId" })
+                </div>
+                <div class="col-sm-4 col-lg-1 d-grid">
+                    <button class="btn btn-primary" type="submit">Tìm</button>
+                </div>
+            </div>
+        }
+
+        <div class="jobs-result-bar">
+            <strong>@Model.TotalItems vị trí phù hợp</strong>
+            @if (!string.IsNullOrWhiteSpace(Model.Keyword) || !string.IsNullOrWhiteSpace(Model.Location) ||
+                 !string.IsNullOrWhiteSpace(Model.JobType) || Model.DepartmentId.HasValue)
+            {
+                <a href="@Url.Action("Index", "Jobs")">Xóa bộ lọc</a>
+            }
+        </div>
+
+        @if (Model.Jobs.Count == 0)
+        {
+            <div class="candidate-empty">
+                <span class="empty-symbol" aria-hidden="true">⌕</span>
+                <h2>Chưa tìm thấy vị trí phù hợp</h2>
+                <p>Hãy thử thay đổi từ khóa hoặc mở rộng điều kiện tìm kiếm.</p>
+                <a class="btn btn-outline-primary" href="@Url.Action("Index", "Jobs")">Xem tất cả việc làm</a>
+            </div>
+        }
+        else
+        {
+            <div class="jobs-grid">
+                @foreach (var job in Model.Jobs)
+                {
+                    <article class="job-card">
+                        <div class="job-card-top">
+                            <span class="job-type">@job.JobType</span>
+                            <span class="job-deadline">Hạn @(job.Deadline.HasValue ? job.Deadline.Value.ToString("dd/MM/yyyy") : "không giới hạn")</span>
+                        </div>
+                        <p class="job-department">@job.DepartmentName</p>
+                        <h2><a href="@Url.Action("Details", "Jobs", new { id = job.JobId })">@job.Title</a></h2>
+                        <p class="job-position">@job.PositionName</p>
+                        <dl class="job-meta">
+                            <div><dt>Địa điểm</dt><dd>@(job.Location ?? "Thỏa thuận")</dd></div>
+                            <div><dt>Mức lương</dt><dd>@(job.SalaryRange ?? "Thỏa thuận")</dd></div>
+                        </dl>
+                        <a class="job-card-action" href="@Url.Action("Details", "Jobs", new { id = job.JobId })">
+                            Xem chi tiết <span aria-hidden="true">→</span>
+                        </a>
+                    </article>
+                }
+            </div>
+
+            if (Model.TotalPages > 1)
+            {
+                <nav class="candidate-pagination" aria-label="Phân trang việc làm">
+                    @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+                    {
+                        <a class="@(pageNumber == Model.Page ? "active" : null)"
+                           href="@Url.Action("Index", "Jobs", new { keyword = Model.Keyword, location = Model.Location, jobType = Model.JobType, departmentId = Model.DepartmentId, page = pageNumber })">
+                            @pageNumber
+                        </a>
+                    }
+                </nav>
+            }
+        }
+    </div>
+</section>

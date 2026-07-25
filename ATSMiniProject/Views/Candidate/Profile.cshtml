@@ -1,0 +1,152 @@
+@model ATSMiniProject.ViewModels.Candidate.CandidateProfilePageViewModel
+
+@{
+    ViewBag.Title = "Hồ sơ cá nhân";
+    var avatarInitial = (string.IsNullOrWhiteSpace(Model.Profile.FullName)
+        ? "U"
+        : Model.Profile.FullName.Substring(0, 1)).ToUpperInvariant();
+}
+
+<section class="candidate-page-band profile-page-band">
+    <div class="container candidate-page-band-inner">
+        <div>
+            <span class="eyebrow">Thông tin cá nhân</span>
+            <h1>Hồ sơ của tôi</h1>
+            <p>Quản lý thông tin liên hệ, ảnh đại diện và bảo mật tài khoản tại một nơi.</p>
+        </div>
+        <a class="btn btn-outline-light" href="@Url.Action("Status", "Applications")">Hồ sơ đã nộp</a>
+    </div>
+</section>
+
+<section class="candidate-section profile-page">
+    <div class="container candidate-container">
+        <div class="profile-layout">
+            <aside class="profile-identity" data-reveal>
+                <div class="profile-avatar-frame">
+                    <img class="profile-avatar-image @(Model.HasAvatar ? null : "d-none")"
+                         src="@(Model.AvatarUrl ?? string.Empty)"
+                         alt="Ảnh đại diện của @Model.Profile.FullName"
+                         data-avatar-preview />
+                    <span class="profile-avatar-fallback @(Model.HasAvatar ? "d-none" : null)"
+                          data-avatar-fallback>@avatarInitial</span>
+                </div>
+                <strong>@Model.Profile.FullName</strong>
+                <span>Ứng viên ATS Careers</span>
+
+                @using (Html.BeginForm(
+                    "UploadAvatar",
+                    "Candidate",
+                    FormMethod.Post,
+                    new { enctype = "multipart/form-data", @class = "avatar-upload-form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input id="avatarFile"
+                           class="visually-hidden"
+                           type="file"
+                           name="avatarFile"
+                           accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                           data-avatar-input />
+                    <label class="btn btn-outline-primary btn-sm w-100" for="avatarFile">Chọn ảnh từ máy</label>
+                    <small data-avatar-file-name>JPG hoặc PNG, tối đa 3 MB</small>
+                    <button class="btn btn-primary btn-sm w-100" type="submit">Cập nhật ảnh</button>
+                }
+
+                @if (Model.HasAvatar)
+                {
+                    using (Html.BeginForm(
+                        "RemoveAvatar",
+                        "Candidate",
+                        FormMethod.Post,
+                        new { @class = "avatar-remove-form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-link btn-sm text-danger" type="submit">Xóa ảnh hiện tại</button>
+                    }
+                }
+
+                <div class="profile-readiness">
+                    <div><span></span></div>
+                    <small>Hồ sơ liên hệ đã sẵn sàng</small>
+                </div>
+            </aside>
+
+            <div class="profile-content-stack">
+                <section class="candidate-form-panel" data-reveal>
+                    <div class="form-panel-heading">
+                        <span class="eyebrow">Thông tin liên hệ</span>
+                        <h2>Thông tin ứng viên</h2>
+                        <p>Các thay đổi sẽ được dùng để điền nhanh cho lần ứng tuyển tiếp theo.</p>
+                    </div>
+                    @using (Html.BeginForm(
+                        "Profile",
+                        "Candidate",
+                        FormMethod.Post,
+                        new { novalidate = "novalidate" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                        <div class="mb-3">
+                            <label class="form-label">Tên đăng nhập</label>
+                            <input class="form-control" value="@Model.Profile.Username" disabled="disabled" />
+                            <div class="form-text">Tên đăng nhập không thể thay đổi.</div>
+                        </div>
+                        <div class="mb-3">
+                            @Html.LabelFor(model => model.Profile.FullName, new { @class = "form-label" })
+                            @Html.TextBoxFor(model => model.Profile.FullName, new { @class = "form-control", autocomplete = "name" })
+                            @Html.ValidationMessageFor(model => model.Profile.FullName, "", new { @class = "text-danger small" })
+                        </div>
+                        <div class="mb-3">
+                            @Html.LabelFor(model => model.Profile.Email, new { @class = "form-label" })
+                            @Html.TextBoxFor(model => model.Profile.Email, new { @class = "form-control", type = "email", autocomplete = "email" })
+                            @Html.ValidationMessageFor(model => model.Profile.Email, "", new { @class = "text-danger small" })
+                        </div>
+                        <div class="mb-4">
+                            @Html.LabelFor(model => model.Profile.Phone, new { @class = "form-label" })
+                            @Html.TextBoxFor(model => model.Profile.Phone, new { @class = "form-control", type = "tel", autocomplete = "tel" })
+                            @Html.ValidationMessageFor(model => model.Profile.Phone, "", new { @class = "text-danger small" })
+                        </div>
+                        <button class="btn btn-primary" type="submit">Lưu thông tin</button>
+                    }
+                </section>
+
+                <section class="candidate-form-panel security-panel" data-reveal>
+                    <div class="form-panel-heading">
+                        <span class="eyebrow">Bảo mật tài khoản</span>
+                        <h2>Đổi mật khẩu</h2>
+                        <p>Dùng mật khẩu riêng cho ATS Careers và không chia sẻ với người khác.</p>
+                    </div>
+                    @using (Html.BeginForm(
+                        "ChangePassword",
+                        "Candidate",
+                        FormMethod.Post,
+                        new { novalidate = "novalidate" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                        <div class="mb-3">
+                            @Html.LabelFor(model => model.Password.CurrentPassword, new { @class = "form-label" })
+                            @Html.PasswordFor(model => model.Password.CurrentPassword, new { @class = "form-control", autocomplete = "current-password" })
+                            @Html.ValidationMessageFor(model => model.Password.CurrentPassword, "", new { @class = "text-danger small" })
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                @Html.LabelFor(model => model.Password.NewPassword, new { @class = "form-label" })
+                                @Html.PasswordFor(model => model.Password.NewPassword, new { @class = "form-control", autocomplete = "new-password" })
+                                @Html.ValidationMessageFor(model => model.Password.NewPassword, "", new { @class = "text-danger small" })
+                            </div>
+                            <div class="col-md-6">
+                                @Html.LabelFor(model => model.Password.ConfirmPassword, new { @class = "form-label" })
+                                @Html.PasswordFor(model => model.Password.ConfirmPassword, new { @class = "form-control", autocomplete = "new-password" })
+                                @Html.ValidationMessageFor(model => model.Password.ConfirmPassword, "", new { @class = "text-danger small" })
+                            </div>
+                        </div>
+                        <div class="password-guidance">Tối thiểu 8 ký tự, có ít nhất một chữ cái và một chữ số.</div>
+                        <button class="btn btn-dark mt-3" type="submit">Đổi mật khẩu</button>
+                    }
+                </section>
+            </div>
+        </div>
+    </div>
+</section>

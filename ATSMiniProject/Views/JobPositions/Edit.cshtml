@@ -1,0 +1,25 @@
+@model ATSMiniProject.ViewModels.Jobs.JobPositionFormViewModel
+@{
+    ViewBag.Title = "Sửa vị trí";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Sửa vị trí tuyển dụng</h1>
+        <p>Cập nhật tên, mô tả và trạng thái sử dụng.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="@Url.Action("Index", "JobPositions")">Quay lại</a>
+</div>
+
+<div class="form-card admin-form-card">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.Partial("_Form", Model)
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Cập nhật</button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "JobPositions")">Huỷ</a>
+        </div>
+    }
+</div>

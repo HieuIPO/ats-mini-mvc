@@ -10,7 +10,7 @@
   Cach dung:
   1. Mo SQL Server Management Studio.
   2. Chay toan bo script nay.
-  3. Trong Visual Studio, dung Code First from database de sinh DbContext va entity classes tu database ATSMiniDB_StudentPlus.
+  3. Ung dung ket noi database ATSMiniDB_StudentPlus qua connection string ATSMiniDBContext.
 
   Luu y quan trong ve mat khau:
   - Script nay khong luu mat khau ro.
@@ -18,6 +18,10 @@
   - PasswordHash trong seed data duoc tao bang SHA2_256(Salt + Password) trong SQL Server.
   - Day la muc demo tot hon plain text cho mon hoc, chua phai chuan production nhu ASP.NET Identity/PBKDF2/bcrypt/Argon2.
 */
+
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 
 IF DB_ID(N'ATSMiniDB_StudentPlus') IS NULL
 BEGIN
@@ -168,8 +172,7 @@ BEGIN
         CONSTRAINT FK_Applications_Jobs FOREIGN KEY (JobID) REFERENCES dbo.Jobs(JobID) ON DELETE CASCADE,
         CONSTRAINT FK_Applications_CandidateUser FOREIGN KEY (CandidateUserID) REFERENCES dbo.Users(UserID),
         CONSTRAINT FK_Applications_Statuses FOREIGN KEY (StatusID) REFERENCES dbo.ApplicationStatuses(StatusID),
-        CONSTRAINT FK_Applications_UpdatedBy FOREIGN KEY (UpdatedByUserID) REFERENCES dbo.Users(UserID),
-        CONSTRAINT UQ_Applications_Job_Email UNIQUE (JobID, CandidateEmail)
+        CONSTRAINT FK_Applications_UpdatedBy FOREIGN KEY (UpdatedByUserID) REFERENCES dbo.Users(UserID)
     );
 END
 GO
@@ -189,8 +192,23 @@ BEGIN
         IsDeleted BIT NOT NULL CONSTRAINT DF_CandidateFiles_IsDeleted DEFAULT 0,
         CONSTRAINT FK_CandidateFiles_Applications FOREIGN KEY (ApplicationID) REFERENCES dbo.Applications(ApplicationID) ON DELETE CASCADE,
         CONSTRAINT FK_CandidateFiles_UploadedBy FOREIGN KEY (UploadedByUserID) REFERENCES dbo.Users(UserID),
-        CONSTRAINT CK_CandidateFiles_Extension CHECK (FileExtension IN (N'.pdf', N'.doc', N'.docx'))
+        CONSTRAINT CK_CandidateFiles_Extension CHECK (FileExtension IN (N'.pdf', N'.doc', N'.docx')),
+        CONSTRAINT CK_CandidateFiles_Size CHECK (FileSizeKB IS NULL OR (FileSizeKB > 0 AND FileSizeKB <= 5120))
     );
+END
+GO
+
+IF OBJECT_ID(N'dbo.CandidateFiles', N'U') IS NOT NULL
+   AND NOT EXISTS (
+       SELECT 1
+       FROM sys.check_constraints
+       WHERE name = N'CK_CandidateFiles_Size'
+         AND parent_object_id = OBJECT_ID(N'dbo.CandidateFiles')
+   )
+BEGIN
+    ALTER TABLE dbo.CandidateFiles
+    ADD CONSTRAINT CK_CandidateFiles_Size
+        CHECK (FileSizeKB IS NULL OR (FileSizeKB > 0 AND FileSizeKB <= 5120));
 END
 GO
 
@@ -267,8 +285,25 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Applications_Job_Stat
     CREATE INDEX IX_Applications_Job_Status ON dbo.Applications(JobID, StatusID, IsDeleted);
 GO
 
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Applications_Email' AND object_id = OBJECT_ID(N'dbo.Applications'))
-    CREATE INDEX IX_Applications_Email ON dbo.Applications(CandidateEmail);
+IF EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE name = N'UQ_Applications_Job_Email'
+      AND parent_object_id = OBJECT_ID(N'dbo.Applications')
+)
+    ALTER TABLE dbo.Applications DROP CONSTRAINT UQ_Applications_Job_Email;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_Applications_Job_Email' AND object_id = OBJECT_ID(N'dbo.Applications'))
+    CREATE UNIQUE INDEX UX_Applications_Job_Email
+        ON dbo.Applications(JobID, CandidateEmail)
+        WHERE IsDeleted = 0;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_Applications_Job_Candidate' AND object_id = OBJECT_ID(N'dbo.Applications'))
+    CREATE UNIQUE INDEX UX_Applications_Job_Candidate
+        ON dbo.Applications(JobID, CandidateUserID)
+        WHERE CandidateUserID IS NOT NULL AND IsDeleted = 0;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Interviews_Date' AND object_id = OBJECT_ID(N'dbo.Interviews'))
@@ -370,24 +405,67 @@ WHERE u.Username = N'admin'
 GO
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
-SELECT N'Moi nop', N'Ung vien vua nop ho so', 1, 0
-WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Moi nop');
+SELECT N'Mới nộp', N'Ứng viên vừa nộp hồ sơ', 1, 0
+WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Mới nộp');
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
-SELECT N'Dang xem xet', N'HR dang xem xet ho so', 2, 0
-WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Dang xem xet');
+SELECT N'Đang xem xét', N'HR đang xem xét hồ sơ', 2, 0
+WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Đang xem xét');
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
-SELECT N'Moi phong van', N'Ung vien duoc moi phong van', 3, 0
-WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Moi phong van');
+SELECT N'Mời phỏng vấn', N'Ứng viên được mời phỏng vấn', 3, 0
+WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Mời phỏng vấn');
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
-SELECT N'Dat', N'Ung vien dat yeu cau', 4, 1
-WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Dat');
+SELECT N'Đạt', N'Ứng viên đạt yêu cầu', 4, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Đạt');
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
-SELECT N'Truot', N'Ung vien khong dat yeu cau', 5, 1
-WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Truot');
+SELECT N'Không đạt', N'Ứng viên không đạt yêu cầu', 5, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Không đạt');
+GO
+
+/* Normalize legacy non-accented or older status names from earlier demo databases. */
+DECLARE @StatusMap TABLE (
+    LegacyName NVARCHAR(50) NOT NULL,
+    CanonicalName NVARCHAR(50) NOT NULL
+);
+
+INSERT INTO @StatusMap (LegacyName, CanonicalName)
+VALUES
+    (N'Moi nop', N'Mới nộp'),
+    (N'Dang xem xet', N'Đang xem xét'),
+    (N'Moi phong van', N'Mời phỏng vấn'),
+    (N'Dat', N'Đạt'),
+    (N'Truot', N'Không đạt'),
+    (N'Trượt', N'Không đạt');
+
+UPDATE a
+SET a.StatusID = canonical.StatusID
+FROM dbo.Applications a
+JOIN dbo.ApplicationStatuses legacy ON legacy.StatusID = a.StatusID
+JOIN @StatusMap sm ON sm.LegacyName = legacy.StatusName
+JOIN dbo.ApplicationStatuses canonical ON canonical.StatusName = sm.CanonicalName;
+
+UPDATE h
+SET h.OldStatusID = canonical.StatusID
+FROM dbo.ApplicationStatusHistories h
+JOIN dbo.ApplicationStatuses legacy ON legacy.StatusID = h.OldStatusID
+JOIN @StatusMap sm ON sm.LegacyName = legacy.StatusName
+JOIN dbo.ApplicationStatuses canonical ON canonical.StatusName = sm.CanonicalName;
+
+UPDATE h
+SET h.NewStatusID = canonical.StatusID
+FROM dbo.ApplicationStatusHistories h
+JOIN dbo.ApplicationStatuses legacy ON legacy.StatusID = h.NewStatusID
+JOIN @StatusMap sm ON sm.LegacyName = legacy.StatusName
+JOIN dbo.ApplicationStatuses canonical ON canonical.StatusName = sm.CanonicalName;
+
+DELETE legacy
+FROM dbo.ApplicationStatuses legacy
+JOIN @StatusMap sm ON sm.LegacyName = legacy.StatusName
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Applications a WHERE a.StatusID = legacy.StatusID)
+  AND NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatusHistories h WHERE h.OldStatusID = legacy.StatusID OR h.NewStatusID = legacy.StatusID);
 GO
 
 INSERT INTO dbo.Jobs (Title, Description, Requirements, DepartmentID, JobPositionID, Industry, SalaryRange, Location, JobType, Deadline, CreatedByUserID, IsActive)
@@ -428,21 +506,21 @@ INSERT INTO dbo.Applications (JobID, CandidateUserID, CandidateName, CandidatePh
 SELECT j.JobID, c.UserID, N'Tran Van Ung Vien', N'0900000003', N'ungvien01@example.com', N'Uploads/CVs/cv-tran-van-ung-vien.pdf', s.StatusID, N'Ho so moi nop, can xem xet ky nang ASP.NET MVC.', DATEADD(DAY, -3, GETDATE())
 FROM dbo.Jobs j
 JOIN dbo.Users c ON c.Username = N'ungvien01'
-JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Moi nop'
+JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Mới nộp'
 WHERE j.Title = N'Tuyen lap trinh vien ASP.NET MVC'
   AND NOT EXISTS (SELECT 1 FROM dbo.Applications WHERE JobID = j.JobID AND CandidateEmail = N'ungvien01@example.com');
 
 INSERT INTO dbo.Applications (JobID, CandidateUserID, CandidateName, CandidatePhone, CandidateEmail, CVFilePath, StatusID, HRNote, AppliedDate)
 SELECT j.JobID, NULL, N'Le Thi Minh Anh', N'0912345678', N'minhanh@example.com', N'Uploads/CVs/cv-le-thi-minh-anh.pdf', s.StatusID, N'Ung vien co kinh nghiem ban hang.', DATEADD(DAY, -2, GETDATE())
 FROM dbo.Jobs j
-JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Dang xem xet'
+JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Đang xem xét'
 WHERE j.Title = N'Tuyen chuyen vien kinh doanh'
   AND NOT EXISTS (SELECT 1 FROM dbo.Applications WHERE JobID = j.JobID AND CandidateEmail = N'minhanh@example.com');
 
 INSERT INTO dbo.Applications (JobID, CandidateUserID, CandidateName, CandidatePhone, CandidateEmail, CVFilePath, StatusID, HRNote, AppliedDate)
 SELECT j.JobID, NULL, N'Pham Quoc Bao', N'0987654321', N'quocbao@example.com', N'Uploads/CVs/cv-pham-quoc-bao.pdf', s.StatusID, N'Da hen phong van vong 1.', DATEADD(DAY, -1, GETDATE())
 FROM dbo.Jobs j
-JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Moi phong van'
+JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Mời phỏng vấn'
 WHERE j.Title = N'Tuyen thuc tap sinh nhan su'
   AND NOT EXISTS (SELECT 1 FROM dbo.Applications WHERE JobID = j.JobID AND CandidateEmail = N'quocbao@example.com');
 GO
@@ -467,7 +545,7 @@ WHERE a.CandidateEmail = N'quocbao@example.com'
 GO
 
 INSERT INTO dbo.ApplicationStatusHistories (ApplicationID, OldStatusID, NewStatusID, ChangedByUserID, Note, ChangedAt)
-SELECT a.ApplicationID, NULL, a.StatusID, hr.UserID, N'He thong ghi nhan trang thai ban dau khi ung vien nop ho so.', a.AppliedDate
+SELECT a.ApplicationID, NULL, a.StatusID, hr.UserID, N'Hệ thống ghi nhận trạng thái ban đầu khi ứng viên nộp hồ sơ.', a.AppliedDate
 FROM dbo.Applications a
 JOIN dbo.Users hr ON hr.Username = N'hr01'
 WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatusHistories WHERE ApplicationID = a.ApplicationID);

@@ -2,51 +2,82 @@
     var isLoggedIn = Session["AuthUserID"] != null;
     var fullName = Session["AuthFullName"] as string;
     var roleName = Session["AuthRoleName"] as string;
+    var currentController = ViewContext.RouteData.Values["controller"] as string;
+    var currentAction = ViewContext.RouteData.Values["action"] as string;
     var isBackOfficeUser = string.Equals(roleName, "Admin", System.StringComparison.OrdinalIgnoreCase)
         || string.Equals(roleName, "HR", System.StringComparison.OrdinalIgnoreCase);
     var isCandidate = string.Equals(roleName, "Candidate", System.StringComparison.OrdinalIgnoreCase);
+    var avatarVersion = Session["AuthAvatarVersion"] ?? 0;
+    var avatarInitial = (string.IsNullOrWhiteSpace(fullName) ? "U" : fullName.Substring(0, 1)).ToUpperInvariant();
+    var displayRole = isCandidate ? "Ứng viên"
+        : string.Equals(roleName, "HR", System.StringComparison.OrdinalIgnoreCase) ? "Nhân sự"
+        : string.Equals(roleName, "Admin", System.StringComparison.OrdinalIgnoreCase) ? "Quản trị viên"
+        : roleName;
+    Func<string, string, string> activeClass = (controller, action) =>
+        string.Equals(currentController, controller, System.StringComparison.OrdinalIgnoreCase) &&
+        (string.IsNullOrEmpty(action) || string.Equals(currentAction, action, System.StringComparison.OrdinalIgnoreCase))
+            ? "active"
+            : string.Empty;
 }
 
-<nav class="navbar navbar-expand-lg navbar-light public-navbar sticky-top">
+<nav class="navbar navbar-expand-lg public-navbar sticky-top">
     <div class="container">
-        <a class="navbar-brand public-brand" href="@Url.Action("Index", "Home")">
+        <a class="navbar-brand public-brand" href="@Url.Action("Index", "Home")" aria-label="ATS Mini - Trang chủ">
             <span class="public-brand-mark">A</span>
-            <span>ATS Mini</span>
+            <span class="brand-wording">
+                <strong>ATS Mini</strong>
+                <small>Kết nối đúng cơ hội</small>
+            </span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNavbar" aria-controls="publicNavbar" aria-expanded="false" aria-label="Mo menu">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNavbar" aria-controls="publicNavbar" aria-expanded="false" aria-label="Mở menu">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="publicNavbar">
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0 public-nav-list">
-                <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Home")">Trang chu</a></li>
-                <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Jobs")">Viec lam</a></li>
+                <li class="nav-item"><a class="nav-link @activeClass("Home", "Index")" href="@Url.Action("Index", "Home")">Trang chủ</a></li>
                 @if (isCandidate)
                 {
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Profile", "Candidate")">Ho so cua toi</a></li>
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Status", "Applications")">Trang thai ung tuyen</a></li>
+                    <li class="nav-item"><a class="nav-link @activeClass("Candidate", "Index")" href="@Url.Action("Index", "Candidate")">Tổng quan</a></li>
                 }
-                else
+                <li class="nav-item"><a class="nav-link @activeClass("Jobs", "")" href="@Url.Action("Index", "Jobs")">Việc làm</a></li>
+                @if (isCandidate)
                 {
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Status", "Applications")">Theo doi ho so</a></li>
+                    <li class="nav-item"><a class="nav-link @activeClass("Applications", "")" href="@Url.Action("Status", "Applications")">Hồ sơ ứng tuyển</a></li>
+                    <li class="nav-item"><a class="nav-link @activeClass("Candidate", "Profile")" href="@Url.Action("Profile", "Candidate")">Hồ sơ cá nhân</a></li>
                 }
                 @if (isBackOfficeUser)
                 {
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Dashboard")">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link @activeClass("Dashboard", "Index")" href="@Url.Action("Index", "Dashboard")">Quản trị tuyển dụng</a></li>
                 }
             </ul>
-            <div class="d-flex align-items-center gap-2 public-nav-actions">
+            <div class="public-nav-actions">
                 @if (isLoggedIn)
                 {
-                    <span class="navbar-text small text-muted d-none d-lg-inline">@fullName (@roleName)</span>
+                    <div class="candidate-user">
+                        <span class="candidate-user-avatar">
+                            <span aria-hidden="true">@avatarInitial</span>
+                            @if (isCandidate)
+                            {
+                                <img src="@Url.Action("Avatar", "Candidate", new { v = avatarVersion })"
+                                     alt=""
+                                     data-candidate-avatar-image />
+                            }
+                        </span>
+                        <span>
+                            <strong>@fullName</strong>
+                            <small>@displayRole</small>
+                        </span>
+                    </div>
                     using (Html.BeginForm("Logout", "Account", FormMethod.Post, new { @class = "d-inline" }))
                     {
                         @Html.AntiForgeryToken()
-                        <button class="btn btn-outline-secondary btn-sm" type="submit">Dang xuat</button>
+                        <button class="btn btn-outline-secondary btn-sm" type="submit">Đăng xuất</button>
                     }
                 }
                 else
                 {
-                    <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Login", "Account")">Dang nhap</a>
+                    <a class="btn btn-link btn-sm public-login-link" href="@Url.Action("Login", "Account")">Đăng nhập</a>
+                    <a class="btn btn-primary btn-sm" href="@Url.Action("Register", "Account")">Tạo hồ sơ</a>
                 }
             </div>
         </div>
