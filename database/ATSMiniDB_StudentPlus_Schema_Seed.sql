@@ -198,6 +198,20 @@ BEGIN
 END
 GO
 
+IF OBJECT_ID(N'dbo.CandidateFiles', N'U') IS NOT NULL
+   AND NOT EXISTS (
+       SELECT 1
+       FROM sys.check_constraints
+       WHERE name = N'CK_CandidateFiles_Size'
+         AND parent_object_id = OBJECT_ID(N'dbo.CandidateFiles')
+   )
+BEGIN
+    ALTER TABLE dbo.CandidateFiles
+    ADD CONSTRAINT CK_CandidateFiles_Size
+        CHECK (FileSizeKB IS NULL OR (FileSizeKB > 0 AND FileSizeKB <= 5120));
+END
+GO
+
 IF OBJECT_ID(N'dbo.ApplicationStatusHistories', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.ApplicationStatusHistories (
@@ -407,8 +421,51 @@ SELECT N'Đạt', N'Ứng viên đạt yêu cầu', 4, 1
 WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Đạt');
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
-SELECT N'Trượt', N'Ứng viên không đạt yêu cầu', 5, 1
-WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Trượt');
+SELECT N'Không đạt', N'Ứng viên không đạt yêu cầu', 5, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Không đạt');
+GO
+
+/* Normalize legacy non-accented or older status names from earlier demo databases. */
+DECLARE @StatusMap TABLE (
+    LegacyName NVARCHAR(50) NOT NULL,
+    CanonicalName NVARCHAR(50) NOT NULL
+);
+
+INSERT INTO @StatusMap (LegacyName, CanonicalName)
+VALUES
+    (N'Moi nop', N'Mới nộp'),
+    (N'Dang xem xet', N'Đang xem xét'),
+    (N'Moi phong van', N'Mời phỏng vấn'),
+    (N'Dat', N'Đạt'),
+    (N'Truot', N'Không đạt'),
+    (N'Trượt', N'Không đạt');
+
+UPDATE a
+SET a.StatusID = canonical.StatusID
+FROM dbo.Applications a
+JOIN dbo.ApplicationStatuses legacy ON legacy.StatusID = a.StatusID
+JOIN @StatusMap sm ON sm.LegacyName = legacy.StatusName
+JOIN dbo.ApplicationStatuses canonical ON canonical.StatusName = sm.CanonicalName;
+
+UPDATE h
+SET h.OldStatusID = canonical.StatusID
+FROM dbo.ApplicationStatusHistories h
+JOIN dbo.ApplicationStatuses legacy ON legacy.StatusID = h.OldStatusID
+JOIN @StatusMap sm ON sm.LegacyName = legacy.StatusName
+JOIN dbo.ApplicationStatuses canonical ON canonical.StatusName = sm.CanonicalName;
+
+UPDATE h
+SET h.NewStatusID = canonical.StatusID
+FROM dbo.ApplicationStatusHistories h
+JOIN dbo.ApplicationStatuses legacy ON legacy.StatusID = h.NewStatusID
+JOIN @StatusMap sm ON sm.LegacyName = legacy.StatusName
+JOIN dbo.ApplicationStatuses canonical ON canonical.StatusName = sm.CanonicalName;
+
+DELETE legacy
+FROM dbo.ApplicationStatuses legacy
+JOIN @StatusMap sm ON sm.LegacyName = legacy.StatusName
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Applications a WHERE a.StatusID = legacy.StatusID)
+  AND NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatusHistories h WHERE h.OldStatusID = legacy.StatusID OR h.NewStatusID = legacy.StatusID);
 GO
 
 INSERT INTO dbo.Jobs (Title, Description, Requirements, DepartmentID, JobPositionID, Industry, SalaryRange, Location, JobType, Deadline, CreatedByUserID, IsActive)
