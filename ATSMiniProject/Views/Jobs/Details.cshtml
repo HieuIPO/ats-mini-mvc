@@ -1,66 +1,58 @@
-@model ATSMiniProject.Models.Job
+﻿@model ATSMiniProject.ViewModels.Jobs.JobDetailsViewModel
+
 @{
     ViewBag.Title = Model.Title;
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    var isExpired = Model.Deadline.HasValue && Model.Deadline.Value < DateTime.Today;
-    var canApply = Model.IsActive && !isExpired;
-    var roleName = Session["AuthRoleName"] as string;
-    var isBackOffice = string.Equals(roleName, "Admin", System.StringComparison.OrdinalIgnoreCase) || string.Equals(roleName, "HR", System.StringComparison.OrdinalIgnoreCase);
 }
 
-<section class="job-detail-section">
+<section class="candidate-section job-detail-section">
     <div class="container">
-        <div class="job-detail-header">
-            <a href="@Url.Action("Index", "Jobs")">Quay lại danh sách</a>
-            <h1>@Model.Title</h1>
-            <div class="job-meta-row">
-                <span>@(Model.Department == null ? "Chưa có phòng ban" : Model.Department.DepartmentName)</span>
-                <span>@(Model.JobPosition == null ? "Chưa có vị trí" : Model.JobPosition.PositionName)</span>
-                <span>@(string.IsNullOrWhiteSpace(Model.Location) ? "Linh hoạt" : Model.Location)</span>
-            </div>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="detail-card job-detail-content">
-                    <h2>Mô tả công việc</h2>
-                    <p>@Html.Raw(System.Web.HttpUtility.HtmlEncode(Model.Description).Replace("\n", "<br />"))</p>
-                    <h2>Yêu cầu ứng viên</h2>
-                    <p>@Html.Raw(System.Web.HttpUtility.HtmlEncode(Model.Requirements).Replace("\n", "<br />"))</p>
-                    @if (!string.IsNullOrWhiteSpace(Model.Industry))
-                    {
-                        <h2>Lĩnh vực</h2>
-                        <p>@Model.Industry</p>
-                    }
+        <a class="candidate-back-link" href="@Url.Action("Index", "Jobs")"><span aria-hidden="true">←</span> Tất cả việc làm</a>
+        <div class="job-detail-layout">
+            <article class="job-detail-main">
+                <div class="job-detail-title-row">
+                    <div>
+                        <span class="eyebrow">@Model.DepartmentName</span>
+                        <h1>@Model.Title</h1>
+                        <p class="job-detail-position">@Model.PositionName</p>
+                    </div>
+                    <span class="job-type">@Model.JobType</span>
                 </div>
-            </div>
-            <div class="col-lg-4">
-                <aside class="detail-card job-summary-card">
-                    <span class="@(canApply ? "badge-soft-success" : "badge-soft-neutral")">@(canApply ? "Đang tuyển" : "Ngừng nhận hồ sơ")</span>
-                    <dl>
-                        <dt>Loại công việc</dt>
-                        <dd>@(string.IsNullOrWhiteSpace(Model.JobType) ? "Chưa cập nhật" : Model.JobType)</dd>
-                        <dt>Mức lương</dt>
-                        <dd>@(string.IsNullOrWhiteSpace(Model.SalaryRange) ? "Thoả thuận" : Model.SalaryRange)</dd>
-                        <dt>Hạn nộp</dt>
-                        <dd>@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("dd/MM/yyyy") : "Chưa cập nhật")</dd>
-                    </dl>
-                    @if (canApply)
-                    {
-                        <a class="btn btn-primary w-100" href="@Url.Action("Create", "Applications", new { jobId = Model.JobID })">Ứng tuyển ngay</a>
-                    }
-                    else
-                    {
-                        <button class="btn btn-secondary w-100" type="button" disabled>Tin đã đóng</button>
-                    }
-                    @if (isBackOffice)
-                    {
-                        <div class="job-admin-actions">
-                            <a class="btn btn-outline-primary w-100" href="@Url.Action("Edit", "Jobs", new { id = Model.JobID })">Sửa tin tuyển dụng</a>
-                        </div>
-                    }
-                </aside>
-            </div>
+
+                <div class="job-detail-facts">
+                    <div><span>Địa điểm</span><strong>@(Model.Location ?? "Thỏa thuận")</strong></div>
+                    <div><span>Mức lương</span><strong>@(Model.SalaryRange ?? "Thỏa thuận")</strong></div>
+                    <div><span>Lĩnh vực</span><strong>@(Model.Industry ?? "Đang cập nhật")</strong></div>
+                    <div><span>Hạn nộp</span><strong>@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("dd/MM/yyyy") : "Không giới hạn")</strong></div>
+                </div>
+
+                <section class="job-copy">
+                    <h2>Mô tả công việc</h2>
+                    <p>@(Model.Description ?? "Thông tin đang được cập nhật.")</p>
+                </section>
+                <section class="job-copy">
+                    <h2>Yêu cầu ứng viên</h2>
+                    <p>@(Model.Requirements ?? "Thông tin đang được cập nhật.")</p>
+                </section>
+            </article>
+
+            <aside class="job-apply-panel">
+                <span class="apply-panel-label">Ứng tuyển ngay</span>
+                <h2>Sẵn sàng cho vị trí này?</h2>
+                <p>Chuẩn bị CV định dạng PDF, DOC hoặc DOCX, dung lượng tối đa 5 MB.</p>
+                @if (Model.AlreadyApplied)
+                {
+                    <div class="applied-confirmation">
+                        <strong>Hồ sơ đã được gửi</strong>
+                        <span>Bạn có thể theo dõi tiến trình bất cứ lúc nào.</span>
+                    </div>
+                    <a class="btn btn-outline-primary w-100" href="@Url.Action("Status", "Applications")">Xem hồ sơ đã nộp</a>
+                }
+                else
+                {
+                    <a class="btn btn-primary btn-lg w-100" href="@Url.Action("Apply", "Jobs", new { id = Model.JobId })">Nộp hồ sơ</a>
+                }
+                <small>Thông tin của bạn chỉ được sử dụng cho mục đích tuyển dụng.</small>
+            </aside>
         </div>
     </div>
 </section>

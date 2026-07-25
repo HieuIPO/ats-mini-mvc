@@ -1,0 +1,78 @@
+﻿@model ATSMiniProject.ViewModels.Jobs.ApplyApplicationViewModel
+
+@{
+    ViewBag.Title = "Nộp hồ sơ";
+}
+
+<section class="candidate-section application-form-page">
+    <div class="container candidate-container">
+        <a class="candidate-back-link" href="@Url.Action("Details", "Jobs", new { id = Model.JobId })"><span aria-hidden="true">←</span> Quay lại tin tuyển dụng</a>
+        <div class="candidate-page-header">
+            <div>
+                <span class="eyebrow">@Model.DepartmentName</span>
+                <h1>Nộp hồ sơ ứng tuyển</h1>
+                <p>@Model.JobTitle</p>
+            </div>
+            <div class="application-deadline">
+                <span>Hạn nhận hồ sơ</span>
+                <strong>@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("dd/MM/yyyy") : "Không giới hạn")</strong>
+            </div>
+        </div>
+
+        <div class="application-form-layout">
+            <div class="candidate-form-panel">
+                @using (Html.BeginForm("Apply", "Jobs", FormMethod.Post, new { enctype = "multipart/form-data", novalidate = "novalidate" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(model => model.JobId)
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                    <div class="form-section-heading">
+                        <span>01</span>
+                        <div>
+                            <h2>Thông tin liên hệ</h2>
+                            <p>Nhà tuyển dụng sẽ sử dụng thông tin này để liên hệ với bạn.</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            @Html.LabelFor(model => model.CandidateName, new { @class = "form-label" })
+                            @Html.TextBoxFor(model => model.CandidateName, new { @class = "form-control", autocomplete = "name" })
+                            @Html.ValidationMessageFor(model => model.CandidateName, "", new { @class = "text-danger small" })
+                        </div>
+                        <div class="col-md-6">
+                            @Html.LabelFor(model => model.CandidatePhone, new { @class = "form-label" })
+                            @Html.TextBoxFor(model => model.CandidatePhone, new { @class = "form-control", type = "tel", autocomplete = "tel" })
+                            @Html.ValidationMessageFor(model => model.CandidatePhone, "", new { @class = "text-danger small" })
+                        </div>
+                        <div class="col-12">
+                            @Html.LabelFor(model => model.CandidateEmail, new { @class = "form-label" })
+                            @Html.TextBoxFor(model => model.CandidateEmail, new { @class = "form-control", type = "email", autocomplete = "email" })
+                            @Html.ValidationMessageFor(model => model.CandidateEmail, "", new { @class = "text-danger small" })
+                        </div>
+                    </div>
+
+                    <div class="form-section-heading form-section-heading-spaced">
+                        <span>02</span>
+                        <div>
+                            <h2>Hồ sơ năng lực</h2>
+                            <p>Tải lên phiên bản CV mới nhất của bạn.</p>
+                        </div>
+                    </div>
+                    <label class="cv-upload-zone" for="CvFile">
+                        <span class="cv-upload-symbol" aria-hidden="true">↑</span>
+                        <strong>Chọn CV từ máy tính</strong>
+                        <small>PDF, DOC hoặc DOCX · Tối đa 5 MB</small>
+                        <input id="CvFile" name="CvFile" type="file" accept=".pdf,.doc,.docx" />
+                    </label>
+                    @Html.ValidationMessageFor(model => model.CvFile, "", new { @class = "text-danger small d-block mt-2" })
+
+                    <div class="candidate-form-actions">
+                        <a class="btn btn-outline-secondary" href="@Url.Action("Details", "Jobs", new { id = Model.JobId })">Hủy</a>
+                        <button class="btn btn-primary btn-lg" type="submit">Xác nhận nộp hồ sơ</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

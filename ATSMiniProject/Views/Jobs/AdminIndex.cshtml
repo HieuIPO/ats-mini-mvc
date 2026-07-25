@@ -35,7 +35,7 @@
 
 <div class="ats-table-card">
     <div class="ats-table-toolbar">
-        @using (Html.BeginForm("Index", "Jobs", FormMethod.Get, new { @class = "admin-filter-form" }))
+        @using (Html.BeginForm("AdminIndex", "Jobs", FormMethod.Get, new { @class = "admin-filter-form" }))
         {
             @Html.TextBox("keyword", Model.Keyword, new { @class = "form-control", placeholder = "Tìm theo tiêu đề, mô tả, yêu cầu..." })
             @Html.DropDownList("departmentId", Model.Departments, "Tất cả phòng ban", new { @class = "form-select" })
@@ -48,7 +48,7 @@
                 <option value="expired" @(Model.Status == "expired" ? "selected" : "")>Hết hạn</option>
             </select>
             <button class="btn btn-primary" type="submit">Lọc</button>
-            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Jobs")">Xoá lọc</a>
+            <a class="btn btn-outline-secondary" href="@Url.Action("AdminIndex", "Jobs")">Xoá lọc</a>
         }
         <div class="admin-table-links">
             <a href="@Url.Action("Index", "Departments")">Phòng ban</a>
