@@ -1,0 +1,62 @@
+@model IEnumerable<ATSMiniProject.Models.JobPosition>
+@{
+    ViewBag.Title = "Vị trí tuyển dụng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Vị trí tuyển dụng</h1>
+        <p>Quản lý danh mục chức danh/vị trí dùng cho tin tuyển dụng.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create", "JobPositions")">Thêm vị trí</a>
+</div>
+
+<div class="ats-table-card">
+    <div class="ats-table-toolbar">
+        @using (Html.BeginForm("Index", "JobPositions", FormMethod.Get, new { @class = "admin-filter-form" }))
+        {
+            @Html.TextBox("keyword", ViewBag.Keyword as string, new { @class = "form-control", placeholder = "Tìm vị trí..." })
+            <button class="btn btn-primary" type="submit">Tìm</button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "JobPositions")">Xoá lọc</a>
+        }
+        <a href="@Url.Action("Index", "Jobs")">Về tin tuyển dụng</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table ats-table align-middle">
+            <thead>
+                <tr>
+                    <th>Tên vị trí</th>
+                    <th>Mô tả</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!System.Linq.Enumerable.Any(Model))
+                {
+                    <tr><td colspan="4" class="text-center text-muted py-4">Chưa có vị trí phù hợp.</td></tr>
+                }
+                else
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><strong>@item.PositionName</strong></td>
+                            <td>@(string.IsNullOrWhiteSpace(item.Description) ? "Chưa cập nhật" : item.Description)</td>
+                            <td><span class="@(item.IsActive ? "badge-soft-success" : "badge-soft-neutral")">@(item.IsActive ? "Đang sử dụng" : "Tạm dừng")</span></td>
+                            <td class="text-end">
+                                <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Edit", "JobPositions", new { id = item.JobPositionID })">Sửa</a>
+                                @using (Html.BeginForm("Delete", "JobPositions", new { id = item.JobPositionID }, FormMethod.Post, new { @class = "d-inline" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-outline-danger btn-sm" type="submit" onclick="return confirm('Xoá vị trí này?');">Xoá</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

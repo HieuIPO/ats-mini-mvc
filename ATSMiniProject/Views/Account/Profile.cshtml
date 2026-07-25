@@ -1,0 +1,72 @@
+@model ATSMiniProject.ViewModels.Account.ProfileViewModel
+@{
+    ViewBag.Title = "Thông tin cá nhân";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var initial = string.IsNullOrWhiteSpace(Model.FullName) ? "U" : Model.FullName.Substring(0, 1).ToUpperInvariant();
+}
+
+<div class="page-header">
+    <div>
+        <h1>Thông tin cá nhân</h1>
+        <p>Cập nhật thông tin liên hệ và tải ảnh đại diện hiển thị trên thanh quản trị.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Dashboard")">Về Dashboard</a>
+</div>
+
+<div class="profile-layout">
+    <aside class="profile-preview">
+        @if (!string.IsNullOrWhiteSpace(Model.AvatarPath))
+        {
+            <img class="profile-avatar-preview avatar-image" src="@Url.Content(Model.AvatarPath)" alt="Ảnh đại diện" />
+        }
+        else
+        {
+            <div class="profile-avatar-preview">@initial</div>
+        }
+        <h2>@Model.FullName</h2>
+        <p>@Model.Username · @Model.RoleName</p>
+        <div class="profile-contact">
+            <span>@Model.Email</span>
+            <span>@(string.IsNullOrWhiteSpace(Model.Phone) ? "Chưa cập nhật số điện thoại" : Model.Phone)</span>
+        </div>
+    </aside>
+
+    <div class="form-card admin-form-card">
+        @using (Html.BeginForm("Profile", "Account", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            @Html.HiddenFor(m => m.Username)
+            @Html.HiddenFor(m => m.RoleName)
+            @Html.HiddenFor(m => m.AvatarPath)
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.FullName, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Email, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email" })
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Phone, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "VD: 0900000002" })
+                    @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.AvatarFile, new { @class = "form-label" })
+                    <input class="form-control" type="file" id="AvatarFile" name="AvatarFile" accept=".jpg,.jpeg,.png,.gif" />
+                    <div class="form-text">Chấp nhận JPG, PNG, GIF. Dung lượng tối đa 2MB.</div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Lưu thông tin</button>
+                <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Dashboard")">Huỷ</a>
+            </div>
+        }
+    </div>
+</div>
