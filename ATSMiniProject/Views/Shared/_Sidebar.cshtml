@@ -16,37 +16,45 @@
         <span class="brand-mark">ATS</span>
         <span class="brand-copy">
             <strong>ATS Mini</strong>
-            <small>Recruitment system</small>
+            <small>Hệ thống tuyển dụng</small>
         </span>
     </div>
 
     <nav class="sidebar-nav" aria-label="Menu quan tri">
-        <div class="sidebar-section-label">Overview</div>
+        <div class="sidebar-section-label">Tổng quan</div>
         <a href="@Url.Action("Index", "Dashboard")" class="@activeClass("Dashboard")">
             <span class="sidebar-icon">D</span>
             <span>Dashboard</span>
         </a>
 
-        <div class="sidebar-section-label">Recruitment</div>
+        <div class="sidebar-section-label">Tuyển dụng</div>
         <a href="@Url.Action("Index", "Jobs")" class="@activeClass("Jobs")">
             <span class="sidebar-icon">J</span>
-            <span>Tin tuyen dung</span>
+            <span>Tin tuyển dụng</span>
+        </a>
+        <a href="@Url.Action("Index", "Departments")" class="@activeClass("Departments")">
+            <span class="sidebar-icon">D</span>
+            <span>Phòng ban</span>
+        </a>
+        <a href="@Url.Action("Index", "JobPositions")" class="@activeClass("JobPositions")">
+            <span class="sidebar-icon">P</span>
+            <span>Vị trí</span>
         </a>
         <a href="@Url.Action("Index", "Applications")" class="@activeClass("Applications")">
             <span class="sidebar-icon">A</span>
-            <span>Ho so ung vien</span>
+            <span>Hồ sơ ứng viên</span>
         </a>
         <a href="@Url.Action("Index", "Interviews")" class="@activeClass("Interviews")">
             <span class="sidebar-icon">I</span>
-            <span>Phong van</span>
+            <span>Phỏng vấn</span>
         </a>
 
         @if (isAdmin)
         {
-            <div class="sidebar-section-label">System</div>
+            <div class="sidebar-section-label">Hệ thống</div>
             <a href="@Url.Action("Users", "Admin")" class="@activeClass("Admin")">
                 <span class="sidebar-icon">U</span>
-                <span>Tai khoan</span>
+                <span>Tài khoản</span>
             </a>
         }
     </nav>

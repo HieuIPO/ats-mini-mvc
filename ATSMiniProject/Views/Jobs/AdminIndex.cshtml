@@ -1,0 +1,119 @@
+@model ATSMiniProject.ViewModels.Jobs.JobFilterViewModel
+@{
+    ViewBag.Title = "Quản lý tin tuyển dụng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Tin tuyển dụng</h1>
+        <p>Quản lý danh sách tin, tìm kiếm, lọc và đóng/mở tin tuyển dụng.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create", "Jobs")">Tạo tin tuyển dụng</a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <span>Tổng tin</span>
+            <strong>@Model.TotalJobs</strong>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <span>Đang mở</span>
+            <strong>@Model.OpenJobs</strong>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <span>Đã đóng / hết hạn</span>
+            <strong>@Model.ClosedJobs</strong>
+        </div>
+    </div>
+</div>
+
+<div class="ats-table-card">
+    <div class="ats-table-toolbar">
+        @using (Html.BeginForm("Index", "Jobs", FormMethod.Get, new { @class = "admin-filter-form" }))
+        {
+            @Html.TextBox("keyword", Model.Keyword, new { @class = "form-control", placeholder = "Tìm theo tiêu đề, mô tả, yêu cầu..." })
+            @Html.DropDownList("departmentId", Model.Departments, "Tất cả phòng ban", new { @class = "form-select" })
+            @Html.DropDownList("jobPositionId", Model.JobPositions, "Tất cả vị trí", new { @class = "form-select" })
+            @Html.DropDownList("jobType", Model.JobTypes, "Loại công việc", new { @class = "form-select" })
+            <select class="form-select" name="status">
+                <option value="">Tất cả trạng thái</option>
+                <option value="open" @(Model.Status == "open" ? "selected" : "")>Đang mở</option>
+                <option value="closed" @(Model.Status == "closed" ? "selected" : "")>Đã đóng</option>
+                <option value="expired" @(Model.Status == "expired" ? "selected" : "")>Hết hạn</option>
+            </select>
+            <button class="btn btn-primary" type="submit">Lọc</button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Jobs")">Xoá lọc</a>
+        }
+        <div class="admin-table-links">
+            <a href="@Url.Action("Index", "Departments")">Phòng ban</a>
+            <span>/</span>
+            <a href="@Url.Action("Index", "JobPositions")">Vị trí</a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table ats-table align-middle">
+            <thead>
+                <tr>
+                    <th>Tin tuyển dụng</th>
+                    <th>Phòng ban</th>
+                    <th>Vị trí</th>
+                    <th>Địa điểm</th>
+                    <th>Hạn nộp</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!System.Linq.Enumerable.Any(Model.Jobs))
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">Chưa có tin tuyển dụng phù hợp.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var job in Model.Jobs)
+                    {
+                        var isExpired = job.Deadline.HasValue && job.Deadline.Value < DateTime.Today;
+                        var statusClass = job.IsActive && !isExpired ? "badge-soft-success" : (isExpired ? "badge-soft-danger" : "badge-soft-neutral");
+                        var statusText = job.IsActive && !isExpired ? "Đang mở" : (isExpired ? "Hết hạn" : "Đã đóng");
+                        <tr>
+                            <td>
+                                <strong>@job.Title</strong>
+                                <div class="text-muted small">@(string.IsNullOrWhiteSpace(job.JobType) ? "Chưa cập nhật loại việc" : job.JobType)</div>
+                            </td>
+                            <td>@(job.Department == null ? "Chưa có" : job.Department.DepartmentName)</td>
+                            <td>@(job.JobPosition == null ? "Chưa có" : job.JobPosition.PositionName)</td>
+                            <td>@(string.IsNullOrWhiteSpace(job.Location) ? "Chưa cập nhật" : job.Location)</td>
+                            <td>@(job.Deadline.HasValue ? job.Deadline.Value.ToString("dd/MM/yyyy") : "Chưa cập nhật")</td>
+                            <td><span class="@statusClass">@statusText</span></td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a class="btn btn-outline-secondary" href="@Url.Action("Details", "Jobs", new { id = job.JobID })">Xem</a>
+                                    <a class="btn btn-outline-primary" href="@Url.Action("Edit", "Jobs", new { id = job.JobID })">Sửa</a>
+                                    @using (Html.BeginForm("ToggleStatus", "Jobs", new { id = job.JobID }, FormMethod.Post, new { @class = "d-inline" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-outline-warning" type="submit">@(job.IsActive ? "Đóng" : "Mở")</button>
+                                    }
+                                    @using (Html.BeginForm("Delete", "Jobs", new { id = job.JobID }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bạn chắc chắn muốn xoá tin tuyển dụng này khỏi danh sách quản lý?');" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-outline-danger" type="submit">Xoá</button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -370,24 +370,24 @@ WHERE u.Username = N'admin'
 GO
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
-SELECT N'Moi nop', N'Ung vien vua nop ho so', 1, 0
-WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Moi nop');
+SELECT N'Mới nộp', N'Ứng viên vừa nộp hồ sơ', 1, 0
+WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Mới nộp');
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
-SELECT N'Dang xem xet', N'HR dang xem xet ho so', 2, 0
-WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Dang xem xet');
+SELECT N'Đang xem xét', N'HR đang xem xét hồ sơ', 2, 0
+WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Đang xem xét');
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
-SELECT N'Moi phong van', N'Ung vien duoc moi phong van', 3, 0
-WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Moi phong van');
+SELECT N'Mời phỏng vấn', N'Ứng viên được mời phỏng vấn', 3, 0
+WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Mời phỏng vấn');
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
-SELECT N'Dat', N'Ung vien dat yeu cau', 4, 1
-WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Dat');
+SELECT N'Đạt', N'Ứng viên đạt yêu cầu', 4, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Đạt');
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
-SELECT N'Truot', N'Ung vien khong dat yeu cau', 5, 1
-WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Truot');
+SELECT N'Trượt', N'Ứng viên không đạt yêu cầu', 5, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatuses WHERE StatusName = N'Trượt');
 GO
 
 INSERT INTO dbo.Jobs (Title, Description, Requirements, DepartmentID, JobPositionID, Industry, SalaryRange, Location, JobType, Deadline, CreatedByUserID, IsActive)
@@ -428,21 +428,21 @@ INSERT INTO dbo.Applications (JobID, CandidateUserID, CandidateName, CandidatePh
 SELECT j.JobID, c.UserID, N'Tran Van Ung Vien', N'0900000003', N'ungvien01@example.com', N'Uploads/CVs/cv-tran-van-ung-vien.pdf', s.StatusID, N'Ho so moi nop, can xem xet ky nang ASP.NET MVC.', DATEADD(DAY, -3, GETDATE())
 FROM dbo.Jobs j
 JOIN dbo.Users c ON c.Username = N'ungvien01'
-JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Moi nop'
+JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Mới nộp'
 WHERE j.Title = N'Tuyen lap trinh vien ASP.NET MVC'
   AND NOT EXISTS (SELECT 1 FROM dbo.Applications WHERE JobID = j.JobID AND CandidateEmail = N'ungvien01@example.com');
 
 INSERT INTO dbo.Applications (JobID, CandidateUserID, CandidateName, CandidatePhone, CandidateEmail, CVFilePath, StatusID, HRNote, AppliedDate)
 SELECT j.JobID, NULL, N'Le Thi Minh Anh', N'0912345678', N'minhanh@example.com', N'Uploads/CVs/cv-le-thi-minh-anh.pdf', s.StatusID, N'Ung vien co kinh nghiem ban hang.', DATEADD(DAY, -2, GETDATE())
 FROM dbo.Jobs j
-JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Dang xem xet'
+JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Đang xem xét'
 WHERE j.Title = N'Tuyen chuyen vien kinh doanh'
   AND NOT EXISTS (SELECT 1 FROM dbo.Applications WHERE JobID = j.JobID AND CandidateEmail = N'minhanh@example.com');
 
 INSERT INTO dbo.Applications (JobID, CandidateUserID, CandidateName, CandidatePhone, CandidateEmail, CVFilePath, StatusID, HRNote, AppliedDate)
 SELECT j.JobID, NULL, N'Pham Quoc Bao', N'0987654321', N'quocbao@example.com', N'Uploads/CVs/cv-pham-quoc-bao.pdf', s.StatusID, N'Da hen phong van vong 1.', DATEADD(DAY, -1, GETDATE())
 FROM dbo.Jobs j
-JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Moi phong van'
+JOIN dbo.ApplicationStatuses s ON s.StatusName = N'Mời phỏng vấn'
 WHERE j.Title = N'Tuyen thuc tap sinh nhan su'
   AND NOT EXISTS (SELECT 1 FROM dbo.Applications WHERE JobID = j.JobID AND CandidateEmail = N'quocbao@example.com');
 GO
@@ -467,7 +467,7 @@ WHERE a.CandidateEmail = N'quocbao@example.com'
 GO
 
 INSERT INTO dbo.ApplicationStatusHistories (ApplicationID, OldStatusID, NewStatusID, ChangedByUserID, Note, ChangedAt)
-SELECT a.ApplicationID, NULL, a.StatusID, hr.UserID, N'He thong ghi nhan trang thai ban dau khi ung vien nop ho so.', a.AppliedDate
+SELECT a.ApplicationID, NULL, a.StatusID, hr.UserID, N'Hệ thống ghi nhận trạng thái ban đầu khi ứng viên nộp hồ sơ.', a.AppliedDate
 FROM dbo.Applications a
 JOIN dbo.Users hr ON hr.Username = N'hr01'
 WHERE NOT EXISTS (SELECT 1 FROM dbo.ApplicationStatusHistories WHERE ApplicationID = a.ApplicationID);

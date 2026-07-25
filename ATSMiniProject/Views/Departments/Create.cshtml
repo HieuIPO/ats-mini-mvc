@@ -1,0 +1,25 @@
+@model ATSMiniProject.ViewModels.Jobs.DepartmentFormViewModel
+@{
+    ViewBag.Title = "Thêm phòng ban";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Thêm phòng ban</h1>
+        <p>Phòng ban sẽ được dùng trong bộ lọc và form tạo tin tuyển dụng.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Departments")">Quay lại</a>
+</div>
+
+<div class="form-card admin-form-card">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.Partial("_Form", Model)
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Lưu phòng ban</button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Departments")">Huỷ</a>
+        </div>
+    }
+</div>

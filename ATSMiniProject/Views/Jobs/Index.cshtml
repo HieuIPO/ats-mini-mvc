@@ -1,0 +1,93 @@
+@model ATSMiniProject.ViewModels.Jobs.JobFilterViewModel
+@{
+    ViewBag.Title = "Việc làm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="jobs-hero">
+    <div class="container">
+        <div class="jobs-hero-copy">
+            <span class="eyebrow">Cơ hội nghề nghiệp</span>
+            <h1>Tìm vị trí phù hợp trong công ty</h1>
+            <p>Lọc nhanh theo từ khoá, phòng ban, vị trí và địa điểm để nộp hồ sơ vào các tin đang mở.</p>
+        </div>
+        @using (Html.BeginForm("Index", "Jobs", FormMethod.Get, new { @class = "job-search-panel" }))
+        {
+            <div class="row g-2">
+                <div class="col-md-4">
+                    @Html.TextBox("keyword", Model.Keyword, new { @class = "form-control", placeholder = "Tên công việc, kỹ năng..." })
+                </div>
+                <div class="col-md-2">
+                    @Html.DropDownList("departmentId", Model.Departments, "Phòng ban", new { @class = "form-select" })
+                </div>
+                <div class="col-md-2">
+                    @Html.DropDownList("jobPositionId", Model.JobPositions, "Vị trí", new { @class = "form-select" })
+                </div>
+                <div class="col-md-2">
+                    @Html.DropDownList("location", Model.Locations, "Địa điểm", new { @class = "form-select" })
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" type="submit">Tìm việc</button>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="jobs-list-section">
+    <div class="container">
+        <div class="section-heading">
+            <div>
+                <h2>Danh sách việc làm</h2>
+                <p>@System.Linq.Enumerable.Count(Model.Jobs) tin phù hợp với bộ lọc hiện tại</p>
+            </div>
+            <a class="btn btn-outline-primary" href="@Url.Action("Index", "Jobs")">Xoá lọc</a>
+        </div>
+
+        @if (!System.Linq.Enumerable.Any(Model.Jobs))
+        {
+            <div class="empty-state">
+                <h3>Chưa có tin tuyển dụng phù hợp</h3>
+                <p>Hãy thử từ khoá khác hoặc quay lại sau khi HR cập nhật tin mới.</p>
+            </div>
+        }
+        else
+        {
+            <div class="job-card-grid">
+                @foreach (var job in Model.Jobs)
+                {
+                    var isExpired = job.Deadline.HasValue && job.Deadline.Value < DateTime.Today;
+                    var canApply = job.IsActive && !isExpired;
+                    <article class="job-card">
+                        <div class="job-card-main">
+                            <span class="job-meta-pill">@((job.Department == null) ? "Chưa có phòng ban" : job.Department.DepartmentName)</span>
+                            <h3>@Html.ActionLink(job.Title, "Details", "Jobs", new { id = job.JobID }, null)</h3>
+                            <div class="job-meta-row">
+                                <span>@((job.JobPosition == null) ? "Chưa có vị trí" : job.JobPosition.PositionName)</span>
+                                <span>@(string.IsNullOrWhiteSpace(job.Location) ? "Linh hoạt" : job.Location)</span>
+                                <span>@(string.IsNullOrWhiteSpace(job.JobType) ? "Chưa cập nhật" : job.JobType)</span>
+                            </div>
+                            <p>@Html.Raw(System.Web.HttpUtility.HtmlEncode(job.Description).Replace("\n", "<br />"))</p>
+                        </div>
+                        <div class="job-card-side">
+                            <span class="@(canApply ? "badge-soft-success" : "badge-soft-neutral")">@(canApply ? "Đang tuyển" : "Ngừng nhận hồ sơ")</span>
+                            <strong>@(string.IsNullOrWhiteSpace(job.SalaryRange) ? "Thoả thuận" : job.SalaryRange)</strong>
+                            <small>Hạn nộp: @(job.Deadline.HasValue ? job.Deadline.Value.ToString("dd/MM/yyyy") : "Chưa cập nhật")</small>
+                            <div class="job-card-actions">
+                                <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Details", "Jobs", new { id = job.JobID })">Xem chi tiết</a>
+                                @if (canApply)
+                                {
+                                    <a class="btn btn-primary btn-sm" href="@Url.Action("Create", "Applications", new { jobId = job.JobID })">Ứng tuyển</a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-secondary btn-sm" type="button" disabled>Ngừng nhận hồ sơ</button>
+                                }
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+</section>

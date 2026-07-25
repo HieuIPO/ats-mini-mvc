@@ -13,21 +13,21 @@
             <span class="public-brand-mark">A</span>
             <span>ATS Mini</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNavbar" aria-controls="publicNavbar" aria-expanded="false" aria-label="Mo menu">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNavbar" aria-controls="publicNavbar" aria-expanded="false" aria-label="Mở menu">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="publicNavbar">
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0 public-nav-list">
-                <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Home")">Trang chu</a></li>
-                <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Jobs")">Viec lam</a></li>
+                <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Jobs")">Việc làm</a></li>
                 @if (isCandidate)
                 {
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Profile", "Candidate")">Ho so cua toi</a></li>
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Status", "Applications")">Trang thai ung tuyen</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Profile", "Candidate")">Hồ sơ của tôi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Status", "Applications")">Trạng thái ứng tuyển</a></li>
                 }
                 else
                 {
-                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Status", "Applications")">Theo doi ho so</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Status", "Applications")">Theo dõi hồ sơ</a></li>
                 }
                 @if (isBackOfficeUser)
                 {
@@ -41,12 +41,12 @@
                     using (Html.BeginForm("Logout", "Account", FormMethod.Post, new { @class = "d-inline" }))
                     {
                         @Html.AntiForgeryToken()
-                        <button class="btn btn-outline-secondary btn-sm" type="submit">Dang xuat</button>
+                        <button class="btn btn-outline-secondary btn-sm" type="submit">Đăng xuất</button>
                     }
                 }
                 else
                 {
-                    <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Login", "Account")">Dang nhap</a>
+                    <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Login", "Account")">Đăng nhập</a>
                 }
             </div>
         </div>

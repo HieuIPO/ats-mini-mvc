@@ -1,0 +1,60 @@
+@model ATSMiniProject.ViewModels.Jobs.JobFormViewModel
+
+@Html.HiddenFor(m => m.JobID)
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+<div class="row g-3">
+    <div class="col-md-8">
+        @Html.LabelFor(m => m.Title, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Title, new { @class = "form-control", placeholder = "VD: Tuyển lập trình viên ASP.NET MVC" })
+        @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-md-4">
+        @Html.LabelFor(m => m.IsActive, new { @class = "form-label d-block" })
+        <div class="form-check form-switch mt-2">
+            @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
+            <label class="form-check-label" for="IsActive">Cho phép ứng viên nộp hồ sơ</label>
+        </div>
+    </div>
+    <div class="col-md-6">
+        @Html.LabelFor(m => m.DepartmentID, new { @class = "form-label" })
+        @Html.DropDownListFor(m => m.DepartmentID, (IEnumerable<SelectListItem>)ViewBag.DepartmentID, "Chọn phòng ban", new { @class = "form-select" })
+        @Html.ValidationMessageFor(m => m.DepartmentID, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-md-6">
+        @Html.LabelFor(m => m.JobPositionID, new { @class = "form-label" })
+        @Html.DropDownListFor(m => m.JobPositionID, (IEnumerable<SelectListItem>)ViewBag.JobPositionID, "Chọn vị trí", new { @class = "form-select" })
+        @Html.ValidationMessageFor(m => m.JobPositionID, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-md-4">
+        @Html.LabelFor(m => m.Location, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Location, new { @class = "form-control", placeholder = "Cao Lãnh, Đồng Tháp" })
+    </div>
+    <div class="col-md-4">
+        @Html.LabelFor(m => m.JobType, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.JobType, new { @class = "form-control", placeholder = "Toàn thời gian, Bán thời gian, Thực tập" })
+    </div>
+    <div class="col-md-4">
+        @Html.LabelFor(m => m.Deadline, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Deadline, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+        @Html.ValidationMessageFor(m => m.Deadline, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-md-6">
+        @Html.LabelFor(m => m.Industry, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Industry, new { @class = "form-control", placeholder = "Công nghệ thông tin" })
+    </div>
+    <div class="col-md-6">
+        @Html.LabelFor(m => m.SalaryRange, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.SalaryRange, new { @class = "form-control", placeholder = "8 - 15 triệu hoặc Thoả thuận" })
+    </div>
+    <div class="col-12">
+        @Html.LabelFor(m => m.Description, new { @class = "form-label" })
+        @Html.TextAreaFor(m => m.Description, 7, 40, new { @class = "form-control", placeholder = "Mô tả nhiệm vụ, trách nhiệm, môi trường làm việc..." })
+        @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-12">
+        @Html.LabelFor(m => m.Requirements, new { @class = "form-label" })
+        @Html.TextAreaFor(m => m.Requirements, 6, 40, new { @class = "form-control", placeholder = "Kỹ năng, kinh nghiệm, bằng cấp, thái độ..." })
+        @Html.ValidationMessageFor(m => m.Requirements, "", new { @class = "text-danger" })
+    </div>
+</div>

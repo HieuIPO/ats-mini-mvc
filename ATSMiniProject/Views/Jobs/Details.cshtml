@@ -1,0 +1,66 @@
+@model ATSMiniProject.Models.Job
+@{
+    ViewBag.Title = Model.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var isExpired = Model.Deadline.HasValue && Model.Deadline.Value < DateTime.Today;
+    var canApply = Model.IsActive && !isExpired;
+    var roleName = Session["AuthRoleName"] as string;
+    var isBackOffice = string.Equals(roleName, "Admin", System.StringComparison.OrdinalIgnoreCase) || string.Equals(roleName, "HR", System.StringComparison.OrdinalIgnoreCase);
+}
+
+<section class="job-detail-section">
+    <div class="container">
+        <div class="job-detail-header">
+            <a href="@Url.Action("Index", "Jobs")">Quay lại danh sách</a>
+            <h1>@Model.Title</h1>
+            <div class="job-meta-row">
+                <span>@(Model.Department == null ? "Chưa có phòng ban" : Model.Department.DepartmentName)</span>
+                <span>@(Model.JobPosition == null ? "Chưa có vị trí" : Model.JobPosition.PositionName)</span>
+                <span>@(string.IsNullOrWhiteSpace(Model.Location) ? "Linh hoạt" : Model.Location)</span>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="detail-card job-detail-content">
+                    <h2>Mô tả công việc</h2>
+                    <p>@Html.Raw(System.Web.HttpUtility.HtmlEncode(Model.Description).Replace("\n", "<br />"))</p>
+                    <h2>Yêu cầu ứng viên</h2>
+                    <p>@Html.Raw(System.Web.HttpUtility.HtmlEncode(Model.Requirements).Replace("\n", "<br />"))</p>
+                    @if (!string.IsNullOrWhiteSpace(Model.Industry))
+                    {
+                        <h2>Lĩnh vực</h2>
+                        <p>@Model.Industry</p>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <aside class="detail-card job-summary-card">
+                    <span class="@(canApply ? "badge-soft-success" : "badge-soft-neutral")">@(canApply ? "Đang tuyển" : "Ngừng nhận hồ sơ")</span>
+                    <dl>
+                        <dt>Loại công việc</dt>
+                        <dd>@(string.IsNullOrWhiteSpace(Model.JobType) ? "Chưa cập nhật" : Model.JobType)</dd>
+                        <dt>Mức lương</dt>
+                        <dd>@(string.IsNullOrWhiteSpace(Model.SalaryRange) ? "Thoả thuận" : Model.SalaryRange)</dd>
+                        <dt>Hạn nộp</dt>
+                        <dd>@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("dd/MM/yyyy") : "Chưa cập nhật")</dd>
+                    </dl>
+                    @if (canApply)
+                    {
+                        <a class="btn btn-primary w-100" href="@Url.Action("Create", "Applications", new { jobId = Model.JobID })">Ứng tuyển ngay</a>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary w-100" type="button" disabled>Tin đã đóng</button>
+                    }
+                    @if (isBackOffice)
+                    {
+                        <div class="job-admin-actions">
+                            <a class="btn btn-outline-primary w-100" href="@Url.Action("Edit", "Jobs", new { id = Model.JobID })">Sửa tin tuyển dụng</a>
+                        </div>
+                    }
+                </aside>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,17 @@
+@{
+    ViewBag.Title = "Phỏng vấn";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Phỏng vấn</h1>
+        <p>Module lịch phỏng vấn thuộc Thành viên 3. Trang tạm được thêm để menu không bị lỗi khi đang tích hợp.</p>
+    </div>
+</div>
+
+<div class="placeholder-card">
+    <h2>Đang chờ module Interviews</h2>
+    <p>Sau khi hoàn thiện, trang này sẽ hiển thị lịch phỏng vấn, tạo lịch và cập nhật kết quả phỏng vấn.</p>
+    <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Về tin tuyển dụng</a>
+</div>
