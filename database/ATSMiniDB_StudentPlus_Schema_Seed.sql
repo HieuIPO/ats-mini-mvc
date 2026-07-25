@@ -10,7 +10,7 @@
   Cach dung:
   1. Mo SQL Server Management Studio.
   2. Chay toan bo script nay.
-  3. Trong Visual Studio, dung Code First from database de sinh DbContext va entity classes tu database ATSMiniDB_StudentPlus.
+  3. Ung dung ket noi database ATSMiniDB_StudentPlus qua connection string ATSMiniDBContext.
 
   Luu y quan trong ve mat khau:
   - Script nay khong luu mat khau ro.
@@ -18,6 +18,10 @@
   - PasswordHash trong seed data duoc tao bang SHA2_256(Salt + Password) trong SQL Server.
   - Day la muc demo tot hon plain text cho mon hoc, chua phai chuan production nhu ASP.NET Identity/PBKDF2/bcrypt/Argon2.
 */
+
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 
 IF DB_ID(N'ATSMiniDB_StudentPlus') IS NULL
 BEGIN
@@ -168,8 +172,7 @@ BEGIN
         CONSTRAINT FK_Applications_Jobs FOREIGN KEY (JobID) REFERENCES dbo.Jobs(JobID) ON DELETE CASCADE,
         CONSTRAINT FK_Applications_CandidateUser FOREIGN KEY (CandidateUserID) REFERENCES dbo.Users(UserID),
         CONSTRAINT FK_Applications_Statuses FOREIGN KEY (StatusID) REFERENCES dbo.ApplicationStatuses(StatusID),
-        CONSTRAINT FK_Applications_UpdatedBy FOREIGN KEY (UpdatedByUserID) REFERENCES dbo.Users(UserID),
-        CONSTRAINT UQ_Applications_Job_Email UNIQUE (JobID, CandidateEmail)
+        CONSTRAINT FK_Applications_UpdatedBy FOREIGN KEY (UpdatedByUserID) REFERENCES dbo.Users(UserID)
     );
 END
 GO
@@ -189,7 +192,8 @@ BEGIN
         IsDeleted BIT NOT NULL CONSTRAINT DF_CandidateFiles_IsDeleted DEFAULT 0,
         CONSTRAINT FK_CandidateFiles_Applications FOREIGN KEY (ApplicationID) REFERENCES dbo.Applications(ApplicationID) ON DELETE CASCADE,
         CONSTRAINT FK_CandidateFiles_UploadedBy FOREIGN KEY (UploadedByUserID) REFERENCES dbo.Users(UserID),
-        CONSTRAINT CK_CandidateFiles_Extension CHECK (FileExtension IN (N'.pdf', N'.doc', N'.docx'))
+        CONSTRAINT CK_CandidateFiles_Extension CHECK (FileExtension IN (N'.pdf', N'.doc', N'.docx')),
+        CONSTRAINT CK_CandidateFiles_Size CHECK (FileSizeKB IS NULL OR (FileSizeKB > 0 AND FileSizeKB <= 5120))
     );
 END
 GO
@@ -267,8 +271,25 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Applications_Job_Stat
     CREATE INDEX IX_Applications_Job_Status ON dbo.Applications(JobID, StatusID, IsDeleted);
 GO
 
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Applications_Email' AND object_id = OBJECT_ID(N'dbo.Applications'))
-    CREATE INDEX IX_Applications_Email ON dbo.Applications(CandidateEmail);
+IF EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE name = N'UQ_Applications_Job_Email'
+      AND parent_object_id = OBJECT_ID(N'dbo.Applications')
+)
+    ALTER TABLE dbo.Applications DROP CONSTRAINT UQ_Applications_Job_Email;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_Applications_Job_Email' AND object_id = OBJECT_ID(N'dbo.Applications'))
+    CREATE UNIQUE INDEX UX_Applications_Job_Email
+        ON dbo.Applications(JobID, CandidateEmail)
+        WHERE IsDeleted = 0;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_Applications_Job_Candidate' AND object_id = OBJECT_ID(N'dbo.Applications'))
+    CREATE UNIQUE INDEX UX_Applications_Job_Candidate
+        ON dbo.Applications(JobID, CandidateUserID)
+        WHERE CandidateUserID IS NOT NULL AND IsDeleted = 0;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Interviews_Date' AND object_id = OBJECT_ID(N'dbo.Interviews'))
