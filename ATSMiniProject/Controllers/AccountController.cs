@@ -1,5 +1,6 @@
 using System;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -14,7 +15,6 @@ namespace ATSMiniProject.Controllers
 {
     public class AccountController : Controller
     {
-        private static readonly string[] BackOfficeRoles = { "Admin", "HR" };
         private static readonly string[] AllowedAvatarExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
 
         [HttpGet]
@@ -45,7 +45,7 @@ namespace ATSMiniProject.Controllers
                     .Include(u => u.Role)
                     .SingleOrDefault(u => u.Username == username);
 
-                if (user == null || !user.IsActive)
+                if (user == null || !user.IsActive || user.Role == null || !user.Role.IsActive)
                 {
                     AddInvalidLoginError();
                     return View(model);
@@ -53,23 +53,28 @@ namespace ATSMiniProject.Controllers
 
                 if (user.LockedUntil.HasValue && user.LockedUntil.Value > DateTime.Now)
                 {
-                    ModelState.AddModelError(string.Empty, "Tài khoản đang tạm khoá. Vui lòng thử lại sau.");
+                    ModelState.AddModelError(string.Empty, "Tài khoản đang tạm khóa. Vui lòng thử lại sau.");
                     return View(model);
                 }
 
-                if (!PasswordHashHelper.VerifySha256Hex(user.PasswordSalt, model.Password, user.PasswordHash))
+                if (user.LockedUntil.HasValue)
+                {
+                    user.FailedLoginCount = 0;
+                    user.LockedUntil = null;
+                }
+
+                if (!PasswordHashHelper.VerifyPassword(user.PasswordSalt, model.Password, user.PasswordHash))
                 {
                     RegisterFailedLogin(db, user);
                     AddInvalidLoginError();
                     return View(model);
                 }
 
-                if (!CanAccessBackOffice(user))
+                if (PasswordHashHelper.NeedsRehash(user.PasswordHash))
                 {
-                    db.AuditLogs.Add(CreateAuditLog(user.UserID, "LOGIN_FORBIDDEN", "Tài khoản không có quyền vào khu vực quản trị."));
-                    db.SaveChanges();
-                    ModelState.AddModelError(string.Empty, "Tài khoản không có quyền truy cập khu vực quản trị.");
-                    return View(model);
+                    var upgradedSalt = PasswordHashHelper.GenerateSalt();
+                    user.PasswordSalt = upgradedSalt;
+                    user.PasswordHash = PasswordHashHelper.HashPassword(upgradedSalt, model.Password);
                 }
 
                 user.FailedLoginCount = 0;
@@ -82,6 +87,93 @@ namespace ATSMiniProject.Controllers
                 SignIn(user);
                 TempData["Success"] = "Đăng nhập thành công.";
                 return RedirectAfterLogin(model.ReturnUrl);
+            }
+        }
+
+        [HttpGet]
+        public ActionResult Register()
+        {
+            if (Session[AuthSessionKeys.UserID] != null)
+            {
+                return RedirectAfterLogin(null);
+            }
+
+            return View(new RegisterViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Register(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var username = model.Username.Trim();
+            var normalizedEmail = model.Email.Trim().ToLowerInvariant();
+
+            using (var db = new ATSMiniDBContext())
+            {
+                if (db.Users.Any(u => u.Username == username))
+                {
+                    ModelState.AddModelError("Username", "Tên đăng nhập đã được sử dụng.");
+                }
+
+                if (db.Users.Any(u => u.Email == normalizedEmail))
+                {
+                    ModelState.AddModelError("Email", "Email đã được sử dụng.");
+                }
+
+                var candidateRole = db.Roles.SingleOrDefault(r => r.RoleName == "Candidate" && r.IsActive);
+                if (candidateRole == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Hệ thống chưa cấu hình vai trò ứng viên.");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                using (var transaction = db.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        var salt = PasswordHashHelper.GenerateSalt();
+                        var user = new UserEntity
+                        {
+                            Username = username,
+                            PasswordSalt = salt,
+                            PasswordHash = PasswordHashHelper.HashPassword(salt, model.Password),
+                            FullName = model.FullName.Trim(),
+                            Email = normalizedEmail,
+                            Phone = model.Phone.Trim(),
+                            RoleID = candidateRole.RoleID,
+                            Role = candidateRole,
+                            FailedLoginCount = 0,
+                            IsActive = true,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        db.Users.Add(user);
+                        db.SaveChanges();
+                        db.AuditLogs.Add(CreateAuditLog(user.UserID, "REGISTER_CANDIDATE", "Ứng viên tạo tài khoản."));
+                        db.SaveChanges();
+                        transaction.Commit();
+
+                        SignIn(user);
+                    }
+                    catch (DbUpdateException)
+                    {
+                        transaction.Rollback();
+                        ModelState.AddModelError(string.Empty, "Tên đăng nhập hoặc email đã tồn tại. Vui lòng kiểm tra lại.");
+                        return View(model);
+                    }
+                }
+
+                TempData["Success"] = "Tạo tài khoản thành công. Chào mừng bạn đến ATS Careers.";
+                return RedirectToAction("Index", "Candidate");
             }
         }
 
@@ -196,16 +288,12 @@ namespace ATSMiniProject.Controllers
 
         private void SignIn(UserEntity user)
         {
+            Session.Clear();
             Session[AuthSessionKeys.UserID] = user.UserID;
             Session[AuthSessionKeys.Username] = user.Username;
             Session[AuthSessionKeys.FullName] = user.FullName;
             Session[AuthSessionKeys.RoleName] = user.Role == null ? string.Empty : user.Role.RoleName;
-        }
-
-        private bool CanAccessBackOffice(UserEntity user)
-        {
-            var roleName = user.Role == null ? string.Empty : user.Role.RoleName;
-            return BackOfficeRoles.Any(role => string.Equals(role, roleName, StringComparison.OrdinalIgnoreCase));
+            Session[AuthSessionKeys.AvatarVersion] = DateTime.UtcNow.Ticks;
         }
 
         private void RegisterFailedLogin(ATSMiniDBContext db, UserEntity user)
@@ -246,6 +334,12 @@ namespace ATSMiniProject.Controllers
             if (Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
+            }
+
+            var roleName = Session[AuthSessionKeys.RoleName] as string;
+            if (string.Equals(roleName, "Candidate", StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction("Index", "Candidate");
             }
 
             return RedirectToAction("Index", "Dashboard");
