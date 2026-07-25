@@ -1,0 +1,35 @@
+﻿@{
+    ViewBag.Title = "Trang chủ";
+}
+
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <span class="eyebrow">ATS Mini</span>
+                <h1 class="hero-title">Quản lý tuyển dụng và theo dõi ứng viên rõ ràng hơn</h1>
+                <p class="hero-text">Hệ thống hỗ trợ đăng tin tuyển dụng, tiếp nhận CV, theo dõi trạng thái ứng viên và quản lý lịch phỏng vấn trong một quy trình gọn nhẹ.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Xem việc đang tuyển</a>
+                    <a class="btn btn-outline-primary" href="@Url.Action("Login", "Account")">Đăng nhập HR/Admin</a>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="hero-panel">
+                    <div class="metric-card">
+                        <span>Tin đang mở</span>
+                        <strong>03</strong>
+                    </div>
+                    <div class="metric-card">
+                        <span>Hồ sơ mới</span>
+                        <strong>12</strong>
+                    </div>
+                    <div class="metric-card">
+                        <span>Lịch phỏng vấn</span>
+                        <strong>04</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

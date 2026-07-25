@@ -1,4 +1,4 @@
-﻿# Visual Studio
+# Visual Studio
 .vs/
 *.user
 *.suo
@@ -35,7 +35,10 @@ logs/
 
 # Uploaded files in runtime
 Uploads/
-ATSMiniProject/Uploads/
+ATSMiniProject/Uploads/*
+!ATSMiniProject/Uploads/CVs/
+ATSMiniProject/Uploads/CVs/*
+!ATSMiniProject/Uploads/CVs/.gitkeep
 
 # OS files
 .DS_Store

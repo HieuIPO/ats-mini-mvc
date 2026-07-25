@@ -1,0 +1,62 @@
+@model IEnumerable<ATSMiniProject.Models.Department>
+@{
+    ViewBag.Title = "Phòng ban";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Phòng ban</h1>
+        <p>Quản lý danh mục phòng ban dùng cho tin tuyển dụng.</p>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create", "Departments")">Thêm phòng ban</a>
+</div>
+
+<div class="ats-table-card">
+    <div class="ats-table-toolbar">
+        @using (Html.BeginForm("Index", "Departments", FormMethod.Get, new { @class = "admin-filter-form" }))
+        {
+            @Html.TextBox("keyword", ViewBag.Keyword as string, new { @class = "form-control", placeholder = "Tìm phòng ban..." })
+            <button class="btn btn-primary" type="submit">Tìm</button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Departments")">Xoá lọc</a>
+        }
+        <a href="@Url.Action("Index", "Jobs")">Về tin tuyển dụng</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table ats-table align-middle">
+            <thead>
+                <tr>
+                    <th>Tên phòng ban</th>
+                    <th>Mô tả</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!System.Linq.Enumerable.Any(Model))
+                {
+                    <tr><td colspan="4" class="text-center text-muted py-4">Chưa có phòng ban phù hợp.</td></tr>
+                }
+                else
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><strong>@item.DepartmentName</strong></td>
+                            <td>@(string.IsNullOrWhiteSpace(item.Description) ? "Chưa cập nhật" : item.Description)</td>
+                            <td><span class="@(item.IsActive ? "badge-soft-success" : "badge-soft-neutral")">@(item.IsActive ? "Đang sử dụng" : "Tạm dừng")</span></td>
+                            <td class="text-end">
+                                <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Edit", "Departments", new { id = item.DepartmentID })">Sửa</a>
+                                @using (Html.BeginForm("Delete", "Departments", new { id = item.DepartmentID }, FormMethod.Post, new { @class = "d-inline" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-outline-danger btn-sm" type="submit" onclick="return confirm('Xoá phòng ban này?');">Xoá</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

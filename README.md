@@ -8,7 +8,7 @@ He thong quan ly tuyen dung va theo doi ung vien (ATS Mini) cho mon Lap trinh We
 - C#
 - Entity Framework 6
 - SQL Server
-- Database First
+- Code First from database
 - Bootstrap
 - Razor View, ViewModel, Validation
 - AJAX / Partial View cho mot so chuc nang cap nhat dong
@@ -36,7 +36,7 @@ Cach tao database:
 2. Tao query moi.
 3. Chay toan bo file SQL tren.
 4. Database duoc tao voi ten `ATSMiniDB_StudentPlus`.
-5. Trong Visual Studio, dung Entity Framework Database First de sinh model tu database nay.
+5. Trong Visual Studio, dung Entity Framework Code First from database de sinh DbContext va entity classes tu database nay.
 
 ## Tai khoan demo
 

@@ -1,0 +1,65 @@
+﻿@model ATSMiniProject.ViewModels.Applications.CandidateApplicationListViewModel
+
+@{
+    ViewBag.Title = "Hồ sơ ứng tuyển";
+}
+
+<section class="candidate-page-band">
+    <div class="container candidate-page-band-inner">
+        <div>
+            <span class="eyebrow">Hành trình của bạn</span>
+            <h1>Hồ sơ ứng tuyển</h1>
+            <p>Theo dõi trạng thái và lịch phỏng vấn của từng vị trí tại một nơi.</p>
+        </div>
+        <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Tìm việc làm mới</a>
+    </div>
+</section>
+
+<section class="candidate-section applications-page">
+    <div class="container">
+        @if (Model.Applications.Count == 0)
+        {
+            <div class="candidate-empty">
+                <span class="empty-symbol" aria-hidden="true">＋</span>
+                <h2>Bạn chưa nộp hồ sơ nào</h2>
+                <p>Một cơ hội phù hợp có thể đang chờ bạn trong danh sách việc làm.</p>
+                <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Khám phá việc làm</a>
+            </div>
+        }
+        else
+        {
+            <div class="applications-summary">
+                <strong>@Model.Applications.Count.ToString("D2")</strong>
+                <span>hồ sơ đã nộp</span>
+            </div>
+            <div class="application-list">
+                @foreach (var application in Model.Applications)
+                {
+                    <article class="application-row">
+                        <div class="application-status-column">
+                            <span class="status-badge @(application.IsFinal ? "status-final" : null)">@application.StatusName</span>
+                            <small>Cập nhật trạng thái</small>
+                        </div>
+                        <div class="application-main">
+                            <h2><a href="@Url.Action("Details", "Applications", new { id = application.ApplicationId })">@application.JobTitle</a></h2>
+                            <p>@application.DepartmentName · @(application.Location ?? "Chưa cập nhật địa điểm")</p>
+                            <span>Đã nộp ngày @application.AppliedDate.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                        <div class="application-meta">
+                            @if (application.NextInterviewDate.HasValue)
+                            {
+                                <span>Lịch phỏng vấn tiếp theo</span>
+                                <strong>@application.NextInterviewDate.Value.ToString("dd/MM/yyyy HH:mm")</strong>
+                            }
+                            else
+                            {
+                                <span>Chưa có lịch phỏng vấn</span>
+                            }
+                        </div>
+                        <a class="application-row-action" href="@Url.Action("Details", "Applications", new { id = application.ApplicationId })" aria-label="Xem chi tiết @application.JobTitle">→</a>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+</section>

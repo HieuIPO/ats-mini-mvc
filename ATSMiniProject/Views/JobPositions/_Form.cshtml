@@ -1,0 +1,24 @@
+@model ATSMiniProject.ViewModels.Jobs.JobPositionFormViewModel
+
+@Html.HiddenFor(m => m.JobPositionID)
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+<div class="row g-3">
+    <div class="col-md-8">
+        @Html.LabelFor(m => m.PositionName, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.PositionName, new { @class = "form-control", placeholder = "VD: Lập trình viên Web" })
+        @Html.ValidationMessageFor(m => m.PositionName, "", new { @class = "text-danger" })
+    </div>
+    <div class="col-md-4">
+        @Html.LabelFor(m => m.IsActive, new { @class = "form-label d-block" })
+        <div class="form-check form-switch mt-2">
+            @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
+            <label class="form-check-label" for="IsActive">Đang sử dụng</label>
+        </div>
+    </div>
+    <div class="col-12">
+        @Html.LabelFor(m => m.Description, new { @class = "form-label" })
+        @Html.TextAreaFor(m => m.Description, 4, 40, new { @class = "form-control", placeholder = "Mô tả ngắn về vị trí tuyển dụng" })
+        @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+    </div>
+</div>

@@ -1,0 +1,156 @@
+﻿@model ATSMiniProject.ViewModels.Applications.AdminApplicationDetailsViewModel
+
+@{
+    ViewBag.Title = "Đánh giá hồ sơ";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var badgeClass = Model.IsFinal
+        ? (Model.StatusName == "Đạt" ? "badge-soft-success" : "badge-soft-danger")
+        : (Model.StatusName == "Mời phỏng vấn" ? "badge-soft-warning" :
+            Model.StatusName == "Đang xem xét" ? "badge-soft-primary" : "badge-soft-info");
+}
+
+<div class="admin-back-row">
+    <a href="@Url.Action("Index", "Applications")">← Quay lại danh sách hồ sơ</a>
+</div>
+
+<div class="page-header application-review-header">
+    <div>
+        <span class="@badgeClass">@Model.StatusName</span>
+        <h1>@Model.CandidateName</h1>
+        <p>@Model.JobTitle · @Model.DepartmentName</p>
+    </div>
+    <div class="page-header-actions">
+        <a class="btn btn-outline-secondary" href="@Url.Action("Details", "Jobs", new { id = Model.JobId })">Xem tin tuyển dụng</a>
+        @if (!Model.IsFinal)
+        {
+            <a class="btn btn-primary" href="@Url.Action("Create", "Interviews", new { applicationId = Model.ApplicationId })">Tạo lịch phỏng vấn</a>
+        }
+    </div>
+</div>
+
+<div class="admin-detail-grid">
+    <div class="admin-detail-main">
+        <section class="admin-panel">
+            <div class="admin-panel-heading">
+                <div>
+                    <span class="admin-eyebrow">Lịch sử xử lý</span>
+                    <h2>Tiến trình hồ sơ</h2>
+                </div>
+                <span>@Model.StatusHistory.Count mốc cập nhật</span>
+            </div>
+
+            <div class="admin-status-timeline">
+                @foreach (var history in Model.StatusHistory)
+                {
+                    <article class="admin-status-item">
+                        <span class="admin-status-dot"></span>
+                        <div>
+                            <strong>@history.NewStatusName</strong>
+                            <p>
+                                @(string.IsNullOrWhiteSpace(history.OldStatusName)
+                                    ? "Ghi nhận hồ sơ mới"
+                                    : history.OldStatusName + " → " + history.NewStatusName)
+                            </p>
+                            @if (!string.IsNullOrWhiteSpace(history.Note))
+                            {
+                                <span>@history.Note</span>
+                            }
+                            <small>@history.ChangedAt.ToString("dd/MM/yyyy HH:mm") · @history.ChangedByName</small>
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+
+        <section class="admin-panel">
+            <div class="admin-panel-heading">
+                <div>
+                    <span class="admin-eyebrow">Phỏng vấn</span>
+                    <h2>Lịch phỏng vấn</h2>
+                </div>
+                @if (!Model.IsFinal)
+                {
+                    <a href="@Url.Action("Create", "Interviews", new { applicationId = Model.ApplicationId })">Thêm lịch</a>
+                }
+            </div>
+
+            @if (!Model.Interviews.Any())
+            {
+                <div class="admin-empty-inline">Hồ sơ này chưa có lịch phỏng vấn.</div>
+            }
+            else
+            {
+                <div class="admin-interview-list">
+                    @foreach (var interview in Model.Interviews)
+                    {
+                        <a href="@Url.Action("Edit", "Interviews", new { id = interview.InterviewId })" class="admin-interview-row">
+                            <span class="interview-date-block">
+                                <strong>@interview.InterviewDate.ToString("dd")</strong>
+                                <small>Tháng @interview.InterviewDate.ToString("MM")</small>
+                            </span>
+                            <span>
+                                <strong>@interview.InterviewDate.ToString("HH:mm") · @(interview.Location ?? "Chưa cập nhật địa điểm")</strong>
+                                <small>@interview.InterviewerName · @(interview.Result ?? "Chưa có kết quả")</small>
+                            </span>
+                            <span>→</span>
+                        </a>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+
+    <aside class="admin-detail-aside">
+        <section class="admin-panel">
+            <div class="admin-panel-heading">
+                <div>
+                    <span class="admin-eyebrow">Ứng viên</span>
+                    <h2>Thông tin liên hệ</h2>
+                </div>
+            </div>
+            <dl class="admin-definition-list">
+                <div><dt>Họ và tên</dt><dd>@Model.CandidateName</dd></div>
+                <div><dt>Email</dt><dd><a href="mailto:@Model.CandidateEmail">@Model.CandidateEmail</a></dd></div>
+                <div><dt>Điện thoại</dt><dd><a href="tel:@Model.CandidatePhone">@Model.CandidatePhone</a></dd></div>
+                <div><dt>Ngày nộp</dt><dd>@Model.AppliedDate.ToString("dd/MM/yyyy HH:mm")</dd></div>
+                <div><dt>Chức danh</dt><dd>@Model.PositionName</dd></div>
+            </dl>
+            @if (Model.CandidateFileId.HasValue)
+            {
+                <a class="btn btn-outline-primary w-100" href="@Url.Action("DownloadCandidateCv", "Applications", new { id = Model.CandidateFileId })">Tải CV · @Model.CvOriginalFileName</a>
+            }
+            else
+            {
+                <div class="admin-file-missing">Chưa có tệp CV khả dụng trên máy chủ.</div>
+            }
+        </section>
+
+        <section class="admin-panel status-update-panel">
+            <div class="admin-panel-heading">
+                <div>
+                    <span class="admin-eyebrow">Xử lý hồ sơ</span>
+                    <h2>Cập nhật trạng thái</h2>
+                </div>
+            </div>
+            @using (Html.BeginForm("UpdateStatus", "Applications", FormMethod.Post, new { @class = "admin-stack-form" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.Hidden("ApplicationId", Model.ApplicationId)
+                <div>
+                    <label class="form-label" for="StatusId">Trạng thái mới</label>
+                    @Html.DropDownList("StatusId", Model.StatusOptions, new { @class = "form-select", id = "StatusId" })
+                </div>
+                <div>
+                    <label class="form-label" for="StatusNote">Ghi chú thay đổi</label>
+                    <textarea id="StatusNote" name="StatusNote" class="form-control" rows="3" maxlength="500" placeholder="Lý do hoặc nội dung xử lý"></textarea>
+                </div>
+                <div>
+                    <label class="form-label" for="HRNote">Ghi chú nội bộ Nhân sự</label>
+                    <textarea id="HRNote" name="HRNote" class="form-control" rows="5" maxlength="2000" placeholder="Chỉ Quản trị viên/Nhân sự nhìn thấy">@Model.HRNote</textarea>
+                </div>
+                <button class="btn btn-primary w-100" type="submit">Lưu cập nhật</button>
+            }
+        </section>
+    </aside>
+</div>
