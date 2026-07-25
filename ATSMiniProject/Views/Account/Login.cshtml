@@ -1,0 +1,53 @@
+﻿@model ATSMiniProject.ViewModels.Account.LoginViewModel
+
+@{
+    ViewBag.Title = "Đăng nhập";
+}
+
+<section class="auth-experience">
+    <div class="auth-visual">
+        <div class="auth-visual-copy">
+            <span>ATS Careers</span>
+            <h1>Tiếp tục hành trình nghề nghiệp của bạn.</h1>
+            <p>Mọi hồ sơ, trạng thái và lịch phỏng vấn được tập trung tại một nơi.</p>
+        </div>
+    </div>
+    <div class="auth-form-side">
+        <div class="auth-form-panel">
+            <a class="auth-brand" href="@Url.Action("Index", "Home")">
+                <span class="public-brand-mark">A</span>
+                <strong>ATS Careers</strong>
+            </a>
+            <span class="eyebrow">Chào mừng trở lại</span>
+            <h2>Đăng nhập tài khoản</h2>
+            <p class="auth-intro">Truy cập không gian ứng viên hoặc khu vực quản trị tuyển dụng.</p>
+
+            @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { @class = "auth-form", novalidate = "novalidate" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.ReturnUrl)
+                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                <div class="mb-3">
+                    @Html.LabelFor(model => model.Username, new { @class = "form-label" })
+                    @Html.TextBoxFor(model => model.Username, new { @class = "form-control form-control-lg", autocomplete = "username", autofocus = "autofocus", placeholder = "Nhập tên đăng nhập" })
+                    @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger small" })
+                </div>
+                <div class="mb-4">
+                    @Html.LabelFor(model => model.Password, new { @class = "form-label" })
+                    @Html.PasswordFor(model => model.Password, new { @class = "form-control form-control-lg", autocomplete = "current-password", placeholder = "Nhập mật khẩu" })
+                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger small" })
+                </div>
+                <button class="btn btn-primary btn-lg w-100" type="submit">Đăng nhập</button>
+            }
+
+            <div class="demo-account-note">
+                <span>Tài khoản ứng viên mẫu</span>
+                <strong>ungvien01</strong>
+                <span>/</span>
+                <strong>123456</strong>
+            </div>
+            <p class="auth-switch">Chưa có tài khoản? <a href="@Url.Action("Register", "Account")">Tạo hồ sơ ứng viên</a></p>
+        </div>
+    </div>
+</section>

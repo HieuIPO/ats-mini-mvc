@@ -1,0 +1,69 @@
+﻿@model ATSMiniProject.ViewModels.Account.RegisterViewModel
+
+@{
+    ViewBag.Title = "Tạo hồ sơ ứng viên";
+}
+
+<section class="auth-experience register-experience">
+    <div class="auth-visual">
+        <div class="auth-visual-copy">
+            <span>Bắt đầu trong vài phút</span>
+            <h1>Một hồ sơ. Nhiều cơ hội phía trước.</h1>
+            <p>Tạo tài khoản để ứng tuyển nhanh, theo dõi minh bạch và không bỏ lỡ lịch phỏng vấn.</p>
+        </div>
+    </div>
+    <div class="auth-form-side">
+        <div class="auth-form-panel auth-form-panel-wide">
+            <a class="auth-brand" href="@Url.Action("Index", "Home")">
+                <span class="public-brand-mark">A</span>
+                <strong>ATS Careers</strong>
+            </a>
+            <span class="eyebrow">Không gian ứng viên</span>
+            <h2>Tạo hồ sơ mới</h2>
+            <p class="auth-intro">Điền thông tin chính xác để nhà tuyển dụng có thể liên hệ với bạn.</p>
+
+            @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "auth-form", novalidate = "novalidate" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        @Html.LabelFor(model => model.Username, new { @class = "form-label" })
+                        @Html.TextBoxFor(model => model.Username, new { @class = "form-control", autocomplete = "username", placeholder = "Ví dụ: nguyenvana" })
+                        @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger small" })
+                    </div>
+                    <div class="col-md-6">
+                        @Html.LabelFor(model => model.FullName, new { @class = "form-label" })
+                        @Html.TextBoxFor(model => model.FullName, new { @class = "form-control", autocomplete = "name", placeholder = "Nguyễn Văn A" })
+                        @Html.ValidationMessageFor(model => model.FullName, "", new { @class = "text-danger small" })
+                    </div>
+                    <div class="col-md-6">
+                        @Html.LabelFor(model => model.Email, new { @class = "form-label" })
+                        @Html.TextBoxFor(model => model.Email, new { @class = "form-control", type = "email", autocomplete = "email", placeholder = "ban@example.com" })
+                        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger small" })
+                    </div>
+                    <div class="col-md-6">
+                        @Html.LabelFor(model => model.Phone, new { @class = "form-label" })
+                        @Html.TextBoxFor(model => model.Phone, new { @class = "form-control", type = "tel", autocomplete = "tel", placeholder = "0901234567" })
+                        @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger small" })
+                    </div>
+                    <div class="col-md-6">
+                        @Html.LabelFor(model => model.Password, new { @class = "form-label" })
+                        @Html.PasswordFor(model => model.Password, new { @class = "form-control", autocomplete = "new-password", placeholder = "Tối thiểu 8 ký tự" })
+                        @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger small" })
+                    </div>
+                    <div class="col-md-6">
+                        @Html.LabelFor(model => model.ConfirmPassword, new { @class = "form-label" })
+                        @Html.PasswordFor(model => model.ConfirmPassword, new { @class = "form-control", autocomplete = "new-password", placeholder = "Nhập lại mật khẩu" })
+                        @Html.ValidationMessageFor(model => model.ConfirmPassword, "", new { @class = "text-danger small" })
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-lg w-100 mt-4" type="submit">Tạo tài khoản ứng viên</button>
+            }
+
+            <p class="auth-switch">Đã có tài khoản? <a href="@Url.Action("Login", "Account")">Đăng nhập</a></p>
+        </div>
+    </div>
+</section>

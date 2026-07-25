@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewBag.Title - ATS Careers</title>
+    <link href="~/Content/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/css/site.css" rel="stylesheet" />
+</head>
+<body class="public-body">
+    @Html.Partial("_Navbar")
+    <main class="public-main">
+        @Html.Partial("_Alert")
+        @RenderBody()
+    </main>
+    @Html.Partial("_PublicFooter")
+    <script src="~/Scripts/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="~/Scripts/app/site-interactions.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

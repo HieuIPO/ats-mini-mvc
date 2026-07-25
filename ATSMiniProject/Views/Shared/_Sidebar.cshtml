@@ -1,0 +1,53 @@
+﻿@{
+    var controllerName = ViewContext.RouteData.Values["controller"] == null
+        ? string.Empty
+        : ViewContext.RouteData.Values["controller"].ToString();
+    var roleName = Session["AuthRoleName"] as string;
+    var isAdmin = string.Equals(roleName, "Admin", System.StringComparison.OrdinalIgnoreCase);
+
+    System.Func<string, string> activeClass = controller =>
+        string.Equals(controllerName, controller, System.StringComparison.OrdinalIgnoreCase)
+            ? "sidebar-link active"
+            : "sidebar-link";
+}
+
+<aside class="admin-sidebar">
+    <div class="sidebar-brand">
+        <span class="brand-mark">ATS</span>
+        <span class="brand-copy">
+            <strong>ATS Careers</strong>
+            <small>Quản trị tuyển dụng</small>
+        </span>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Menu quản trị">
+        <div class="sidebar-section-label">Tổng quan</div>
+        <a href="@Url.Action("Index", "Dashboard")" class="@activeClass("Dashboard")">
+            <span class="sidebar-icon">D</span>
+            <span>Bảng điều khiển</span>
+        </a>
+
+        <div class="sidebar-section-label">Tuyển dụng</div>
+        <a href="@Url.Action("Index", "Jobs")" class="@activeClass("Jobs")">
+            <span class="sidebar-icon">J</span>
+            <span>Tin tuyển dụng</span>
+        </a>
+        <a href="@Url.Action("Index", "Applications")" class="@activeClass("Applications")">
+            <span class="sidebar-icon">A</span>
+            <span>Hồ sơ ứng viên</span>
+        </a>
+        <a href="@Url.Action("Index", "Interviews")" class="@activeClass("Interviews")">
+            <span class="sidebar-icon">I</span>
+            <span>Phỏng vấn</span>
+        </a>
+
+        @if (isAdmin)
+        {
+            <div class="sidebar-section-label">Hệ thống</div>
+            <a href="@Url.Action("Users", "Admin")" class="@activeClass("Admin")">
+                <span class="sidebar-icon">U</span>
+                <span>Tài khoản</span>
+            </a>
+        }
+    </nav>
+</aside>

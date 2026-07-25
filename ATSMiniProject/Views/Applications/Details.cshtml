@@ -1,0 +1,102 @@
+﻿@model ATSMiniProject.ViewModels.Applications.CandidateApplicationDetailsViewModel
+
+@{
+    ViewBag.Title = "Chi tiết hồ sơ";
+}
+
+<section class="candidate-section application-detail-page">
+    <div class="container">
+        <a class="candidate-back-link" href="@Url.Action("Status", "Applications")"><span aria-hidden="true">←</span> Tất cả hồ sơ</a>
+        <div class="application-detail-header">
+            <div>
+                <span class="status-badge @(Model.IsFinal ? "status-final" : null)">@Model.StatusName</span>
+                <h1>@Model.JobTitle</h1>
+                <p>@Model.DepartmentName · @Model.PositionName · @(Model.Location ?? "Chưa cập nhật địa điểm")</p>
+            </div>
+            <a class="btn btn-outline-primary" href="@Url.Action("Details", "Jobs", new { id = Model.JobId })">Xem tin tuyển dụng</a>
+        </div>
+
+        <div class="application-detail-layout">
+            <div>
+                <section class="candidate-panel status-progress-panel">
+                    <div class="panel-heading">
+                        <span class="eyebrow">Tiến trình tuyển dụng</span>
+                        <h2>Lịch sử trạng thái</h2>
+                    </div>
+                    <div class="status-timeline">
+                        @foreach (var history in Model.StatusHistory)
+                        {
+                            <div class="status-timeline-item">
+                                <span></span>
+                                <div>
+                                    <strong>@history.StatusName</strong>
+                                    <small>@history.ChangedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <section class="candidate-panel interview-panel">
+                    <div class="panel-heading">
+                        <span class="eyebrow">Trao đổi trực tiếp</span>
+                        <h2>Lịch phỏng vấn</h2>
+                    </div>
+                    @if (Model.Interviews.Count == 0)
+                    {
+                        <div class="inline-empty">
+                            <strong>Chưa có lịch phỏng vấn</strong>
+                            <span>Thông tin sẽ xuất hiện tại đây khi nhà tuyển dụng cập nhật.</span>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var interview in Model.Interviews)
+                        {
+                            <div class="interview-item">
+                                <div class="interview-date">
+                                    <strong>@interview.InterviewDate.ToString("dd")</strong>
+                                    <span>Tháng @interview.InterviewDate.ToString("MM")</span>
+                                </div>
+                                <div>
+                                    <strong>@interview.InterviewDate.ToString("HH:mm")</strong>
+                                    <span>@(interview.Location ?? "Địa điểm sẽ được cập nhật")</span>
+                                    @if (!string.IsNullOrWhiteSpace(interview.Result))
+                                    {
+                                        <small>Kết quả: @interview.Result</small>
+                                    }
+                                    @if (interview.CanAddToCalendar)
+                                    {
+                                        <a class="interview-calendar-link"
+                                           href="@Url.Action("DownloadInterviewCalendar", "Applications", new { id = interview.InterviewId })">
+                                            Thêm vào lịch
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </section>
+            </div>
+
+            <aside class="candidate-panel application-summary-panel">
+                <div class="panel-heading">
+                    <span class="eyebrow">Hồ sơ đã gửi</span>
+                    <h2>Thông tin ứng tuyển</h2>
+                </div>
+                <dl class="candidate-summary">
+                    <div><dt>Ứng viên</dt><dd>@Model.CandidateName</dd></div>
+                    <div><dt>Email</dt><dd>@Model.CandidateEmail</dd></div>
+                    <div><dt>Điện thoại</dt><dd>@Model.CandidatePhone</dd></div>
+                    <div><dt>Ngày nộp</dt><dd>@Model.AppliedDate.ToString("dd/MM/yyyy HH:mm")</dd></div>
+                </dl>
+                @if (Model.CandidateFileId.HasValue)
+                {
+                    <a class="btn btn-outline-primary w-100" href="@Url.Action("DownloadCv", "Applications", new { id = Model.CandidateFileId })">
+                        Tải CV · @Model.CvOriginalFileName
+                    </a>
+                }
+            </aside>
+        </div>
+    </div>
+</section>

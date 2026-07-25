@@ -1,0 +1,28 @@
+﻿@model ATSMiniProject.ViewModels.Dashboard.DashboardViewModel
+
+@{
+    ViewBag.Title = "Bảng điều khiển";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Bảng điều khiển</h1>
+        <p>Tổng quan nhanh về tình hình tuyển dụng.</p>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-3">
+        <div class="stat-card"><span>Tin đang mở</span><strong>@Model.ActiveJobs</strong></div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card"><span>Hồ sơ ứng viên</span><strong>@Model.TotalApplications</strong></div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card"><span>Đang xem xét</span><strong>@Model.UnderReviewApplications</strong></div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card"><span>Phỏng vấn sắp tới</span><strong>@Model.UpcomingInterviews</strong></div>
+    </div>
+</div>
