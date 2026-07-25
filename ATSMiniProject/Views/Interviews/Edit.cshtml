@@ -1,0 +1,141 @@
+﻿@model ATSMiniProject.ViewModels.Interviews.InterviewEditViewModel
+
+@{
+    ViewBag.Title = Model.IsEdit ? "Cập nhật lịch phỏng vấn" : "Tạo lịch phỏng vấn";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var actionName = Model.IsEdit ? "Edit" : "Create";
+}
+
+<div class="admin-back-row">
+    <a href="@Url.Action("Index", "Interviews")">← Quay lại danh sách phỏng vấn</a>
+</div>
+
+<div class="page-header">
+    <div>
+        <span class="admin-eyebrow">@(Model.IsEdit ? "Cập nhật lịch" : "Lịch phỏng vấn mới")</span>
+        <h1>@ViewBag.Title</h1>
+        <p>Thông tin được lưu sẽ hiển thị ngay trong khu vực theo dõi của ứng viên.</p>
+    </div>
+    @if (Model.IsEdit)
+    {
+        <a class="btn btn-outline-secondary" href="@Url.Action("Review", "Applications", new { id = Model.ApplicationId })">Xem hồ sơ ứng viên</a>
+    }
+</div>
+
+<div class="admin-edit-grid">
+    <section class="admin-panel">
+        @using (Html.BeginForm(actionName, "Interviews", FormMethod.Post, new { @class = "admin-editor-form" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.InterviewId)
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+            <div class="admin-form-section">
+                <div class="admin-form-section-heading">
+                    <span>01</span>
+                    <div>
+                        <h2>Hồ sơ và lịch hẹn</h2>
+                        <p>Chọn đúng ứng viên, thời gian và địa điểm trao đổi.</p>
+                    </div>
+                </div>
+
+                <div class="admin-form-grid">
+                    <div class="form-field form-field-full">
+                        @Html.LabelFor(model => model.ApplicationId, new { @class = "form-label" })
+                        @if (Model.IsEdit)
+                        {
+                            @Html.HiddenFor(model => model.ApplicationId)
+                            <input class="form-control" value="#@Model.ApplicationId.ToString("D4") · @Model.CandidateName · @Model.JobTitle" disabled />
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(model => model.ApplicationId, Model.ApplicationOptions, "Chọn hồ sơ ứng viên", new { @class = "form-select" })
+                        }
+                        @Html.ValidationMessageFor(model => model.ApplicationId, "", new { @class = "text-danger small" })
+                    </div>
+                    <div class="form-field">
+                        @Html.LabelFor(model => model.InterviewDate, new { @class = "form-label" })
+                        @Html.TextBoxFor(model => model.InterviewDate, "{0:yyyy-MM-ddTHH:mm}", new { @class = "form-control", type = "datetime-local" })
+                        @Html.ValidationMessageFor(model => model.InterviewDate, "", new { @class = "text-danger small" })
+                    </div>
+                    <div class="form-field">
+                        @Html.LabelFor(model => model.InterviewerUserId, new { @class = "form-label" })
+                        @Html.DropDownListFor(model => model.InterviewerUserId, Model.InterviewerOptions, "Chưa phân công", new { @class = "form-select" })
+                        @Html.ValidationMessageFor(model => model.InterviewerUserId, "", new { @class = "text-danger small" })
+                    </div>
+                    <div class="form-field form-field-full">
+                        @Html.LabelFor(model => model.InterviewLocation, new { @class = "form-label" })
+                        @Html.TextBoxFor(model => model.InterviewLocation, new { @class = "form-control", placeholder = "Ví dụ: Phòng họp A101 hoặc đường dẫn Microsoft Teams" })
+                        @Html.ValidationMessageFor(model => model.InterviewLocation, "", new { @class = "text-danger small" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-form-section">
+                <div class="admin-form-section-heading">
+                    <span>02</span>
+                    <div>
+                        <h2>Nội dung và kết quả</h2>
+                        <p>Ghi lại thông tin cần chuẩn bị và cập nhật kết quả sau buổi phỏng vấn.</p>
+                    </div>
+                </div>
+
+                <div class="admin-form-grid">
+                    <div class="form-field form-field-full">
+                        @Html.LabelFor(model => model.Note, new { @class = "form-label" })
+                        @Html.TextAreaFor(model => model.Note, 5, 40, new { @class = "form-control", placeholder = "Vòng phỏng vấn, nội dung trao đổi, yêu cầu chuẩn bị..." })
+                        @Html.ValidationMessageFor(model => model.Note, "", new { @class = "text-danger small" })
+                    </div>
+                    @if (Model.IsEdit)
+                    {
+                        <div class="form-field form-field-full">
+                            @Html.LabelFor(model => model.Result, new { @class = "form-label" })
+                            @Html.DropDownListFor(model => model.Result, Model.ResultOptions, new { @class = "form-select" })
+                            @Html.ValidationMessageFor(model => model.Result, "", new { @class = "text-danger small" })
+                            <div class="form-text">Kết quả “Đạt” hoặc “Không đạt” sẽ đồng bộ trạng thái hồ sơ tương ứng.</div>
+                        </div>
+                    }
+                    else
+                    {
+                        @Html.HiddenFor(model => model.Result)
+                        <div class="form-field form-field-full">
+                            <div class="admin-inline-note">Kết quả được cập nhật sau khi lịch phỏng vấn đã được tạo.</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="admin-form-actions">
+                <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Interviews")">Hủy thao tác</a>
+                <button class="btn btn-primary" type="submit">@(Model.IsEdit ? "Lưu thay đổi" : "Tạo lịch phỏng vấn")</button>
+            </div>
+        }
+    </section>
+
+    <aside class="admin-editor-aside">
+        <section class="admin-panel">
+            <span class="admin-eyebrow">Nguyên tắc vận hành</span>
+            <h2>Thông tin nhất quán</h2>
+            <ul class="admin-check-list">
+                <li>Mỗi lịch gắn với đúng một hồ sơ ứng tuyển.</li>
+                <li>Không tạo hai lịch trùng thời điểm cho cùng hồ sơ.</li>
+                <li>Tạo lịch mới tự chuyển hồ sơ sang “Mời phỏng vấn”.</li>
+                <li>Mọi cập nhật đều được ghi vào nhật ký hệ thống.</li>
+            </ul>
+        </section>
+
+        @if (Model.IsEdit)
+        {
+            <section class="admin-panel admin-danger-panel">
+                <span class="admin-eyebrow">Hủy lịch</span>
+                <h2>Không còn sử dụng lịch này?</h2>
+                <p>Lịch sẽ được hủy mềm và không còn hiển thị cho ứng viên.</p>
+                @using (Html.BeginForm("Cancel", "Interviews", new { id = Model.InterviewId }, FormMethod.Post, new { @class = "mt-3" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-outline-danger w-100" type="submit" onclick="return confirm('Hủy lịch phỏng vấn này?');">Hủy lịch phỏng vấn</button>
+                }
+            </section>
+        }
+    </aside>
+</div>

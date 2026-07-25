@@ -118,6 +118,7 @@
     <Compile Include="ViewModels\Candidate\CandidateDashboardViewModel.cs" />
     <Compile Include="ViewModels\Candidate\CandidateProfileViewModel.cs" />
     <Compile Include="ViewModels\Dashboard\DashboardViewModel.cs" />
+    <Compile Include="ViewModels\Interviews\InterviewManagementViewModels.cs" />
     <Compile Include="ViewModels\Jobs\CandidateJobViewModels.cs" />
     <Compile Include="ViewModels\Jobs\DepartmentFormViewModel.cs" />
     <Compile Include="ViewModels\Jobs\JobFilterViewModel.cs" />
@@ -165,6 +166,7 @@
     <Content Include="Views\Departments\Index.cshtml" />
     <Content Include="Views\Departments\_Form.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Interviews\Edit.cshtml" />
     <Content Include="Views\Interviews\Index.cshtml" />
     <Content Include="Views\JobPositions\Create.cshtml" />
     <Content Include="Views\JobPositions\Edit.cshtml" />
