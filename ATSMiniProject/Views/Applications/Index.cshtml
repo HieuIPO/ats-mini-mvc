@@ -1,17 +1,149 @@
+﻿@model ATSMiniProject.ViewModels.Applications.AdminApplicationListViewModel
+
 @{
-    ViewBag.Title = "Hồ sơ ứng viên";
+    ViewBag.Title = "Quản lý hồ sơ ứng viên";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    Func<string, bool, string> statusClass = (name, isFinal) =>
+    {
+        if (isFinal && name == "Đạt") return "badge-soft-success";
+        if (isFinal) return "badge-soft-danger";
+        if (name == "Mời phỏng vấn") return "badge-soft-warning";
+        if (name == "Đang xem xét") return "badge-soft-primary";
+        return "badge-soft-info";
+    };
 }
 
 <div class="page-header">
     <div>
+        <span class="admin-eyebrow">Quản lý tuyển dụng</span>
         <h1>Hồ sơ ứng viên</h1>
-        <p>Module này thuộc Thành viên 3. Trang tạm được thêm để menu không bị lỗi khi đang tích hợp.</p>
+        <p>Tra cứu, đánh giá và theo dõi toàn bộ hồ sơ theo từng vị trí tuyển dụng.</p>
     </div>
+    <a class="btn btn-primary" href="@Url.Action("Create", "Interviews")">Tạo lịch phỏng vấn</a>
 </div>
 
-<div class="placeholder-card">
-    <h2>Đang chờ module Applications</h2>
-    <p>Sau khi Thành viên 3 hoàn thiện, trang này sẽ hiển thị danh sách hồ sơ, lọc trạng thái và thao tác cập nhật hồ sơ.</p>
-    <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Về tin tuyển dụng</a>
-</div>
+<section class="admin-filter-panel" aria-label="Bộ lọc hồ sơ">
+    @using (Html.BeginForm("Index", "Applications", FormMethod.Get, new { @class = "admin-filter-grid application-filter-grid" }))
+    {
+        <div class="filter-field filter-field-wide">
+            <label for="keyword">Từ khóa</label>
+            <input id="keyword" name="keyword" class="form-control" value="@Model.Keyword" placeholder="Tên, email, điện thoại hoặc vị trí" />
+        </div>
+        <div class="filter-field">
+            <label for="jobId">Tin tuyển dụng</label>
+            @Html.DropDownList("jobId", Model.Jobs, "Tất cả tin tuyển dụng", new { @class = "form-select", id = "jobId" })
+        </div>
+        <div class="filter-field">
+            <label for="statusId">Trạng thái</label>
+            @Html.DropDownList("statusId", Model.Statuses, "Tất cả trạng thái", new { @class = "form-select", id = "statusId" })
+        </div>
+        <div class="filter-field">
+            <label for="fromDate">Từ ngày</label>
+            <input id="fromDate" name="fromDate" type="date" class="form-control" value="@(Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : null)" />
+        </div>
+        <div class="filter-field">
+            <label for="toDate">Đến ngày</label>
+            <input id="toDate" name="toDate" type="date" class="form-control" value="@(Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : null)" />
+        </div>
+        <div class="filter-actions">
+            <button class="btn btn-primary" type="submit">Áp dụng</button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Applications")">Đặt lại</a>
+        </div>
+    }
+</section>
+
+<section class="ats-table-card">
+    <div class="ats-table-toolbar">
+        <div>
+            <strong>@Model.TotalItems hồ sơ</strong>
+            <span class="admin-toolbar-note">Sắp xếp theo thời điểm nộp mới nhất</span>
+        </div>
+        <span class="admin-page-count">Trang @Model.Page / @Model.TotalPages</span>
+    </div>
+
+    @if (!Model.Applications.Any())
+    {
+        <div class="admin-empty-state">
+            <strong>Không tìm thấy hồ sơ phù hợp</strong>
+            <span>Hãy thay đổi điều kiện lọc hoặc kiểm tra lại dữ liệu tuyển dụng.</span>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table ats-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Ứng viên</th>
+                        <th>Vị trí ứng tuyển</th>
+                        <th>Ngày nộp</th>
+                        <th>Trạng thái</th>
+                        <th>Phỏng vấn tiếp theo</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Applications)
+                    {
+                        <tr>
+                            <td>
+                                <div class="table-primary-cell">
+                                    <span class="table-avatar">@item.CandidateName.Substring(0, 1).ToUpperInvariant()</span>
+                                    <span>
+                                        <strong>@item.CandidateName</strong>
+                                        <small>@item.CandidateEmail · @item.CandidatePhone</small>
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <strong class="table-title">@item.JobTitle</strong>
+                                <small class="table-subtitle">@item.DepartmentName</small>
+                            </td>
+                            <td>
+                                <span>@item.AppliedDate.ToString("dd/MM/yyyy")</span>
+                                <small class="table-subtitle">@item.AppliedDate.ToString("HH:mm")</small>
+                            </td>
+                            <td>
+                                <span class="@statusClass(item.StatusName, item.IsFinal)">@item.StatusName</span>
+                            </td>
+                            <td>
+                                @if (item.NextInterviewDate.HasValue)
+                                {
+                                    <strong>@item.NextInterviewDate.Value.ToString("dd/MM/yyyy")</strong>
+                                    <small class="table-subtitle">@item.NextInterviewDate.Value.ToString("HH:mm")</small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa có lịch</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Review", "Applications", new { id = item.ApplicationId })">Xem hồ sơ</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="admin-pagination" aria-label="Phân trang hồ sơ">
+            @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+            {
+                <a class="@(pageNumber == Model.Page ? "active" : null)"
+                   href="@Url.Action("Index", "Applications", new
+                   {
+                       keyword = Model.Keyword,
+                       jobId = Model.JobId,
+                       statusId = Model.StatusId,
+                       fromDate = Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : null,
+                       toDate = Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : null,
+                       page = pageNumber
+                   })">@pageNumber</a>
+            }
+        </nav>
+    }
+</section>

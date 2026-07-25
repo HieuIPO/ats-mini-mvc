@@ -45,7 +45,7 @@
                         <strong>Hồ sơ đã được gửi</strong>
                         <span>Bạn có thể theo dõi tiến trình bất cứ lúc nào.</span>
                     </div>
-                    <a class="btn btn-outline-primary w-100" href="@Url.Action("Status", "Applications")">Xem hồ sơ đã nộp</a>
+                    <a class="btn btn-outline-primary w-100" href="@Url.Action("Details", "Applications", new { id = Model.ExistingApplicationId })">Xem hồ sơ đã nộp</a>
                 }
                 else
                 {
