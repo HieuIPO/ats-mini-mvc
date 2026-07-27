@@ -28,6 +28,7 @@ packages/
 # SQL Server local database files
 *.mdf
 *.ldf
+*.bak
 
 # Logs
 *.log
