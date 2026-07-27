@@ -1,14 +1,27 @@
-﻿@if (TempData["Success"] != null)
+@if (TempData["Success"] != null || TempData["Error"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["Success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
-    </div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    <div class="ats-alert-stack" aria-live="polite" aria-atomic="true">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show ats-toast" role="status" data-auto-dismiss="true">
+                <span class="ats-toast-icon" aria-hidden="true">✓</span>
+                <div>
+                    <strong>Thành công</strong>
+                    <span>@TempData["Success"]</span>
+                </div>
+                <button type="button" class="ats-toast-close" data-bs-dismiss="alert" aria-label="Đóng thông báo">×</button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show ats-toast" role="alert">
+                <span class="ats-toast-icon" aria-hidden="true">!</span>
+                <div>
+                    <strong>Cần kiểm tra lại</strong>
+                    <span>@TempData["Error"]</span>
+                </div>
+                <button type="button" class="ats-toast-close" data-bs-dismiss="alert" aria-label="Đóng thông báo">×</button>
+            </div>
+        }
     </div>
 }

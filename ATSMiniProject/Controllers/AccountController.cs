@@ -294,6 +294,12 @@ namespace ATSMiniProject.Controllers
             Session[AuthSessionKeys.FullName] = user.FullName;
             Session[AuthSessionKeys.RoleName] = user.Role == null ? string.Empty : user.Role.RoleName;
             Session[AuthSessionKeys.AvatarVersion] = DateTime.UtcNow.Ticks;
+
+            var avatarPath = FindStoredAvatarPath(user.UserID);
+            if (!string.IsNullOrWhiteSpace(avatarPath))
+            {
+                Session["AuthAvatarPath"] = avatarPath;
+            }
         }
 
         private void RegisterFailedLogin(ATSMiniDBContext db, UserEntity user)
@@ -331,12 +337,17 @@ namespace ATSMiniProject.Controllers
 
         private ActionResult RedirectAfterLogin(string returnUrl)
         {
+            var roleName = Session[AuthSessionKeys.RoleName] as string;
+            if (InternalAccountRolePolicy.IsAllowedRoleName(roleName))
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
             if (Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
             }
 
-            var roleName = Session[AuthSessionKeys.RoleName] as string;
             if (string.Equals(roleName, "Candidate", StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction("Index", "Candidate");
@@ -373,6 +384,15 @@ namespace ATSMiniProject.Controllers
             avatarFile.SaveAs(physicalPath);
 
             return "~/Uploads/Avatars/" + storedFileName;
+        }
+
+        private string FindStoredAvatarPath(int userId)
+        {
+            var folder = Server.MapPath("~/Uploads/Avatars/");
+            var storedFileName = AccountAvatarPathResolver.FindLatestFileName(folder, userId);
+            return string.IsNullOrWhiteSpace(storedFileName)
+                ? null
+                : "~/Uploads/Avatars/" + storedFileName;
         }
 
         private void FillProfileMeta(ProfileViewModel model, UserEntity user = null)

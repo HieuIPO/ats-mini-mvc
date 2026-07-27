@@ -1,158 +1,198 @@
 @model ATSMiniProject.ViewModels.Dashboard.DashboardViewModel
+@using System
+@using System.Linq
 @{
     ViewBag.Title = "Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var displayName = string.IsNullOrWhiteSpace(Model.DisplayName) ? "Quản trị viên" : Model.DisplayName;
+    var todayValue = DateTime.Today.ToString("yyyy-MM-dd");
 }
 
 <div class="page-header dashboard-header">
     <div>
+        <span class="dashboard-kicker">Trung tâm điều hành</span>
         <h1>Dashboard tuyển dụng</h1>
-        <p>Tổng quan dữ liệu việc làm, hồ sơ ứng tuyển và lịch phỏng vấn trong hệ thống.</p>
+        <p>Xin chào @displayName. Hôm nay có <strong>@Model.TotalActionItems việc cần ưu tiên</strong> trong quy trình tuyển dụng.</p>
     </div>
     <a class="btn btn-primary" href="@Url.Action("Create", "Jobs")">Tạo tin tuyển dụng</a>
 </div>
 
-<div class="row g-3">
-    <div class="col-md-3">
-        <div class="stat-card metric-blue">
-            <span>Tổng tin tuyển dụng</span>
-            <strong>@Model.TotalJobs</strong>
-            <small>@Model.OpenJobs tin đang mở</small>
-            <a class="stat-card-link" href="@Url.Action("Index", "Jobs")">Xem chi tiết</a>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card metric-green">
-            <span>Hồ sơ ứng viên</span>
-            <strong>@Model.TotalApplications</strong>
-            <small>Dữ liệu từ Applications</small>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card metric-amber">
-            <span>Sắp hết hạn</span>
-            <strong>@Model.ExpiringJobs</strong>
-            <small>Deadline trong 7 ngày</small>
-            <a class="stat-card-link" href="@Url.Action("Index", "Jobs", new { status = "open" })">Xem chi tiết</a>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card metric-purple">
-            <span>Phỏng vấn sắp tới</span>
-            <strong>@Model.UpcomingInterviews</strong>
-            <small>@Model.TotalInterviews lịch phỏng vấn</small>
-        </div>
-    </div>
-</div>
+<section class="dashboard-metric-grid" aria-label="Chỉ số tuyển dụng chính">
+    <a class="dashboard-metric metric-teal" href="@Url.Action("AdminIndex", "Jobs", new { status = "open" })">
+        <span class="dashboard-metric-label">Tin đang mở</span>
+        <strong>@Model.OpenJobs</strong>
+        <small>@Model.TotalJobs tin trong hệ thống</small>
+        <span class="dashboard-metric-action">Quản lý tin <span aria-hidden="true">→</span></span>
+    </a>
+    <a class="dashboard-metric metric-coral" href="@Url.Action("Index", "Applications", new { statusId = Model.NewApplicationStatusId })">
+        <span class="dashboard-metric-label">Hồ sơ mới</span>
+        <strong>@Model.NewApplications</strong>
+        <small>Cần được tiếp nhận và đánh giá</small>
+        <span class="dashboard-metric-action">Xem hồ sơ mới <span aria-hidden="true">→</span></span>
+    </a>
+    <a class="dashboard-metric metric-amber" href="@Url.Action("Index", "Applications", new { statusId = Model.InReviewStatusId })">
+        <span class="dashboard-metric-label">Đang xem xét</span>
+        <strong>@Model.InReviewApplications</strong>
+        <small>Hồ sơ đang trong quá trình xử lý</small>
+        <span class="dashboard-metric-action">Tiếp tục xử lý <span aria-hidden="true">→</span></span>
+    </a>
+    <a class="dashboard-metric metric-slate" href="@Url.Action("Index", "Interviews", new { fromDate = todayValue })">
+        <span class="dashboard-metric-label">Phỏng vấn sắp tới</span>
+        <strong>@Model.UpcomingInterviews</strong>
+        <small>@Model.TotalInterviews lịch phỏng vấn trong hệ thống</small>
+        <span class="dashboard-metric-action">Xem lịch phỏng vấn <span aria-hidden="true">→</span></span>
+    </a>
+</section>
 
-<div class="row g-3 mt-1">
-    <div class="col-lg-7">
-        <div class="dashboard-card">
-            <div class="dashboard-card-header">
-                <div>
-                    <h2>Hồ sơ theo trạng thái</h2>
-                    <p>Biểu đồ thanh ngang dựa trên bảng ApplicationStatuses.</p>
-                </div>
-                <span class="badge-soft-primary">@Model.TotalApplications hồ sơ</span>
+<div class="dashboard-priority-grid">
+    <section class="dashboard-card dashboard-priority-card" aria-labelledby="priority-title">
+        <div class="dashboard-card-header">
+            <div>
+                <span class="dashboard-section-kicker">Ưu tiên hôm nay</span>
+                <h2 id="priority-title">Cần xử lý ngay</h2>
+                <p>Tập trung vào những việc có ảnh hưởng trực tiếp đến ứng viên.</p>
             </div>
+            <span class="dashboard-count-badge">@Model.TotalActionItems việc</span>
+        </div>
 
-            <div class="status-chart">
-                @foreach (var item in Model.ApplicationStatuses)
+        @if (Model.TotalActionItems == 0)
+        {
+            <div class="dashboard-empty-state" role="status">
+                <strong>Không có việc tồn đọng</strong>
+                <span>Các đầu việc ưu tiên hôm nay đã được xử lý.</span>
+            </div>
+        }
+        else
+        {
+            <div class="dashboard-action-list">
+                @if (Model.NewApplications > 0)
                 {
-                    <div class="chart-row">
-                        <div class="chart-row-label">
-                            <strong>@item.Name</strong>
-                            <span>@item.Count hồ sơ</span>
-                        </div>
-                        <div class="chart-track">
-                            <span class="chart-bar @item.CssClass" style="width:@item.Percent%"></span>
-                        </div>
-                    </div>
+                    <a class="dashboard-action-item action-critical" href="@Url.Action("Index", "Applications", new { statusId = Model.NewApplicationStatusId })">
+                        <span class="dashboard-action-number">@Model.NewApplications</span>
+                        <span><strong>Hồ sơ mới chưa xem</strong><small>Mở danh sách và bắt đầu đánh giá ứng viên.</small></span>
+                        <span class="dashboard-row-arrow" aria-hidden="true">→</span>
+                    </a>
+                }
+                @if (Model.ExpiringJobs > 0)
+                {
+                    <a class="dashboard-action-item action-warning" href="@Url.Action("AdminIndex", "Jobs", new { status = "expiring" })">
+                        <span class="dashboard-action-number">@Model.ExpiringJobs</span>
+                        <span><strong>Tin sắp hết hạn trong 7 ngày</strong><small>Gia hạn, đóng tin hoặc ưu tiên xử lý hồ sơ.</small></span>
+                        <span class="dashboard-row-arrow" aria-hidden="true">→</span>
+                    </a>
+                }
+                @if (Model.TodayInterviews > 0)
+                {
+                    <a class="dashboard-action-item action-info" href="@Url.Action("Index", "Interviews", new { fromDate = todayValue, toDate = todayValue })">
+                        <span class="dashboard-action-number">@Model.TodayInterviews</span>
+                        <span><strong>Lịch phỏng vấn hôm nay</strong><small>Kiểm tra thời gian, địa điểm và người phụ trách.</small></span>
+                        <span class="dashboard-row-arrow" aria-hidden="true">→</span>
+                    </a>
                 }
             </div>
-        </div>
-    </div>
+        }
+    </section>
 
-    <div class="col-lg-5">
-        <div class="dashboard-card">
-            <div class="dashboard-card-header">
-                <div>
-                    <h2>Tình trạng tin tuyển dụng</h2>
-                    <p>So sánh tin đang mở, đã đóng và sắp hết hạn.</p>
-                </div>
-                <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index", "Jobs")">Xem chi tiết</a>
+    <section class="dashboard-card" aria-labelledby="pipeline-title">
+        <div class="dashboard-card-header">
+            <div>
+                <span class="dashboard-section-kicker">Pipeline</span>
+                <h2 id="pipeline-title">Tiến độ hồ sơ</h2>
+                <p>@Model.TotalApplications hồ sơ trên toàn bộ tin tuyển dụng.</p>
             </div>
-            <div class="donut-wrap">
-                @{
-                    var openPercent = Model.TotalJobs == 0 ? 0 : (int)Math.Round((double)Model.OpenJobs * 100 / Model.TotalJobs);
-                    var closedPercent = Model.TotalJobs == 0 ? 0 : (int)Math.Round((double)Model.ClosedJobs * 100 / Model.TotalJobs);
-                }
-                <div class="donut" style="--open:@openPercent; --closed:@closedPercent;">
-                    <div>
-                        <strong>@openPercent%</strong>
-                        <span>đang mở</span>
-                    </div>
-                </div>
-                <div class="donut-legend">
-                    <span><i class="legend-open"></i>Đang mở: @Model.OpenJobs</span>
-                    <span><i class="legend-closed"></i>Đã đóng/hết hạn: @Model.ClosedJobs</span>
-                    <span><i class="legend-expiring"></i>Sắp hết hạn: @Model.ExpiringJobs</span>
-                </div>
-            </div>
+            <a class="dashboard-text-link" href="@Url.Action("Index", "Applications")">Tất cả hồ sơ</a>
         </div>
-    </div>
+        <div class="status-chart">
+            @foreach (var item in Model.ApplicationStatuses)
+            {
+                <a class="chart-row" href="@Url.Action("Index", "Applications", new { statusId = item.StatusId })">
+                    <span class="chart-row-label"><strong>@item.Name</strong><span>@item.Count hồ sơ</span></span>
+                    <span class="chart-track" aria-hidden="true"><span class="chart-bar @item.CssClass" style="width:@item.Percent%"></span></span>
+                    <span class="dashboard-row-arrow" aria-hidden="true">→</span>
+                </a>
+            }
+        </div>
+    </section>
 </div>
 
-<div class="row g-3 mt-1">
-    <div class="col-lg-7">
-        <div class="dashboard-card">
-            <div class="dashboard-card-header">
-                <div>
-                    <h2>Top tin có hồ sơ</h2>
-                    <p>Giúp HR ưu tiên xử lý các tin có nhiều ứng viên.</p>
-                </div>
-                <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Index", "Jobs")">Xem chi tiết</a>
+<div class="dashboard-detail-grid">
+    <section class="dashboard-card" aria-labelledby="jobs-performance-title">
+        <div class="dashboard-card-header">
+            <div>
+                <span class="dashboard-section-kicker">Hiệu quả theo tin</span>
+                <h2 id="jobs-performance-title">Tin có nhiều hồ sơ</h2>
+                <p>Mở trực tiếp danh sách ứng viên của từng tin.</p>
             </div>
-            <div class="job-chart">
+            <a class="dashboard-text-link" href="@Url.Action("AdminIndex", "Jobs")">Quản lý tin</a>
+        </div>
+        @if (!Model.JobApplications.Any())
+        {
+            <div class="dashboard-empty-state" role="status"><strong>Chưa có tin tuyển dụng</strong><span>Tạo tin đầu tiên để bắt đầu nhận hồ sơ.</span></div>
+        }
+        else
+        {
+            <div class="dashboard-job-list">
                 @foreach (var job in Model.JobApplications)
                 {
-                    <div class="job-chart-row">
-                        <span title="@job.Title">@job.Title</span>
-                        <div class="chart-track"><i style="width:@job.Percent%"></i></div>
-                        <strong>@job.Count</strong>
-                    </div>
+                    <a class="dashboard-job-row" href="@Url.Action("Index", "Applications", new { jobId = job.JobId })">
+                        <span class="dashboard-job-copy"><strong title="@job.Title">@job.Title</strong><small>@(job.IsOpen ? "Đang mở" : "Đã đóng hoặc hết hạn")</small></span>
+                        <span class="chart-track" aria-hidden="true"><span style="width:@job.Percent%"></span></span>
+                        <span class="dashboard-job-count">@job.Count <small>hồ sơ</small></span>
+                        <span class="dashboard-row-arrow" aria-hidden="true">→</span>
+                    </a>
                 }
             </div>
+        }
+    </section>
+
+    <section class="dashboard-card" aria-labelledby="upcoming-title">
+        <div class="dashboard-card-header">
+            <div>
+                <span class="dashboard-section-kicker">Lịch làm việc</span>
+                <h2 id="upcoming-title">Phỏng vấn gần nhất</h2>
+                <p>Các lịch sắp diễn ra theo thứ tự thời gian.</p>
+            </div>
+            <a class="dashboard-text-link" href="@Url.Action("Index", "Interviews")">Toàn bộ lịch</a>
         </div>
-    </div>
-    <div class="col-lg-5">
-        <div class="dashboard-card">
-            <div class="dashboard-card-header">
-                <div>
-                    <h2>Lịch phỏng vấn gần nhất</h2>
-                    <p>Các lịch sắp diễn ra để HR theo dõi nhanh.</p>
-                </div>
-            </div>
-            <div class="interview-list">
-                @if (!Model.UpcomingInterviewItems.Any())
+        @if (!Model.UpcomingInterviewItems.Any())
+        {
+            <div class="dashboard-empty-state" role="status"><strong>Chưa có lịch sắp tới</strong><span>Lịch mới sẽ xuất hiện tại đây sau khi được tạo.</span></div>
+        }
+        else
+        {
+            <div class="dashboard-interview-list">
+                @foreach (var item in Model.UpcomingInterviewItems)
                 {
-                    <p class="text-muted mb-0">Chưa có lịch phỏng vấn sắp tới.</p>
-                }
-                else
-                {
-                    foreach (var item in Model.UpcomingInterviewItems)
-                    {
-                        <div class="interview-item">
-                            <div class="interview-date">@item.InterviewTime</div>
-                            <div>
-                                <strong>@item.CandidateName</strong>
-                                <span>@item.JobTitle</span>
-                                <small>@item.Location</small>
-                            </div>
-                        </div>
-                    }
+                    <a class="dashboard-interview-item" href="@Url.Action("Edit", "Interviews", new { id = item.InterviewId })">
+                        <time datetime="@item.InterviewDate.ToString("s")"><strong>@item.InterviewDate.ToString("dd/MM")</strong><span>@item.InterviewDate.ToString("HH:mm")</span></time>
+                        <span><strong>@item.CandidateName</strong><small>@item.JobTitle · @item.Location</small></span>
+                        <span class="dashboard-row-arrow" aria-hidden="true">→</span>
+                    </a>
                 }
             </div>
-        </div>
-    </div>
+        }
+    </section>
 </div>
+
+<section class="dashboard-card dashboard-activity-card" aria-labelledby="activity-title">
+    <div class="dashboard-card-header">
+        <div>
+            <span class="dashboard-section-kicker">Theo dõi thay đổi</span>
+            <h2 id="activity-title">Hoạt động nghiệp vụ gần đây</h2>
+            <p>Các cập nhật hồ sơ và phỏng vấn mới nhất trong hệ thống.</p>
+        </div>
+    </div>
+    @if (!Model.RecentActivities.Any())
+    {
+        <div class="dashboard-empty-state" role="status"><strong>Chưa có hoạt động</strong><span>Các thay đổi nghiệp vụ mới sẽ được hiển thị tại đây.</span></div>
+    }
+    else
+    {
+        <ol class="dashboard-activity-list">
+            @foreach (var activity in Model.RecentActivities)
+            {
+                <li><span class="dashboard-activity-marker" aria-hidden="true"></span><span><strong>@activity.Label</strong><span>@activity.Description</span><small>@activity.ActorName · @activity.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small></span></li>
+            }
+        </ol>
+    }
+</section>

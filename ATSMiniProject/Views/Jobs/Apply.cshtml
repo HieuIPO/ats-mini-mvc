@@ -1,78 +1,175 @@
-﻿@model ATSMiniProject.ViewModels.Jobs.ApplyApplicationViewModel
+@model ATSMiniProject.ViewModels.Jobs.ApplyApplicationViewModel
 
 @{
     ViewBag.Title = "Nộp hồ sơ";
+    var department = String.IsNullOrWhiteSpace(Model.DepartmentName) ? "ATS Mini" : Model.DepartmentName;
+    var deadline = Model.Deadline.HasValue ? Model.Deadline.Value.ToString("dd/MM/yyyy") : "Không giới hạn";
+    var generalErrors = ViewData.ModelState[string.Empty];
 }
 
-<section class="candidate-section application-form-page">
-    <div class="container candidate-container">
-        <a class="candidate-back-link" href="@Url.Action("Details", "Jobs", new { id = Model.JobId })"><span aria-hidden="true">←</span> Quay lại tin tuyển dụng</a>
-        <div class="candidate-page-header">
-            <div>
-                <span class="eyebrow">@Model.DepartmentName</span>
-                <h1>Nộp hồ sơ ứng tuyển</h1>
-                <p>@Model.JobTitle</p>
-            </div>
-            <div class="application-deadline">
-                <span>Hạn nhận hồ sơ</span>
-                <strong>@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("dd/MM/yyyy") : "Không giới hạn")</strong>
+<main class="career-application-page">
+    <header class="career-application-hero">
+        <div class="container">
+            <a class="career-application-back" href="@Url.Action("Details", "Jobs", new { id = Model.JobId })">
+                <span aria-hidden="true">←</span>
+                Quay lại chi tiết việc làm
+            </a>
+
+            <div class="career-application-heading">
+                <div>
+                    <span class="career-application-kicker">@department</span>
+                    <h1>Nộp hồ sơ ứng tuyển</h1>
+                    <p>@Model.JobTitle</p>
+                </div>
+                <div class="career-application-deadline">
+                    <span>Hạn nhận hồ sơ</span>
+                    <strong>@deadline</strong>
+                </div>
             </div>
         </div>
+    </header>
 
-        <div class="application-form-layout">
-            <div class="candidate-form-panel">
+    <section class="career-application-content" aria-label="Biểu mẫu ứng tuyển">
+        <div class="container career-application-layout">
+            <div class="career-application-form-card">
                 @using (Html.BeginForm("Apply", "Jobs", FormMethod.Post, new { enctype = "multipart/form-data", novalidate = "novalidate" }))
                 {
                     @Html.AntiForgeryToken()
                     @Html.HiddenFor(model => model.JobId)
-                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+                    if (generalErrors != null && generalErrors.Errors.Count > 0)
+                    {
+                        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger career-form-validation" })
+                    }
 
-                    <div class="form-section-heading">
-                        <span>01</span>
+                    <section class="career-form-section" aria-labelledby="contact-heading">
+                        <div class="career-form-section-heading">
+                            <span aria-hidden="true">01</span>
+                            <div>
+                                <h2 id="contact-heading">Thông tin liên hệ</h2>
+                                <p>Thông tin này giúp bộ phận tuyển dụng liên hệ với bạn khi hồ sơ phù hợp.</p>
+                            </div>
+                        </div>
+
+                        <div class="career-form-grid">
+                            <div class="career-form-field">
+                                @Html.LabelFor(model => model.CandidateName, new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.CandidateName, new { @class = "form-control", autocomplete = "name", placeholder = "Nhập họ và tên" })
+                                @Html.ValidationMessageFor(model => model.CandidateName, "", new { @class = "text-danger small" })
+                            </div>
+                            <div class="career-form-field">
+                                @Html.LabelFor(model => model.CandidatePhone, new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.CandidatePhone, new { @class = "form-control", type = "tel", autocomplete = "tel", placeholder = "Ví dụ: 0901234567" })
+                                @Html.ValidationMessageFor(model => model.CandidatePhone, "", new { @class = "text-danger small" })
+                            </div>
+                            <div class="career-form-field career-form-field-full">
+                                @Html.LabelFor(model => model.CandidateEmail, new { @class = "form-label" })
+                                @Html.TextBoxFor(model => model.CandidateEmail, new { @class = "form-control", type = "email", autocomplete = "email", placeholder = "tenban@email.com" })
+                                @Html.ValidationMessageFor(model => model.CandidateEmail, "", new { @class = "text-danger small" })
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="career-form-section" aria-labelledby="cv-heading">
+                        <div class="career-form-section-heading">
+                            <span aria-hidden="true">02</span>
+                            <div>
+                                <h2 id="cv-heading">Hồ sơ năng lực</h2>
+                                <p>Chọn phiên bản CV mới nhất và phù hợp nhất với vị trí này.</p>
+                            </div>
+                        </div>
+
+                        <label class="career-cv-upload" for="CvFile">
+                            <span class="career-cv-upload-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M12 16V4M7 9l5-5 5 5"></path>
+                                    <path d="M5 14v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5"></path>
+                                </svg>
+                            </span>
+                            <span class="career-cv-upload-copy">
+                                <strong>Chọn CV từ máy tính</strong>
+                                <small>PDF, DOC hoặc DOCX · Dung lượng tối đa 5 MB</small>
+                                <span data-cv-file-name>Chưa chọn tệp</span>
+                            </span>
+                            <span class="career-cv-upload-action">Chọn tệp</span>
+                            <input class="visually-hidden" id="CvFile" name="CvFile" type="file" accept=".pdf,.doc,.docx" data-cv-input />
+                        </label>
+                        @Html.ValidationMessageFor(model => model.CvFile, "", new { @class = "text-danger small d-block mt-2" })
+                    </section>
+
+                    <div class="career-form-consent">
+                        <div class="career-consent-check">
+                            @Html.CheckBoxFor(model => model.AcceptPrivacyPolicy, new
+                            {
+                                @class = "career-consent-input",
+                                required = "required",
+                                aria_describedby = "privacy-consent-help privacy-consent-error"
+                            })
+                            <label for="AcceptPrivacyPolicy">
+                                Tôi xác nhận thông tin cung cấp là chính xác và đồng ý với
+                                <a href="#application-privacy-policy">chính sách bảo mật</a>
+                                của ATS Mini.
+                            </label>
+                        </div>
+                        <p id="privacy-consent-help">Bạn phải chọn ô này trước khi nộp hồ sơ.</p>
+                        @Html.ValidationMessageFor(
+                            model => model.AcceptPrivacyPolicy,
+                            "",
+                            new { @class = "text-danger small d-block", id = "privacy-consent-error" })
+                    </div>
+
+                    <details class="career-privacy-policy" id="application-privacy-policy">
+                        <summary>ATS Mini sử dụng thông tin của bạn như thế nào?</summary>
                         <div>
-                            <h2>Thông tin liên hệ</h2>
-                            <p>Nhà tuyển dụng sẽ sử dụng thông tin này để liên hệ với bạn.</p>
+                            <p>ATS Mini thu thập họ tên, email, số điện thoại và CV để tiếp nhận, đánh giá, liên hệ và cập nhật tiến trình ứng tuyển.</p>
+                            <p>Thông tin chỉ được hiển thị cho ứng viên sở hữu hồ sơ và người dùng HR/Admin có quyền xử lý tuyển dụng. Hệ thống không lưu nội dung tệp CV trực tiếp trong database.</p>
+                            <p>Bạn có thể cập nhật thông tin liên hệ trong mục Hồ sơ cá nhân và theo dõi hồ sơ đã nộp trên hệ thống.</p>
                         </div>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            @Html.LabelFor(model => model.CandidateName, new { @class = "form-label" })
-                            @Html.TextBoxFor(model => model.CandidateName, new { @class = "form-control", autocomplete = "name" })
-                            @Html.ValidationMessageFor(model => model.CandidateName, "", new { @class = "text-danger small" })
-                        </div>
-                        <div class="col-md-6">
-                            @Html.LabelFor(model => model.CandidatePhone, new { @class = "form-label" })
-                            @Html.TextBoxFor(model => model.CandidatePhone, new { @class = "form-control", type = "tel", autocomplete = "tel" })
-                            @Html.ValidationMessageFor(model => model.CandidatePhone, "", new { @class = "text-danger small" })
-                        </div>
-                        <div class="col-12">
-                            @Html.LabelFor(model => model.CandidateEmail, new { @class = "form-label" })
-                            @Html.TextBoxFor(model => model.CandidateEmail, new { @class = "form-control", type = "email", autocomplete = "email" })
-                            @Html.ValidationMessageFor(model => model.CandidateEmail, "", new { @class = "text-danger small" })
-                        </div>
-                    </div>
+                    </details>
 
-                    <div class="form-section-heading form-section-heading-spaced">
-                        <span>02</span>
-                        <div>
-                            <h2>Hồ sơ năng lực</h2>
-                            <p>Tải lên phiên bản CV mới nhất của bạn.</p>
-                        </div>
-                    </div>
-                    <label class="cv-upload-zone" for="CvFile">
-                        <span class="cv-upload-symbol" aria-hidden="true">↑</span>
-                        <strong>Chọn CV từ máy tính</strong>
-                        <small>PDF, DOC hoặc DOCX · Tối đa 5 MB</small>
-                        <input id="CvFile" name="CvFile" type="file" accept=".pdf,.doc,.docx" />
-                    </label>
-                    @Html.ValidationMessageFor(model => model.CvFile, "", new { @class = "text-danger small d-block mt-2" })
-
-                    <div class="candidate-form-actions">
-                        <a class="btn btn-outline-secondary" href="@Url.Action("Details", "Jobs", new { id = Model.JobId })">Hủy</a>
-                        <button class="btn btn-primary btn-lg" type="submit">Xác nhận nộp hồ sơ</button>
+                    <div class="career-form-actions">
+                        <a href="@Url.Action("Details", "Jobs", new { id = Model.JobId })">Hủy</a>
+                        <button type="submit">
+                            Xác nhận nộp hồ sơ
+                            <span aria-hidden="true">→</span>
+                        </button>
                     </div>
                 }
             </div>
+
+            <aside class="career-application-aside" aria-label="Hướng dẫn nộp hồ sơ">
+                <div class="career-application-summary">
+                    <span class="career-application-summary-label">Bạn đang ứng tuyển</span>
+                    <h2>@Model.JobTitle</h2>
+                    <dl>
+                        <div>
+                            <dt>Phòng ban</dt>
+                            <dd>@department</dd>
+                        </div>
+                        <div>
+                            <dt>Hạn nộp</dt>
+                            <dd>@deadline</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <div class="career-application-steps">
+                    <h2>Sau khi nộp hồ sơ</h2>
+                    <ol>
+                        <li>
+                            <span>1</span>
+                            <p><strong>Tiếp nhận hồ sơ</strong><small>Hồ sơ xuất hiện trong mục theo dõi của bạn.</small></p>
+                        </li>
+                        <li>
+                            <span>2</span>
+                            <p><strong>HR xem xét</strong><small>Bộ phận tuyển dụng đánh giá mức độ phù hợp.</small></p>
+                        </li>
+                        <li>
+                            <span>3</span>
+                            <p><strong>Cập nhật kết quả</strong><small>Trạng thái và lịch phỏng vấn được cập nhật trên hệ thống.</small></p>
+                        </li>
+                    </ol>
+                </div>
+            </aside>
         </div>
-    </div>
-</section>
+    </section>
+</main>

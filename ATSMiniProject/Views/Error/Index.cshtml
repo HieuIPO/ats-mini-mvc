@@ -1,0 +1,17 @@
+@{
+    ViewBag.Title = "Đã xảy ra lỗi";
+}
+
+<section class="error-page" aria-labelledby="error-title">
+    <div class="container">
+        <div class="error-page-card">
+            <div class="error-page-symbol" aria-hidden="true">!</div>
+            <span class="section-kicker">ATS Mini</span>
+            <h1 id="error-title">Đã xảy ra lỗi</h1>
+            <p>Hệ thống chưa thể xử lý yêu cầu của bạn lúc này. Vui lòng quay lại trang chủ và thử lại sau.</p>
+            <div class="error-page-actions">
+                <a class="btn btn-primary btn-lg" href="@Url.Action("Index", "Home")">Quay về trang chủ</a>
+            </div>
+        </div>
+    </div>
+</section>

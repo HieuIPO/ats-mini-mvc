@@ -1,0 +1,113 @@
+@model ATSMiniProject.ViewModels.Candidate.SavedJobListViewModel
+
+@{
+    ViewBag.Title = "Tin đã lưu";
+}
+
+<main class="candidate-saved-jobs-page">
+    <header class="candidate-saved-jobs-header">
+        <div class="container candidate-saved-jobs-header-inner">
+            <div>
+                <span class="candidate-saved-jobs-eyebrow">Danh sách của bạn</span>
+                <h1>Tin tuyển dụng đã lưu</h1>
+                <p>Lưu lại những cơ hội phù hợp để xem và ứng tuyển khi bạn sẵn sàng.</p>
+            </div>
+            <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Khám phá việc làm</a>
+        </div>
+    </header>
+
+    <section class="candidate-saved-jobs-content" aria-labelledby="saved-jobs-title">
+        <div class="container">
+            <div class="candidate-saved-jobs-toolbar">
+                <div>
+                    <span>Tin quan tâm</span>
+                <h2 id="saved-jobs-title"><span data-saved-jobs-count>@Model.TotalItems</span> tin đã lưu</h2>
+                </div>
+                <a href="@Url.Action("Index", "Candidate")">Về trang tổng quan <span aria-hidden="true">→</span></a>
+            </div>
+
+            @if (Model.Jobs.Count == 0)
+            {
+                <div class="candidate-saved-jobs-empty" role="status">
+                    <span aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"></path></svg>
+                    </span>
+                    <h2>Bạn chưa lưu tin tuyển dụng nào</h2>
+                    <p>Khi thấy một vị trí phù hợp, chọn “Lưu tin” để quay lại xem sau.</p>
+                    <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Xem việc làm đang tuyển</a>
+                </div>
+            }
+            else
+            {
+                <div class="candidate-saved-jobs-grid">
+                    @foreach (var job in Model.Jobs)
+                    {
+                        var statusText = job.IsExpired ? "Đã hết hạn" : job.IsActive ? "Đang tuyển" : "Đã đóng";
+                        var statusClass = job.IsExpired ? "is-expired" : job.IsActive ? "is-open" : "is-closed";
+
+                        <article class="candidate-saved-job-card">
+                            <div class="candidate-saved-job-topline">
+                                <span class="candidate-saved-job-status @statusClass">@statusText</span>
+                                <span>Đã lưu @job.SavedAt.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div class="candidate-saved-job-copy">
+                                <span>@(String.IsNullOrWhiteSpace(job.DepartmentName) ? "ATS Mini" : job.DepartmentName)</span>
+                                <h3>@job.Title</h3>
+                                <p>@(String.IsNullOrWhiteSpace(job.PositionName) ? "Vị trí tuyển dụng" : job.PositionName)</p>
+                            </div>
+                            <dl class="candidate-saved-job-meta">
+                                <div><dt>Địa điểm</dt><dd>@(job.Location ?? "Thỏa thuận")</dd></div>
+                                <div><dt>Mức lương</dt><dd>@(job.SalaryRange ?? "Thỏa thuận")</dd></div>
+                                <div><dt>Hình thức</dt><dd>@(job.JobType ?? "Đang cập nhật")</dd></div>
+                            </dl>
+                            <div class="candidate-saved-job-actions">
+                                @if (job.IsOpen)
+                                {
+                                    <a href="@Url.Action("Details", "Jobs", new { id = job.JobId })">Xem chi tiết <span aria-hidden="true">→</span></a>
+                                }
+                                else
+                                {
+                                    <span class="candidate-saved-job-unavailable">Tin hiện không nhận hồ sơ</span>
+                                }
+                                @using (Html.BeginForm("UnsaveJob", "Jobs", FormMethod.Post, new
+                                {
+                                    @class = "job-save-form",
+                                    data_saved_job_form = "true",
+                                    data_save_url = Url.Action("SaveJob", "Jobs"),
+                                    data_unsave_url = Url.Action("UnsaveJob", "Jobs"),
+                                    data_remove_card_on_unsave = "true"
+                                }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    @Html.Hidden("jobId", job.JobId)
+                                    @Html.Hidden("returnUrl", Request.RawUrl)
+                                    <button class="job-save-button job-save-button-icon-only is-saved"
+                                            type="submit"
+                                            aria-pressed="true"
+                                            data-job-title="@job.Title"
+                                            title="Bỏ lưu tin"
+                                            aria-label="Bỏ lưu tin @job.Title">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5S4.5 16.2 4.5 9.8A4.3 4.3 0 0 1 12 6.9a4.3 4.3 0 0 1 7.5 2.9C19.5 16.2 12 20.5 12 20.5Z"></path></svg>
+                                        <span class="visually-hidden">Bỏ lưu</span>
+                                    </button>
+                                }
+                            </div>
+                        </article>
+                    }
+                </div>
+
+                if (Model.TotalPages > 1)
+                {
+                    <nav class="candidate-pagination" aria-label="Phân trang tin đã lưu">
+                        @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+                        {
+                            <a class="@(pageNumber == Model.Page ? "active" : null)"
+                               aria-current="@(pageNumber == Model.Page ? "page" : null)"
+                               href="@Url.Action("SavedJobs", "Candidate", new { page = pageNumber })">@pageNumber</a>
+                        }
+                    </nav>
+                }
+            }
+        </div>
+    </section>
+</main>

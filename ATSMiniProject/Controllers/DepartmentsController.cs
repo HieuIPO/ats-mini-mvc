@@ -12,9 +12,10 @@ namespace ATSMiniProject.Controllers
     [AuthorizeRole("Admin", "HR")]
     public class DepartmentsController : Controller
     {
+        private const int PageSize = 12;
         private readonly ATSMiniDBContext db = new ATSMiniDBContext();
 
-        public ActionResult Index(string keyword)
+        public ActionResult Index(string keyword, int page = 1)
         {
             var query = db.Departments.Where(d => !d.IsDeleted);
 
@@ -24,8 +25,33 @@ namespace ATSMiniProject.Controllers
                 query = query.Where(d => d.DepartmentName.Contains(trimmed) || d.Description.Contains(trimmed));
             }
 
-            ViewBag.Keyword = keyword;
-            return View(query.OrderByDescending(d => d.IsActive).ThenBy(d => d.DepartmentName).ToList());
+            var totalItems = query.Count();
+            var pagination = Pagination.Calculate(page, totalItems, PageSize);
+            var items = query
+                .OrderByDescending(d => d.IsActive)
+                .ThenBy(d => d.DepartmentName)
+                .ThenBy(d => d.DepartmentID)
+                .Skip(pagination.Offset)
+                .Take(pagination.PageSize)
+                .Select(d => new DepartmentListItemViewModel
+                {
+                    DepartmentID = d.DepartmentID,
+                    DepartmentName = d.DepartmentName,
+                    Description = d.Description,
+                    IsActive = d.IsActive
+                })
+                .ToList();
+
+            return View(new DepartmentListViewModel
+            {
+                Keyword = keyword,
+                Page = pagination.Page,
+                TotalPages = pagination.TotalPages,
+                TotalItems = pagination.TotalItems,
+                FirstItem = pagination.FirstItem,
+                LastItem = pagination.LastItem,
+                Items = items
+            });
         }
 
         [HttpGet]

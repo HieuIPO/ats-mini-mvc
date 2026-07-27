@@ -1,56 +1,110 @@
-@model IEnumerable<ATSMiniProject.Models.JobPosition>
+@model ATSMiniProject.ViewModels.Jobs.JobPositionListViewModel
 @{
     ViewBag.Title = "Vị trí tuyển dụng";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var resultCount = Model.Items.Count;
+    var keyword = Model.Keyword;
+    var hasKeyword = !String.IsNullOrWhiteSpace(keyword);
 }
 
-<div class="page-header">
-    <div>
+<div class="page-header departments-page-header job-positions-page-header">
+    <div class="departments-header-copy">
         <h1>Vị trí tuyển dụng</h1>
-        <p>Quản lý danh mục chức danh/vị trí dùng cho tin tuyển dụng.</p>
+        <p>Quản lý danh mục chức danh dùng trong tin tuyển dụng.</p>
+        <a class="department-back-link" href="@Url.Action("AdminIndex", "Jobs")">
+            <span aria-hidden="true">←</span>
+            Về tin tuyển dụng
+        </a>
     </div>
     <a class="btn btn-primary" href="@Url.Action("Create", "JobPositions")">Thêm vị trí</a>
 </div>
 
-<div class="ats-table-card">
-    <div class="ats-table-toolbar">
-        @using (Html.BeginForm("Index", "JobPositions", FormMethod.Get, new { @class = "admin-filter-form" }))
+<section class="ats-table-card departments-card job-positions-card" aria-labelledby="job-positions-results-heading">
+    <div class="ats-table-toolbar departments-toolbar">
+        @using (Html.BeginForm("Index", "JobPositions", FormMethod.Get, new { @class = "admin-filter-form departments-filter-form", role = "search" }))
         {
-            @Html.TextBox("keyword", ViewBag.Keyword as string, new { @class = "form-control", placeholder = "Tìm vị trí..." })
-            <button class="btn btn-primary" type="submit">Tìm</button>
-            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "JobPositions")">Xoá lọc</a>
+            <label class="visually-hidden" for="job-position-keyword">Tìm theo tên hoặc mô tả vị trí</label>
+            @Html.TextBox("keyword", keyword, new { @class = "form-control", id = "job-position-keyword", placeholder = "Tìm theo tên hoặc mô tả vị trí..." })
+            <button class="btn btn-primary departments-filter-submit" type="submit">Tìm</button>
+            <a class="btn btn-link departments-filter-reset" href="@Url.Action("Index", "JobPositions")">Xoá lọc</a>
         }
-        <a href="@Url.Action("Index", "Jobs")">Về tin tuyển dụng</a>
     </div>
+
+    <div class="departments-results-meta" aria-live="polite">
+        <div>
+            <strong id="job-positions-results-heading">@Model.TotalItems vị trí</strong>
+            @if (hasKeyword)
+            {
+                <span>phù hợp với “@keyword.Trim()”</span>
+            }
+            else
+            {
+                <span>trong danh mục tuyển dụng</span>
+            }
+        </div>
+    </div>
+
     <div class="table-responsive">
-        <table class="table ats-table align-middle">
+        <table class="table ats-table departments-table job-positions-table align-middle">
+            <colgroup>
+                <col class="departments-name-column" />
+                <col class="departments-description-column" />
+                <col class="departments-status-column" />
+                <col class="departments-actions-column" />
+            </colgroup>
             <thead>
                 <tr>
                     <th>Tên vị trí</th>
                     <th>Mô tả</th>
                     <th>Trạng thái</th>
-                    <th class="text-end">Thao tác</th>
+                    <th>Thao tác</th>
                 </tr>
             </thead>
             <tbody>
-                @if (!System.Linq.Enumerable.Any(Model))
+                @if (resultCount == 0)
                 {
-                    <tr><td colspan="4" class="text-center text-muted py-4">Chưa có vị trí phù hợp.</td></tr>
+                    <tr>
+                        <td colspan="4" class="departments-empty-cell">
+                            <div class="departments-empty-state" role="status">
+                                <span class="departments-empty-icon" aria-hidden="true">⌕</span>
+                                @if (hasKeyword)
+                                {
+                                    <strong>Không tìm thấy vị trí</strong>
+                                    <p>Thử dùng tên ngắn hơn hoặc kiểm tra lại từ khoá “@keyword.Trim()”.</p>
+                                    <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index", "JobPositions")">Xem tất cả vị trí</a>
+                                }
+                                else
+                                {
+                                    <strong>Chưa có vị trí tuyển dụng</strong>
+                                    <p>Thêm vị trí đầu tiên để sử dụng khi tạo tin tuyển dụng.</p>
+                                    <a class="btn btn-primary btn-sm" href="@Url.Action("Create", "JobPositions")">Thêm vị trí</a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
                 }
                 else
                 {
-                    foreach (var item in Model)
+                    foreach (var item in Model.Items)
                     {
                         <tr>
                             <td><strong>@item.PositionName</strong></td>
                             <td>@(string.IsNullOrWhiteSpace(item.Description) ? "Chưa cập nhật" : item.Description)</td>
                             <td><span class="@(item.IsActive ? "badge-soft-success" : "badge-soft-neutral")">@(item.IsActive ? "Đang sử dụng" : "Tạm dừng")</span></td>
-                            <td class="text-end">
+                            <td class="departments-actions-cell">
                                 <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Edit", "JobPositions", new { id = item.JobPositionID })">Sửa</a>
-                                @using (Html.BeginForm("Delete", "JobPositions", new { id = item.JobPositionID }, FormMethod.Post, new { @class = "d-inline" }))
+                                @using (Html.BeginForm("Delete", "JobPositions", new { id = item.JobPositionID }, FormMethod.Post, new
+                                {
+                                    @class = "departments-action-form",
+                                    data_confirm = "true",
+                                    data_confirm_title = "Xoá vị trí tuyển dụng",
+                                    data_confirm_message = "Vị trí sẽ bị xoá khỏi danh mục nếu chưa được dùng trong tin tuyển dụng.",
+                                    data_confirm_action = "Xoá vị trí",
+                                    data_confirm_danger = "true"
+                                }))
                                 {
                                     @Html.AntiForgeryToken()
-                                    <button class="btn btn-outline-danger btn-sm" type="submit" onclick="return confirm('Xoá vị trí này?');">Xoá</button>
+                                    <button class="btn btn-outline-danger btn-sm" type="submit">Xoá</button>
                                 }
                             </td>
                         </tr>
@@ -59,4 +113,31 @@
             </tbody>
         </table>
     </div>
-</div>
+
+    @if (Model.TotalItems > 0)
+    {
+        <div class="departments-results-meta" aria-live="polite">
+            <span>Đang xem @Model.FirstItem–@Model.LastItem trên tổng @Model.TotalItems</span>
+        </div>
+    }
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="admin-pagination" aria-label="Phân trang vị trí tuyển dụng">
+            @if (Model.Page > 1)
+            {
+                <a href="@Url.Action("Index", new { keyword = Model.Keyword, page = Model.Page - 1 })">Trước</a>
+            }
+            @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+            {
+                <a class="@(pageNumber == Model.Page ? "active" : null)"
+                   aria-current="@(pageNumber == Model.Page ? "page" : null)"
+                   href="@Url.Action("Index", new { keyword = Model.Keyword, page = pageNumber })">@pageNumber</a>
+            }
+            @if (Model.Page < Model.TotalPages)
+            {
+                <a href="@Url.Action("Index", new { keyword = Model.Keyword, page = Model.Page + 1 })">Sau</a>
+            }
+        </nav>
+    }
+</section>

@@ -21,7 +21,7 @@
         <p>@Model.JobTitle · @Model.DepartmentName</p>
     </div>
     <div class="page-header-actions">
-        <a class="btn btn-outline-secondary" href="@Url.Action("Details", "Jobs", new { id = Model.JobId })">Xem tin tuyển dụng</a>
+        <a class="btn btn-outline-secondary" href="@Url.Action("AdminPreview", "Jobs", new { id = Model.JobId })">Xem tin tuyển dụng</a>
         @if (!Model.IsFinal)
         {
             <a class="btn btn-primary" href="@Url.Action("Create", "Interviews", new { applicationId = Model.ApplicationId })">Tạo lịch phỏng vấn</a>

@@ -1,58 +1,220 @@
-﻿@model ATSMiniProject.ViewModels.Jobs.JobDetailsViewModel
+@model ATSMiniProject.ViewModels.Jobs.JobDetailsViewModel
+@using ATSMiniProject.Helpers
 
 @{
     ViewBag.Title = Model.Title;
+    var department = String.IsNullOrWhiteSpace(Model.DepartmentName) ? "ATS Mini" : Model.DepartmentName;
+    var position = String.IsNullOrWhiteSpace(Model.PositionName) ? "Vị trí tuyển dụng" : Model.PositionName;
+    var location = String.IsNullOrWhiteSpace(Model.Location) ? "Thỏa thuận" : Model.Location;
+    var jobType = String.IsNullOrWhiteSpace(Model.JobType) ? "Đang cập nhật" : Model.JobType;
+    var salary = String.IsNullOrWhiteSpace(Model.SalaryRange) ? "Thỏa thuận" : Model.SalaryRange;
+    var industry = String.IsNullOrWhiteSpace(Model.Industry) ? "Đang cập nhật" : Model.Industry;
+    var deadline = Model.Deadline.HasValue ? Model.Deadline.Value.ToString("dd/MM/yyyy") : "Không giới hạn";
+    var isUrgent = Model.Deadline.HasValue
+        && Model.Deadline.Value.Date >= DateTime.Today
+        && Model.Deadline.Value.Date <= DateTime.Today.AddDays(7);
+    var isLoggedIn = Session[AuthSessionKeys.UserID] != null;
+    var isCandidate = string.Equals(
+        Session[AuthSessionKeys.RoleName] as string,
+        "Candidate",
+        StringComparison.OrdinalIgnoreCase);
 }
 
-<section class="candidate-section job-detail-section">
-    <div class="container">
-        <a class="candidate-back-link" href="@Url.Action("Index", "Jobs")"><span aria-hidden="true">←</span> Tất cả việc làm</a>
-        <div class="job-detail-layout">
-            <article class="job-detail-main">
-                <div class="job-detail-title-row">
+<main class="career-detail-page">
+    <header class="career-detail-hero">
+        <div class="career-detail-hero-overlay" aria-hidden="true"></div>
+        <div class="container career-detail-hero-inner">
+            <a class="career-detail-back" href="@Url.Action("Index", "Jobs")">
+                <span aria-hidden="true">←</span>
+                Danh sách việc làm
+            </a>
+
+            <div class="career-detail-heading">
+                <span class="career-detail-kicker">@department</span>
+                <h1>@Model.Title</h1>
+                <p>@position</p>
+
+                <dl class="career-detail-hero-meta">
                     <div>
-                        <span class="eyebrow">@Model.DepartmentName</span>
-                        <h1>@Model.Title</h1>
-                        <p class="job-detail-position">@Model.PositionName</p>
+                        <dt>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+                                <circle cx="12" cy="10" r="2.5"></circle>
+                            </svg>
+                            Địa điểm
+                        </dt>
+                        <dd>@location</dd>
                     </div>
-                    <span class="job-type">@Model.JobType</span>
-                </div>
+                    <div>
+                        <dt>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="7" width="18" height="13" rx="2"></rect>
+                                <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"></path>
+                            </svg>
+                            Hình thức
+                        </dt>
+                        <dd>@jobType</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </header>
 
-                <div class="job-detail-facts">
-                    <div><span>Địa điểm</span><strong>@(Model.Location ?? "Thỏa thuận")</strong></div>
-                    <div><span>Mức lương</span><strong>@(Model.SalaryRange ?? "Thỏa thuận")</strong></div>
-                    <div><span>Lĩnh vực</span><strong>@(Model.Industry ?? "Đang cập nhật")</strong></div>
-                    <div><span>Hạn nộp</span><strong>@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("dd/MM/yyyy") : "Không giới hạn")</strong></div>
-                </div>
+    <section class="career-detail-content" aria-label="Thông tin việc làm">
+        <div class="container career-detail-layout">
+            <article class="career-detail-main">
+                <section class="career-detail-copy">
+                    <div class="career-detail-section-title">
+                        <span aria-hidden="true">01</span>
+                        <h2>Mô tả công việc</h2>
+                    </div>
+                    <div class="career-rich-text">
+                        @if (String.IsNullOrWhiteSpace(Model.Description))
+                        {
+                            <p>Thông tin đang được cập nhật.</p>
+                        }
+                        else
+                        {
+                            @Html.Raw(RichTextSanitizer.Sanitize(Model.Description))
+                        }
+                    </div>
+                </section>
 
-                <section class="job-copy">
-                    <h2>Mô tả công việc</h2>
-                    <p>@(Model.Description ?? "Thông tin đang được cập nhật.")</p>
+                <section class="career-detail-copy">
+                    <div class="career-detail-section-title">
+                        <span aria-hidden="true">02</span>
+                        <h2>Yêu cầu ứng viên</h2>
+                    </div>
+                    <div class="career-rich-text">
+                        @if (String.IsNullOrWhiteSpace(Model.Requirements))
+                        {
+                            <p>Thông tin đang được cập nhật.</p>
+                        }
+                        else
+                        {
+                            @Html.Raw(RichTextSanitizer.Sanitize(Model.Requirements))
+                        }
+                    </div>
                 </section>
-                <section class="job-copy">
-                    <h2>Yêu cầu ứng viên</h2>
-                    <p>@(Model.Requirements ?? "Thông tin đang được cập nhật.")</p>
-                </section>
+
+                <div class="career-detail-bottom-cta">
+                    <div>
+                        <span>Cơ hội tại ATS Mini</span>
+                        <h2>Bạn thấy mình phù hợp với vị trí này?</h2>
+                    </div>
+                    @if (Model.AlreadyApplied)
+                    {
+                        <a href="@Url.Action("Details", "Applications", new { id = Model.ExistingApplicationId })">
+                            Xem hồ sơ đã nộp <span aria-hidden="true">→</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Apply", "Jobs", new { id = Model.JobId })">
+                            Ứng tuyển ngay <span aria-hidden="true">→</span>
+                        </a>
+                    }
+                </div>
             </article>
 
-            <aside class="job-apply-panel">
-                <span class="apply-panel-label">Ứng tuyển ngay</span>
-                <h2>Sẵn sàng cho vị trí này?</h2>
-                <p>Chuẩn bị CV định dạng PDF, DOC hoặc DOCX, dung lượng tối đa 5 MB.</p>
-                @if (Model.AlreadyApplied)
-                {
-                    <div class="applied-confirmation">
-                        <strong>Hồ sơ đã được gửi</strong>
-                        <span>Bạn có thể theo dõi tiến trình bất cứ lúc nào.</span>
+            <aside class="career-detail-sidebar" aria-label="Ứng tuyển">
+                <div class="career-apply-card">
+                    <span class="career-apply-label">Thông tin vị trí</span>
+                    <h2>@Model.Title</h2>
+
+                    <dl class="career-apply-facts">
+                        <div>
+                            <dt>Mức lương</dt>
+                            <dd>@salary</dd>
+                        </div>
+                        <div>
+                            <dt>Lĩnh vực</dt>
+                            <dd>@industry</dd>
+                        </div>
+                        <div class="@(isUrgent ? "is-urgent" : "")">
+                            <dt>Hạn nộp hồ sơ</dt>
+                            <dd>@deadline</dd>
+                        </div>
+                    </dl>
+
+                    <div class="career-detail-primary-actions">
+                        <div class="career-detail-application-action">
+                            @if (Model.AlreadyApplied)
+                            {
+                                <div class="career-applied-status">
+                                    <span aria-hidden="true">✓</span>
+                                    <div>
+                                        <strong>Hồ sơ đã được gửi</strong>
+                                        <small>Bạn có thể theo dõi tiến trình bất cứ lúc nào.</small>
+                                    </div>
+                                </div>
+                                <a class="career-apply-button is-secondary"
+                                   href="@Url.Action("Details", "Applications", new { id = Model.ExistingApplicationId })">
+                                    Xem hồ sơ đã nộp <span aria-hidden="true">→</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="career-apply-button" href="@Url.Action("Apply", "Jobs", new { id = Model.JobId })">
+                                    Ứng tuyển vị trí này <span aria-hidden="true">→</span>
+                                </a>
+                            }
+                        </div>
+
+                        @if (isCandidate)
+                        {
+                            using (Html.BeginForm(
+                                Model.IsSaved ? "UnsaveJob" : "SaveJob",
+                                "Jobs",
+                                FormMethod.Post,
+                                new
+                                {
+                                    @class = "job-save-form career-detail-save-form",
+                                    data_saved_job_form = "true",
+                                    data_save_url = Url.Action("SaveJob", "Jobs"),
+                                    data_unsave_url = Url.Action("UnsaveJob", "Jobs")
+                                }))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("jobId", Model.JobId)
+                                @Html.Hidden("returnUrl", Request.RawUrl)
+                                <button class="job-save-button job-save-button-icon-only @(Model.IsSaved ? "is-saved" : null)"
+                                        type="submit"
+                                        aria-pressed="@(Model.IsSaved ? "true" : "false")"
+                                        data-job-title="@Model.Title"
+                                        title="@(Model.IsSaved ? "Bỏ lưu tin" : "Lưu tin")"
+                                        aria-label="@(Model.IsSaved ? "Bỏ lưu tin " : "Lưu tin ")@Model.Title">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5S4.5 16.2 4.5 9.8A4.3 4.3 0 0 1 12 6.9a4.3 4.3 0 0 1 7.5 2.9C19.5 16.2 12 20.5 12 20.5Z"></path></svg>
+                                    <span class="visually-hidden">@(Model.IsSaved ? "Bỏ lưu tin" : "Lưu tin để xem sau")</span>
+                                </button>
+                            }
+                        }
+                        else if (!isLoggedIn)
+                        {
+                            <a class="job-save-button job-save-button-icon-only career-detail-save-form"
+                               href="@Url.Action("Login", "Account", new { returnUrl = Request.RawUrl })"
+                               title="Lưu tin"
+                               aria-label="Đăng nhập để lưu tin @Model.Title">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5S4.5 16.2 4.5 9.8A4.3 4.3 0 0 1 12 6.9a4.3 4.3 0 0 1 7.5 2.9C19.5 16.2 12 20.5 12 20.5Z"></path></svg>
+                                <span class="visually-hidden">Lưu tin để xem sau</span>
+                            </a>
+                        }
                     </div>
-                    <a class="btn btn-outline-primary w-100" href="@Url.Action("Details", "Applications", new { id = Model.ExistingApplicationId })">Xem hồ sơ đã nộp</a>
-                }
-                else
-                {
-                    <a class="btn btn-primary btn-lg w-100" href="@Url.Action("Apply", "Jobs", new { id = Model.JobId })">Nộp hồ sơ</a>
-                }
-                <small>Thông tin của bạn chỉ được sử dụng cho mục đích tuyển dụng.</small>
+
+                    <div class="career-apply-note">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path>
+                            <path d="m9 12 2 2 4-4"></path>
+                        </svg>
+                        <p>CV định dạng PDF, DOC hoặc DOCX, tối đa 5 MB. Thông tin chỉ được dùng cho mục đích tuyển dụng.</p>
+                    </div>
+                </div>
+
+                <a class="career-more-jobs" href="@Url.Action("Index", "Jobs")">
+                    <span aria-hidden="true">＋</span>
+                    Khám phá các vị trí khác
+                </a>
             </aside>
         </div>
-    </div>
-</section>
+    </section>
+</main>

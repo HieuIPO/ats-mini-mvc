@@ -4,22 +4,28 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="page-header">
-    <div>
-        <h1>Thêm phòng ban</h1>
-        <p>Phòng ban sẽ được dùng trong bộ lọc và form tạo tin tuyển dụng.</p>
+<div class="department-form-page">
+    <div class="page-header department-form-page-header">
+        <div>
+            <a class="department-back-link" href="@Url.Action("Index", "Departments")">
+                <span aria-hidden="true">←</span>
+                Danh sách phòng ban
+            </a>
+            <h1>Thêm phòng ban</h1>
+            <p>Tạo đơn vị mới để phân loại tin tuyển dụng và hồ sơ ứng viên.</p>
+        </div>
     </div>
-    <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Departments")">Quay lại</a>
-</div>
 
-<div class="form-card admin-form-card">
-    @using (Html.BeginForm())
+    @using (Html.BeginForm(null, null, FormMethod.Post, new { @class = "department-form-frame" }))
     {
         @Html.AntiForgeryToken()
         @Html.Partial("_Form", Model)
-        <div class="form-actions">
-            <button class="btn btn-primary" type="submit">Lưu phòng ban</button>
-            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Departments")">Huỷ</a>
-        </div>
+        <footer class="department-form-footer">
+            <p><span aria-hidden="true">*</span> Trường bắt buộc</p>
+            <div class="department-form-actions">
+                <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Departments")">Huỷ</a>
+                <button class="btn btn-primary" type="submit">Lưu phòng ban</button>
+            </div>
+        </footer>
     }
 </div>

@@ -19,9 +19,16 @@ namespace ATSMiniProject.ViewModels.Applications
         public int? StatusId { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
+        public string Queue { get; set; }
         public int Page { get; set; }
         public int TotalPages { get; set; }
         public int TotalItems { get; set; }
+        public int AttentionCount { get; set; }
+        public int NewCount { get; set; }
+        public int ReviewingCount { get; set; }
+        public int InterviewCount { get; set; }
+        public int FinalCount { get; set; }
+        public int AllCount { get; set; }
         public IList<AdminApplicationListItemViewModel> Applications { get; set; }
         public IList<SelectListItem> Jobs { get; set; }
         public IList<SelectListItem> Statuses { get; set; }
@@ -30,6 +37,8 @@ namespace ATSMiniProject.ViewModels.Applications
     public class AdminApplicationListItemViewModel
     {
         public int ApplicationId { get; set; }
+        public int? CandidateUserId { get; set; }
+        public string CandidateAvatarUrl { get; set; }
         public string CandidateName { get; set; }
         public string CandidateEmail { get; set; }
         public string CandidatePhone { get; set; }
@@ -38,6 +47,7 @@ namespace ATSMiniProject.ViewModels.Applications
         public string StatusName { get; set; }
         public bool IsFinal { get; set; }
         public DateTime AppliedDate { get; set; }
+        public int WaitingDays { get; set; }
         public DateTime? NextInterviewDate { get; set; }
     }
 

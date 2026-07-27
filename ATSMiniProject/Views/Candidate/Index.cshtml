@@ -1,117 +1,166 @@
-﻿@model ATSMiniProject.ViewModels.Candidate.CandidateDashboardViewModel
+@model ATSMiniProject.ViewModels.Candidate.CandidateDashboardViewModel
 
 @{
     ViewBag.Title = "Tổng quan ứng viên";
 }
 
-<section class="candidate-dashboard-hero">
-    <div class="container candidate-dashboard-hero-inner">
-        <div>
-            <span class="dashboard-kicker">Không gian ứng viên</span>
-            <h1>Chào @Model.FullName,</h1>
-            <p>Hành trình nghề nghiệp của bạn đang được cập nhật tại đây.</p>
-        </div>
-        <div class="dashboard-hero-actions">
-            <a class="btn btn-light" href="@Url.Action("Index", "Jobs")">Tìm cơ hội mới</a>
-            <a class="btn btn-outline-light" href="@Url.Action("Profile", "Candidate")">Cập nhật hồ sơ</a>
-        </div>
-    </div>
-</section>
-
-<section class="candidate-metrics">
-    <div class="container candidate-metrics-grid">
-        <div>
-            <span>Hồ sơ đã nộp</span>
-            <strong>@Model.TotalApplications.ToString("D2")</strong>
-        </div>
-        <div>
-            <span>Đang trong quy trình</span>
-            <strong>@Model.ActiveApplications.ToString("D2")</strong>
-        </div>
-        <div>
-            <span>Lịch phỏng vấn sắp tới</span>
-            <strong>@Model.UpcomingInterviews.ToString("D2")</strong>
-            @if (Model.NextInterviewDate.HasValue)
-            {
-                <small>@Model.NextInterviewDate.Value.ToString("dd/MM/yyyy HH:mm")</small>
-            }
-        </div>
-    </div>
-</section>
-
-<section class="candidate-dashboard-content">
-    <div class="container">
-        @if (!Model.IsProfileComplete)
-        {
-            <div class="profile-completion-alert">
-                <div>
-                    <strong>Hoàn thiện hồ sơ để ứng tuyển nhanh hơn</strong>
-                    <span>Bổ sung đầy đủ họ tên, email và số điện thoại của bạn.</span>
-                </div>
-                <a href="@Url.Action("Profile", "Candidate")">Hoàn thiện hồ sơ</a>
+<main class="candidate-overview-page">
+    <section class="candidate-overview-header">
+        <div class="container candidate-overview-header-inner">
+            <div class="candidate-overview-welcome">
+                <span class="candidate-overview-eyebrow">Tổng quan ứng viên</span>
+                <h1>Chào @Model.FullName</h1>
+                @if (Model.ActiveApplications > 0)
+                {
+                    <p>Bạn đang có <strong>@Model.ActiveApplications hồ sơ</strong> trong quy trình tuyển dụng.</p>
+                }
+                else
+                {
+                    <p>Khám phá cơ hội phù hợp và theo dõi hành trình ứng tuyển tại đây.</p>
+                }
             </div>
-        }
-
-        <div class="candidate-dashboard-grid">
-            <section class="dashboard-section">
-                <div class="dashboard-section-heading">
-                    <div>
-                        <span class="eyebrow">Tiến trình gần đây</span>
-                        <h2>Hồ sơ ứng tuyển</h2>
-                    </div>
-                    <a href="@Url.Action("Status", "Applications")">Xem tất cả</a>
-                </div>
-
-                @if (Model.RecentApplications.Count == 0)
-                {
-                    <div class="candidate-empty candidate-empty-compact">
-                        <h3>Bạn chưa nộp hồ sơ nào</h3>
-                        <p>Khám phá các vị trí đang tuyển và bắt đầu hành trình mới.</p>
-                        <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Xem việc làm</a>
-                    </div>
-                }
-                else
-                {
-                    <div class="dashboard-application-list">
-                        @foreach (var application in Model.RecentApplications)
-                        {
-                            <a class="dashboard-application-item" href="@Url.Action("Details", "Applications", new { id = application.ApplicationId })">
-                                <span class="status-marker @(application.IsFinal ? "is-final" : null)"></span>
-                                <span class="dashboard-application-copy">
-                                    <strong>@application.JobTitle</strong>
-                                    <small>@application.DepartmentName · Nộp ngày @application.AppliedDate.ToString("dd/MM/yyyy")</small>
-                                </span>
-                                <span class="status-badge @(application.IsFinal ? "status-final" : null)">@application.StatusName</span>
-                                <span class="dashboard-row-arrow" aria-hidden="true">→</span>
-                            </a>
-                        }
-                    </div>
-                }
-            </section>
-
-            <aside class="dashboard-section recommended-section">
-                <div class="dashboard-section-heading">
-                    <div>
-                        <span class="eyebrow">Dành cho bạn</span>
-                        <h2>Cơ hội chưa ứng tuyển</h2>
-                    </div>
-                </div>
-                @if (Model.RecommendedJobs.Count == 0)
-                {
-                    <p class="text-muted">Bạn đã ứng tuyển tất cả vị trí đang mở.</p>
-                }
-                else
-                {
-                    foreach (var job in Model.RecommendedJobs)
-                    {
-                        <a class="recommended-job-item" href="@Url.Action("Details", "Jobs", new { id = job.JobId })">
-                            <span>@job.JobType</span>
-                            <strong>@job.Title</strong>
-                            <small>@job.Location · @job.SalaryRange</small>
-                        </a>
-                    }
-                }
-            </aside>
+            <div class="candidate-overview-actions" aria-label="Thao tác nhanh">
+                <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v12H4z"></path><path d="M9 7V5h6v2M4 12h16"></path></svg>
+                    Tìm việc làm
+                </a>
+                <a class="candidate-overview-profile-link" href="@Url.Action("Profile", "Candidate")">
+                    Cập nhật hồ sơ
+                    <span aria-hidden="true">→</span>
+                </a>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+
+    <section class="candidate-overview-metrics" aria-label="Tóm tắt hoạt động">
+        <div class="container candidate-overview-metric-grid">
+            <article class="candidate-overview-metric metric-total">
+                <span class="candidate-metric-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M7 4h10v4H7z"></path><path d="M5 6h14v14H5zM8 12h8M8 16h5"></path></svg>
+                </span>
+                <div>
+                    <span>Hồ sơ đã nộp</span>
+                    <strong>@Model.TotalApplications.ToString("D2")</strong>
+                    <small>Tổng số hồ sơ của bạn</small>
+                </div>
+            </article>
+            <article class="candidate-overview-metric metric-active">
+                <span class="candidate-metric-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg>
+                </span>
+                <div>
+                    <span>Đang trong quy trình</span>
+                    <strong>@Model.ActiveApplications.ToString("D2")</strong>
+                    <small>Đang được nhà tuyển dụng xử lý</small>
+                </div>
+            </article>
+            <article class="candidate-overview-metric metric-interview">
+                <span class="candidate-metric-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M5 6h14v14H5zM8 4v4M16 4v4M5 10h14"></path><path d="M9 14h2M13 14h2"></path></svg>
+                </span>
+                <div>
+                    <span>Lịch phỏng vấn sắp tới</span>
+                    <strong>@Model.UpcomingInterviews.ToString("D2")</strong>
+                    @if (Model.NextInterviewDate.HasValue)
+                    {
+                        <small>Gần nhất: @Model.NextInterviewDate.Value.ToString("dd/MM/yyyy · HH:mm")</small>
+                    }
+                    else
+                    {
+                        <small>Chưa có lịch phỏng vấn mới</small>
+                    }
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="candidate-overview-content">
+        <div class="container">
+            @if (!Model.IsProfileComplete)
+            {
+                <aside class="candidate-profile-prompt" aria-labelledby="profile-prompt-title">
+                    <span class="candidate-profile-prompt-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M5 20a7 7 0 0 1 14 0"></path></svg>
+                    </span>
+                    <div>
+                        <strong id="profile-prompt-title">Hoàn thiện hồ sơ để ứng tuyển nhanh hơn</strong>
+                        <span>Bổ sung đầy đủ họ tên, email và số điện thoại của bạn.</span>
+                    </div>
+                    <a href="@Url.Action("Profile", "Candidate")">Hoàn thiện hồ sơ <span aria-hidden="true">→</span></a>
+                </aside>
+            }
+
+            <div class="candidate-overview-layout">
+                <section class="candidate-activity-panel" aria-labelledby="candidate-activity-title">
+                    <header class="candidate-panel-heading">
+                        <div>
+                            <span>Tiến trình gần đây</span>
+                            <h2 id="candidate-activity-title">Hồ sơ ứng tuyển</h2>
+                        </div>
+                        <a href="@Url.Action("Status", "Applications")">Xem tất cả <span aria-hidden="true">→</span></a>
+                    </header>
+
+                    @if (Model.RecentApplications.Count == 0)
+                    {
+                        <div class="candidate-overview-empty">
+                            <span aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M7 4h10v4H7z"></path><path d="M5 6h14v14H5zM8 12h8M8 16h5"></path></svg>
+                            </span>
+                            <h3>Bạn chưa nộp hồ sơ nào</h3>
+                            <p>Khám phá các vị trí đang tuyển và bắt đầu hành trình mới.</p>
+                            <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Xem việc làm</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="candidate-activity-list">
+                            @foreach (var application in Model.RecentApplications)
+                            {
+                                <a class="candidate-activity-item" href="@Url.Action("Details", "Applications", new { id = application.ApplicationId })">
+                                    <span class="candidate-activity-marker @(application.IsFinal ? "is-final" : null)" aria-hidden="true"></span>
+                                    <span class="candidate-activity-copy">
+                                        <strong>@application.JobTitle</strong>
+                                        <small>@application.DepartmentName · Nộp ngày @application.AppliedDate.ToString("dd/MM/yyyy")</small>
+                                    </span>
+                                    <span class="status-badge @(application.IsFinal ? "status-final" : null)">@application.StatusName</span>
+                                    <span class="candidate-activity-arrow" aria-hidden="true">→</span>
+                                </a>
+                            }
+                        </div>
+                    }
+                </section>
+
+                <aside class="candidate-opportunity-panel" aria-labelledby="candidate-opportunity-title">
+                    <header class="candidate-panel-heading">
+                        <div>
+                            <span>Dành cho bạn</span>
+                            <h2 id="candidate-opportunity-title">Cơ hội phù hợp</h2>
+                        </div>
+                    </header>
+
+                    @if (Model.RecommendedJobs.Count == 0)
+                    {
+                        <div class="candidate-opportunity-empty">
+                            <p>Bạn đã ứng tuyển tất cả vị trí đang mở.</p>
+                            <a href="@Url.Action("Index", "Jobs")">Xem danh sách việc làm</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="candidate-opportunity-list">
+                            @foreach (var job in Model.RecommendedJobs)
+                            {
+                                <a class="candidate-opportunity-item" href="@Url.Action("Details", "Jobs", new { id = job.JobId })">
+                                    <span class="candidate-opportunity-type">@job.JobType</span>
+                                    <strong>@job.Title</strong>
+                                    <small>@job.Location · @job.SalaryRange</small>
+                                    <span class="candidate-opportunity-arrow" aria-hidden="true">→</span>
+                                </a>
+                            }
+                        </div>
+                    }
+                </aside>
+            </div>
+        </div>
+    </section>
+</main>

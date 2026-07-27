@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,6 +10,7 @@ using System.Web.Mvc;
 using ATSMiniProject.Filters;
 using ATSMiniProject.Helpers;
 using ATSMiniProject.Models;
+using ATSMiniProject.Services;
 using ATSMiniProject.ViewModels.Jobs;
 using ApplicationEntity = ATSMiniProject.Models.Application;
 
@@ -17,6 +19,7 @@ namespace ATSMiniProject.Controllers
     public class JobsController : Controller
     {
         private const int PageSize = 9;
+        private const int AdminPageSize = 12;
         private readonly ATSMiniDBContext db = new ATSMiniDBContext();
 
         [HttpGet]
@@ -24,11 +27,13 @@ namespace ATSMiniProject.Controllers
         {
             page = Math.Max(page, 1);
             var today = DateTime.Today;
+            var candidateUserId = IsCandidate() ? (int?)GetCurrentUserId() : null;
 
-            var query = db.Jobs
+            var openJobsQuery = db.Jobs
                 .AsNoTracking()
                 .Where(j => j.IsActive && !j.IsDeleted &&
                             (!j.Deadline.HasValue || j.Deadline.Value >= today));
+            var query = openJobsQuery;
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
@@ -73,9 +78,16 @@ namespace ATSMiniProject.Controllers
                     Location = j.Location,
                     JobType = j.JobType,
                     SalaryRange = j.SalaryRange,
-                    Deadline = j.Deadline
+                    Summary = j.Description,
+                    Deadline = j.Deadline,
+                    IsSaved = candidateUserId.HasValue &&
+                              j.SavedJobs.Any(s => s.CandidateUserID == candidateUserId.Value)
                 })
                 .ToList();
+            foreach (var job in jobs)
+            {
+                job.Summary = RichTextSanitizer.ToPlainText(job.Summary);
+            }
 
             var departmentRows = db.Departments
                 .AsNoTracking()
@@ -95,6 +107,32 @@ namespace ATSMiniProject.Controllers
                     Selected = departmentId.HasValue && d.DepartmentID == departmentId.Value
                 })
                 .ToList();
+            var locations = openJobsQuery
+                .Where(j => j.Location != null && j.Location != string.Empty)
+                .Select(j => j.Location)
+                .Distinct()
+                .OrderBy(value => value)
+                .ToList()
+                .Select(value => new SelectListItem
+                {
+                    Value = value,
+                    Text = value,
+                    Selected = string.Equals(value, location, StringComparison.OrdinalIgnoreCase)
+                })
+                .ToList();
+            var jobTypes = openJobsQuery
+                .Where(j => j.JobType != null && j.JobType != string.Empty)
+                .Select(j => j.JobType)
+                .Distinct()
+                .OrderBy(value => value)
+                .ToList()
+                .Select(value => new SelectListItem
+                {
+                    Value = value,
+                    Text = value,
+                    Selected = string.Equals(value, jobType, StringComparison.OrdinalIgnoreCase)
+                })
+                .ToList();
 
             return View(new JobSearchViewModel
             {
@@ -106,15 +144,54 @@ namespace ATSMiniProject.Controllers
                 TotalPages = totalPages,
                 TotalItems = totalItems,
                 Jobs = jobs,
-                Departments = departments
+                Departments = departments,
+                Locations = locations,
+                JobTypes = jobTypes
             });
         }
 
         [AuthorizeRole("Admin", "HR")]
         [HttpGet]
-        public ActionResult AdminIndex(string keyword, int? departmentId, int? jobPositionId, string location, string jobType, string status)
+        public ActionResult AdminIndex(string keyword, int? departmentId, int? jobPositionId, string location, string jobType, string status, string sort, int page = 1)
         {
-            var model = BuildJobFilterModel(keyword, departmentId, jobPositionId, location, jobType, status, false);
+            var model = BuildJobFilterModel(keyword, departmentId, jobPositionId, location, jobType, status, sort, false, page);
+            return View(model);
+        }
+
+        [AuthorizeRole("Admin", "HR")]
+        [HttpGet]
+        public ActionResult AdminPreview(int? id)
+        {
+            if (!id.HasValue)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            var model = db.Jobs
+                .AsNoTracking()
+                .Where(j => j.JobID == id.Value && !j.IsDeleted)
+                .Select(j => new JobDetailsViewModel
+                {
+                    JobId = j.JobID,
+                    Title = j.Title,
+                    DepartmentName = j.Department.DepartmentName,
+                    PositionName = j.JobPosition.PositionName,
+                    Industry = j.Industry,
+                    Location = j.Location,
+                    JobType = j.JobType,
+                    SalaryRange = j.SalaryRange,
+                    Deadline = j.Deadline,
+                    Description = j.Description,
+                    Requirements = j.Requirements,
+                    IsActive = j.IsActive
+                })
+                .SingleOrDefault();
+
+            if (model == null)
+            {
+                return HttpNotFound();
+            }
+
             return View(model);
         }
 
@@ -141,6 +218,7 @@ namespace ATSMiniProject.Controllers
 
             var today = DateTime.Today;
             var isBackOffice = IsBackOfficeUser();
+            var candidateUserId = IsCandidate() ? (int?)GetCurrentUserId() : null;
             var model = db.Jobs
                 .AsNoTracking()
                 .Where(j => j.JobID == id.Value && !j.IsDeleted &&
@@ -157,7 +235,9 @@ namespace ATSMiniProject.Controllers
                     SalaryRange = j.SalaryRange,
                     Deadline = j.Deadline,
                     Description = j.Description,
-                    Requirements = j.Requirements
+                    Requirements = j.Requirements,
+                    IsSaved = candidateUserId.HasValue &&
+                              j.SavedJobs.Any(s => s.CandidateUserID == candidateUserId.Value)
                 })
                 .SingleOrDefault();
 
@@ -178,6 +258,74 @@ namespace ATSMiniProject.Controllers
             }
 
             return View(model);
+        }
+
+        [AuthorizeRole("Candidate")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult SaveJob(int jobId, string returnUrl)
+        {
+            var userId = GetCurrentUserId();
+            if (!db.Jobs.Any(j => j.JobID == jobId && !j.IsDeleted))
+            {
+                return HttpNotFound();
+            }
+
+            if (!db.SavedJobs.Any(s => s.CandidateUserID == userId && s.JobID == jobId))
+            {
+                var savedJob = new SavedJob
+                {
+                    CandidateUserID = userId,
+                    JobID = jobId,
+                    SavedAt = DateTime.Now
+                };
+                db.SavedJobs.Add(savedJob);
+
+                try
+                {
+                    db.SaveChanges();
+                }
+                catch (DbUpdateException)
+                {
+                    db.Entry(savedJob).State = EntityState.Detached;
+                    if (!db.SavedJobs.AsNoTracking().Any(s =>
+                        s.CandidateUserID == userId && s.JobID == jobId))
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            if (Request.IsAjaxRequest())
+            {
+                return Json(new { success = true, saved = true });
+            }
+
+            TempData["Success"] = "Đã lưu tin tuyển dụng.";
+            return RedirectAfterSavedJobAction(jobId, returnUrl);
+        }
+
+        [AuthorizeRole("Candidate")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult UnsaveJob(int jobId, string returnUrl)
+        {
+            var userId = GetCurrentUserId();
+            var savedJob = db.SavedJobs.SingleOrDefault(s =>
+                s.CandidateUserID == userId && s.JobID == jobId);
+            if (savedJob != null)
+            {
+                db.SavedJobs.Remove(savedJob);
+                db.SaveChanges();
+            }
+
+            if (Request.IsAjaxRequest())
+            {
+                return Json(new { success = true, saved = false });
+            }
+
+            TempData["Success"] = "Đã bỏ lưu tin tuyển dụng.";
+            return RedirectAfterSavedJobAction(jobId, returnUrl);
         }
 
         [AuthorizeRole("Candidate")]
@@ -319,6 +467,19 @@ namespace ATSMiniProject.Controllers
                     db.SaveChanges();
                     transaction.Commit();
 
+                    try
+                    {
+                        new NotificationService()
+                            .CreateNewApplicationNotification(application.ApplicationID);
+                    }
+                    catch (Exception notificationException)
+                    {
+                        Trace.TraceError(
+                            "Could not create notification for application {0}: {1}",
+                            application.ApplicationID,
+                            notificationException);
+                    }
+
                     TempData["Success"] = "Nộp hồ sơ thành công.";
                     return RedirectToAction("Status", "Applications");
                 }
@@ -358,6 +519,8 @@ namespace ATSMiniProject.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(JobFormViewModel model)
         {
+            SanitizeRichTextFields(model);
+            ValidateSalaryRange(model);
             ValidateDeadline(model);
 
             if (!ModelState.IsValid)
@@ -415,6 +578,8 @@ namespace ATSMiniProject.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(JobFormViewModel model)
         {
+            SanitizeRichTextFields(model);
+            ValidateSalaryRange(model);
             ValidateDeadline(model);
 
             if (!ModelState.IsValid)
@@ -523,8 +688,10 @@ namespace ATSMiniProject.Controllers
             };
         }
 
-        private JobFilterViewModel BuildJobFilterModel(string keyword, int? departmentId, int? jobPositionId, string location, string jobType, string status, bool publicOnly)
+        private JobFilterViewModel BuildJobFilterModel(string keyword, int? departmentId, int? jobPositionId, string location, string jobType, string status, string sort, bool publicOnly, int page)
         {
+            var today = DateTime.Today;
+            var expiringThrough = today.AddDays(7);
             var baseQuery = db.Jobs.Where(j => !j.IsDeleted);
             var query = baseQuery
                 .Include(j => j.Department)
@@ -533,7 +700,7 @@ namespace ATSMiniProject.Controllers
 
             if (publicOnly)
             {
-                query = query.Where(j => j.IsActive && (!j.Deadline.HasValue || j.Deadline.Value >= DateTime.Today));
+                query = query.Where(j => j.IsActive && (!j.Deadline.HasValue || j.Deadline.Value >= today));
             }
 
             if (!string.IsNullOrWhiteSpace(keyword))
@@ -570,16 +737,54 @@ namespace ATSMiniProject.Controllers
             {
                 if (status.Equals("open", StringComparison.OrdinalIgnoreCase))
                 {
-                    query = query.Where(j => j.IsActive && (!j.Deadline.HasValue || j.Deadline.Value >= DateTime.Today));
+                    query = query.Where(j => j.IsActive && (!j.Deadline.HasValue || j.Deadline.Value >= today));
+                }
+                else if (status.Equals("expiring", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(j =>
+                        j.IsActive &&
+                        j.Deadline.HasValue &&
+                        j.Deadline.Value >= today &&
+                        j.Deadline.Value <= expiringThrough);
                 }
                 else if (status.Equals("closed", StringComparison.OrdinalIgnoreCase))
                 {
-                    query = query.Where(j => !j.IsActive);
+                    query = query.Where(j =>
+                        !j.IsActive &&
+                        (!j.Deadline.HasValue || j.Deadline.Value >= today));
                 }
                 else if (status.Equals("expired", StringComparison.OrdinalIgnoreCase))
                 {
-                    query = query.Where(j => j.Deadline.HasValue && j.Deadline.Value < DateTime.Today);
+                    query = query.Where(j => j.Deadline.HasValue && j.Deadline.Value < today);
                 }
+            }
+
+            var filteredJobs = query.Count();
+            var pagination = Pagination.Calculate(page, filteredJobs, AdminPageSize);
+            if (string.Equals(sort, "applications", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query
+                    .OrderByDescending(j => j.Applications.Count(a => !a.IsDeleted))
+                    .ThenBy(j => j.Deadline)
+                    .ThenByDescending(j => j.CreatedAt)
+                    .ThenBy(j => j.JobID);
+            }
+            else if (string.Equals(sort, "newest", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query
+                    .OrderByDescending(j => j.CreatedAt)
+                    .ThenBy(j => j.Deadline)
+                    .ThenBy(j => j.JobID);
+            }
+            else
+            {
+                sort = "deadline";
+                query = query
+                    .OrderByDescending(j => j.IsActive && (!j.Deadline.HasValue || j.Deadline.Value >= today))
+                    .ThenBy(j => j.Deadline.HasValue && j.Deadline.Value < today)
+                    .ThenBy(j => j.Deadline)
+                    .ThenByDescending(j => j.CreatedAt)
+                    .ThenBy(j => j.JobID);
             }
 
             return new JobFilterViewModel
@@ -590,13 +795,39 @@ namespace ATSMiniProject.Controllers
                 Location = location,
                 JobType = jobType,
                 Status = status,
+                Sort = sort,
                 TotalJobs = baseQuery.Count(),
-                OpenJobs = baseQuery.Count(j => j.IsActive && (!j.Deadline.HasValue || j.Deadline.Value >= DateTime.Today)),
-                ClosedJobs = baseQuery.Count(j => !j.IsActive || (j.Deadline.HasValue && j.Deadline.Value < DateTime.Today)),
-                Jobs = query.OrderByDescending(j => j.IsActive)
-                    .ThenBy(j => j.Deadline.HasValue && j.Deadline.Value < DateTime.Today)
-                    .ThenBy(j => j.Deadline)
-                    .ThenByDescending(j => j.CreatedAt)
+                OpenJobs = baseQuery.Count(j => j.IsActive && (!j.Deadline.HasValue || j.Deadline.Value >= today)),
+                ExpiringJobs = baseQuery.Count(j =>
+                    j.IsActive &&
+                    j.Deadline.HasValue &&
+                    j.Deadline.Value >= today &&
+                    j.Deadline.Value <= expiringThrough),
+                ClosedJobs = baseQuery.Count(j =>
+                    !j.IsActive &&
+                    (!j.Deadline.HasValue || j.Deadline.Value >= today)),
+                ExpiredJobs = baseQuery.Count(j => j.Deadline.HasValue && j.Deadline.Value < today),
+                FilteredJobs = filteredJobs,
+                Page = pagination.Page,
+                TotalPages = pagination.TotalPages,
+                FirstItem = pagination.FirstItem,
+                LastItem = pagination.LastItem,
+                Jobs = query
+                    .Skip(pagination.Offset)
+                    .Take(pagination.PageSize)
+                    .Select(j => new AdminJobListItemViewModel
+                    {
+                        JobID = j.JobID,
+                        Title = j.Title,
+                        DepartmentName = j.Department == null ? null : j.Department.DepartmentName,
+                        PositionName = j.JobPosition == null ? null : j.JobPosition.PositionName,
+                        Location = j.Location,
+                        JobType = j.JobType,
+                        Deadline = j.Deadline,
+                        IsActive = j.IsActive,
+                        ApplicationCount = j.Applications.Count(a => !a.IsDeleted),
+                        CreatedAt = j.CreatedAt
+                    })
                     .ToList(),
                 Departments = BuildDepartmentItems(departmentId),
                 JobPositions = BuildJobPositionItems(jobPositionId),
@@ -607,20 +838,23 @@ namespace ATSMiniProject.Controllers
 
         private void PopulateJobDropdowns(int? departmentId = null, int? jobPositionId = null)
         {
-            ViewBag.DepartmentID = BuildDepartmentItems(departmentId);
-            ViewBag.JobPositionID = BuildJobPositionItems(jobPositionId);
+            ViewBag.DepartmentOptions = BuildDepartmentItems(departmentId);
+            ViewBag.JobPositionOptions = BuildJobPositionItems(jobPositionId);
         }
 
         private IEnumerable<SelectListItem> BuildDepartmentItems(int? selectedId)
         {
             return db.Departments
-                .Where(d => !d.IsDeleted && d.IsActive)
+                .Where(d => (!d.IsDeleted && d.IsActive) ||
+                            (selectedId.HasValue && d.DepartmentID == selectedId.Value))
                 .OrderBy(d => d.DepartmentName)
                 .ToList()
                 .Select(d => new SelectListItem
                 {
                     Value = d.DepartmentID.ToString(),
-                    Text = d.DepartmentName,
+                    Text = d.IsActive && !d.IsDeleted
+                        ? d.DepartmentName
+                        : d.DepartmentName + " (dữ liệu hiện tại)",
                     Selected = selectedId.HasValue && d.DepartmentID == selectedId.Value
                 });
         }
@@ -628,13 +862,16 @@ namespace ATSMiniProject.Controllers
         private IEnumerable<SelectListItem> BuildJobPositionItems(int? selectedId)
         {
             return db.JobPositions
-                .Where(p => !p.IsDeleted && p.IsActive)
+                .Where(p => (!p.IsDeleted && p.IsActive) ||
+                            (selectedId.HasValue && p.JobPositionID == selectedId.Value))
                 .OrderBy(p => p.PositionName)
                 .ToList()
                 .Select(p => new SelectListItem
                 {
                     Value = p.JobPositionID.ToString(),
-                    Text = p.PositionName,
+                    Text = p.IsActive && !p.IsDeleted
+                        ? p.PositionName
+                        : p.PositionName + " (dữ liệu hiện tại)",
                     Selected = selectedId.HasValue && p.JobPositionID == selectedId.Value
                 });
         }
@@ -668,6 +905,36 @@ namespace ATSMiniProject.Controllers
             };
         }
 
+        private void SanitizeRichTextFields(JobFormViewModel model)
+        {
+            model.Description = RichTextSanitizer.Sanitize(model.Description);
+            model.Requirements = RichTextSanitizer.Sanitize(model.Requirements);
+            ModelState.SetModelValue(
+                "Description",
+                new ValueProviderResult(model.Description, model.Description, System.Globalization.CultureInfo.CurrentCulture));
+            ModelState.SetModelValue(
+                "Requirements",
+                new ValueProviderResult(model.Requirements, model.Requirements, System.Globalization.CultureInfo.CurrentCulture));
+
+            if (!RichTextSanitizer.HasMeaningfulText(model.Description))
+            {
+                ModelState.AddModelError("Description", "Vui lòng nhập mô tả công việc.");
+            }
+            else if (RichTextSanitizer.ToPlainText(model.Description).Length > 20000)
+            {
+                ModelState.AddModelError("Description", "Mô tả công việc không được vượt quá 20.000 ký tự.");
+            }
+
+            if (!RichTextSanitizer.HasMeaningfulText(model.Requirements))
+            {
+                ModelState.AddModelError("Requirements", "Vui lòng nhập yêu cầu ứng viên.");
+            }
+            else if (RichTextSanitizer.ToPlainText(model.Requirements).Length > 20000)
+            {
+                ModelState.AddModelError("Requirements", "Yêu cầu ứng viên không được vượt quá 20.000 ký tự.");
+            }
+        }
+
         private void ValidateDeadline(JobFormViewModel model)
         {
             if (model.Deadline.HasValue && model.Deadline.Value.Date < DateTime.Today)
@@ -676,9 +943,35 @@ namespace ATSMiniProject.Controllers
             }
         }
 
+        private void ValidateSalaryRange(JobFormViewModel model)
+        {
+            string normalized;
+            string errorMessage;
+            if (!SalaryRangePolicy.TryNormalize(model.SalaryRange, out normalized, out errorMessage))
+            {
+                ModelState.AddModelError("SalaryRange", errorMessage);
+                return;
+            }
+
+            model.SalaryRange = normalized;
+            ModelState.SetModelValue(
+                "SalaryRange",
+                new ValueProviderResult(normalized, normalized, System.Globalization.CultureInfo.CurrentCulture));
+        }
+
         private string Clean(string value)
         {
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private ActionResult RedirectAfterSavedJobAction(int jobId, string returnUrl)
+        {
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            return RedirectToAction("Details", new { id = jobId });
         }
 
         private int? CurrentUserId()

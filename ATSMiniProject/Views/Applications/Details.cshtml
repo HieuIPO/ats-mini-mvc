@@ -53,27 +53,58 @@
                     {
                         foreach (var interview in Model.Interviews)
                         {
-                            <div class="interview-item">
-                                <div class="interview-date">
+                            var hasResult = !string.IsNullOrWhiteSpace(interview.Result);
+                            var isUpcoming = interview.InterviewDate >= DateTime.Now;
+                            var stateClass = hasResult
+                                ? "candidate-interview-state--complete"
+                                : isUpcoming
+                                    ? "candidate-interview-state--upcoming"
+                                    : "candidate-interview-state--waiting";
+                            var stateText = hasResult
+                                ? "Đã có kết quả"
+                                : isUpcoming
+                                    ? "Sắp diễn ra"
+                                    : "Chờ cập nhật kết quả";
+
+                            <article class="candidate-interview-card">
+                                <time class="candidate-interview-card__date"
+                                      datetime="@interview.InterviewDate.ToString("yyyy-MM-ddTHH:mm:ss")">
                                     <strong>@interview.InterviewDate.ToString("dd")</strong>
                                     <span>Tháng @interview.InterviewDate.ToString("MM")</span>
-                                </div>
-                                <div>
-                                    <strong>@interview.InterviewDate.ToString("HH:mm")</strong>
-                                    <span>@(interview.Location ?? "Địa điểm sẽ được cập nhật")</span>
-                                    @if (!string.IsNullOrWhiteSpace(interview.Result))
+                                    <small>@interview.InterviewDate.ToString("yyyy")</small>
+                                </time>
+
+                                <div class="candidate-interview-card__content">
+                                    <div class="candidate-interview-card__heading">
+                                        <strong>@interview.InterviewDate.ToString("dd/MM/yyyy") lúc @interview.InterviewDate.ToString("HH:mm")</strong>
+                                        <span class="candidate-interview-state @stateClass">@stateText</span>
+                                    </div>
+
+                                    <dl class="candidate-interview-card__details">
+                                        <div>
+                                            <dt>Địa điểm:</dt>
+                                            <dd>@(string.IsNullOrWhiteSpace(interview.Location) ? "Sẽ được cập nhật" : interview.Location)</dd>
+                                        </div>
+                                    </dl>
+
+                                    @if (hasResult)
                                     {
-                                        <small>Kết quả: @interview.Result</small>
-                                    }
-                                    @if (interview.CanAddToCalendar)
-                                    {
-                                        <a class="interview-calendar-link"
-                                           href="@Url.Action("DownloadInterviewCalendar", "Applications", new { id = interview.InterviewId })">
-                                            Thêm vào lịch
-                                        </a>
+                                        <p class="candidate-interview-card__result">
+                                            <span>Kết quả:</span>
+                                            <strong>@interview.Result</strong>
+                                        </p>
                                     }
                                 </div>
-                            </div>
+
+                                @if (interview.CanAddToCalendar)
+                                {
+                                    <a class="candidate-interview-card__action"
+                                       href="@Url.Action("DownloadInterviewCalendar", "Applications", new { id = interview.InterviewId })">
+                                        <span aria-hidden="true">＋</span>
+                                        Thêm vào lịch
+                                    </a>
+                                }
+                            </article>
                         }
                     }
                 </section>

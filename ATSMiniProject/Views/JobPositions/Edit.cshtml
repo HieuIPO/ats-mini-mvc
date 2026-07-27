@@ -4,22 +4,28 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="page-header">
-    <div>
-        <h1>Sửa vị trí tuyển dụng</h1>
-        <p>Cập nhật tên, mô tả và trạng thái sử dụng.</p>
+<div class="department-form-page job-position-form-page">
+    <div class="page-header department-form-page-header">
+        <div>
+            <a class="department-back-link" href="@Url.Action("Index", "JobPositions")">
+                <span aria-hidden="true">←</span>
+                Danh sách vị trí
+            </a>
+            <h1>Sửa vị trí tuyển dụng</h1>
+            <p>Cập nhật thông tin và trạng thái sử dụng của vị trí.</p>
+        </div>
     </div>
-    <a class="btn btn-outline-secondary" href="@Url.Action("Index", "JobPositions")">Quay lại</a>
-</div>
 
-<div class="form-card admin-form-card">
-    @using (Html.BeginForm())
+    @using (Html.BeginForm(null, null, FormMethod.Post, new { @class = "department-form-frame" }))
     {
         @Html.AntiForgeryToken()
         @Html.Partial("_Form", Model)
-        <div class="form-actions">
-            <button class="btn btn-primary" type="submit">Cập nhật</button>
-            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "JobPositions")">Huỷ</a>
-        </div>
+        <footer class="department-form-footer">
+            <p><span aria-hidden="true">*</span> Trường bắt buộc</p>
+            <div class="department-form-actions">
+                <a class="btn btn-outline-secondary" href="@Url.Action("Index", "JobPositions")">Huỷ</a>
+                <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
+            </div>
+        </footer>
     }
 </div>

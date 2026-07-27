@@ -12,6 +12,8 @@ namespace ATSMiniProject.ViewModels.Jobs
         {
             Jobs = new List<JobCardViewModel>();
             Departments = new List<SelectListItem>();
+            Locations = new List<SelectListItem>();
+            JobTypes = new List<SelectListItem>();
         }
 
         public string Keyword { get; set; }
@@ -23,6 +25,8 @@ namespace ATSMiniProject.ViewModels.Jobs
         public int TotalItems { get; set; }
         public IList<JobCardViewModel> Jobs { get; set; }
         public IList<SelectListItem> Departments { get; set; }
+        public IList<SelectListItem> Locations { get; set; }
+        public IList<SelectListItem> JobTypes { get; set; }
     }
 
     public class JobCardViewModel
@@ -34,7 +38,9 @@ namespace ATSMiniProject.ViewModels.Jobs
         public string Location { get; set; }
         public string JobType { get; set; }
         public string SalaryRange { get; set; }
+        public string Summary { get; set; }
         public DateTime? Deadline { get; set; }
+        public bool IsSaved { get; set; }
     }
 
     public class JobDetailsViewModel : JobCardViewModel
@@ -42,6 +48,7 @@ namespace ATSMiniProject.ViewModels.Jobs
         public string Industry { get; set; }
         public string Description { get; set; }
         public string Requirements { get; set; }
+        public bool IsActive { get; set; }
         public bool AlreadyApplied { get; set; }
         public int? ExistingApplicationId { get; set; }
     }
@@ -73,5 +80,9 @@ namespace ATSMiniProject.ViewModels.Jobs
         [Required(ErrorMessage = "Vui lòng chọn CV.")]
         [Display(Name = "CV")]
         public HttpPostedFileBase CvFile { get; set; }
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Bạn cần đồng ý với chính sách bảo mật trước khi nộp hồ sơ.")]
+        [Display(Name = "Đồng ý với chính sách bảo mật")]
+        public bool AcceptPrivacyPolicy { get; set; }
     }
 }

@@ -1,0 +1,123 @@
+:root {
+    --error-text: #858585;
+    --error-code: #898989;
+    --error-action: #ef5b2a;
+    --error-action-hover: #dc4d20;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+.not-found-body {
+    background: #fff;
+    color: var(--error-text);
+    font-family: "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    min-width: 20rem;
+}
+
+.not-found-page {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+.not-found-content {
+    margin-top: -2rem;
+    max-width: 68rem;
+    width: 100%;
+}
+
+.not-found-code {
+    color: var(--error-code);
+    font-size: clamp(7rem, 11vw, 10rem);
+    font-weight: 300;
+    letter-spacing: .015em;
+    line-height: .9;
+    margin-bottom: 2.25rem;
+}
+
+.not-found-page h1 {
+    color: var(--error-text);
+    font-size: clamp(2rem, 3.2vw, 3rem);
+    font-weight: 400;
+    letter-spacing: -.025em;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.not-found-page p {
+    color: var(--error-text);
+    font-size: clamp(1rem, 1.4vw, 1.25rem);
+    line-height: 1.7;
+    margin: 1.5rem auto 2.5rem;
+    max-width: 60rem;
+}
+
+.not-found-home-link {
+    align-items: center;
+    background: var(--error-action);
+    border: 2px solid var(--error-action);
+    border-radius: 999px;
+    color: #fff;
+    display: inline-flex;
+    font-size: 1rem;
+    font-weight: 800;
+    justify-content: center;
+    min-height: 3.6rem;
+    min-width: 18rem;
+    padding: .8rem 2.25rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.not-found-home-link:hover {
+    background: var(--error-action-hover);
+    border-color: var(--error-action-hover);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.not-found-home-link:focus-visible {
+    outline: 3px solid rgba(239, 91, 42, .3);
+    outline-offset: 4px;
+}
+
+@media (max-width: 575.98px) {
+    .not-found-page {
+        padding: 2.5rem 1.25rem;
+    }
+
+    .not-found-content {
+        margin-top: 0;
+    }
+
+    .not-found-code {
+        margin-bottom: 1.5rem;
+    }
+
+    .not-found-page p {
+        margin: 1.25rem auto 2rem;
+    }
+
+    .not-found-home-link {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .not-found-home-link {
+        transition: none;
+    }
+}

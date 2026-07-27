@@ -1,0 +1,26 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Không tìm thấy trang - ATS Mini</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="@Url.Content("~/Content/images/brand/ats-mini-favicon.png")" />
+    <link href="@Url.Content("~/Content/css/error-pages.css")?v=20260726-1" rel="stylesheet" />
+</head>
+<body class="not-found-body">
+    <main class="not-found-page" aria-labelledby="not-found-title">
+        <div class="not-found-content">
+            <div class="not-found-code" aria-hidden="true">404</div>
+            <h1 id="not-found-title">Rất tiếc! Không tìm thấy trang</h1>
+            <p>Chúng tôi xin lỗi vì sự bất tiện này. Có thể trang bạn đang tìm kiếm không tồn tại hoặc nội dung đã bị xoá.</p>
+            <a class="not-found-home-link" href="@Url.Action("Index", "Home")">
+                Quay lại trang chủ
+            </a>
+        </div>
+    </main>
+</body>
+</html>

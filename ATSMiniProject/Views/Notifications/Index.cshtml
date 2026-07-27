@@ -1,0 +1,76 @@
+@model ATSMiniProject.ViewModels.Notifications.NotificationIndexViewModel
+@{
+    ViewBag.Title = "Thông báo";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<section class="notification-page">
+    <header class="notification-page-header">
+        <div>
+            <span class="eyebrow">Hộp thư tuyển dụng</span>
+            <h1>Thông báo</h1>
+            <p>@Model.UnreadCount thông báo chưa đọc.</p>
+        </div>
+
+        @if (Model.UnreadCount > 0)
+        {
+            using (Html.BeginForm("MarkAllRead", "Notifications", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <button class="btn btn-outline-primary" type="submit">Đánh dấu tất cả đã đọc</button>
+            }
+        }
+    </header>
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="notification-empty-state">
+            <h2>Chưa có thông báo</h2>
+            <p>Hồ sơ mới gửi tới tin tuyển dụng của bạn sẽ xuất hiện tại đây.</p>
+        </div>
+    }
+    else
+    {
+        <div class="departments-results-meta" aria-live="polite">
+            <span>Đang xem @Model.FirstItem–@Model.LastItem trên tổng @Model.TotalItems thông báo</span>
+        </div>
+        <div class="notification-list">
+            @foreach (var item in Model.Items)
+            {
+                using (Html.BeginForm("Open", "Notifications", FormMethod.Post, new { @class = "notification-list-form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.Hidden("id", item.NotificationId)
+                    <button class="notification-list-item @(item.IsRead ? string.Empty : "notification-item-unread")" type="submit">
+                        <span class="notification-status-dot" aria-hidden="true"></span>
+                        <span class="notification-list-copy">
+                            <strong>@item.Title</strong>
+                            <span>@item.Message</span>
+                            <small>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                        </span>
+                    </button>
+                }
+            }
+        </div>
+    }
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="admin-pagination" aria-label="Phân trang thông báo">
+            @if (Model.Page > 1)
+            {
+                <a href="@Url.Action("Index", "Notifications", new { page = Model.Page - 1 })">Trước</a>
+            }
+            @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+            {
+                <a class="@(pageNumber == Model.Page ? "active" : null)"
+                   aria-current="@(pageNumber == Model.Page ? "page" : null)"
+                   href="@Url.Action("Index", "Notifications", new { page = pageNumber })">@pageNumber</a>
+            }
+            @if (Model.Page < Model.TotalPages)
+            {
+                <a href="@Url.Action("Index", "Notifications", new { page = Model.Page + 1 })">Sau</a>
+            }
+        </nav>
+    }
+</section>

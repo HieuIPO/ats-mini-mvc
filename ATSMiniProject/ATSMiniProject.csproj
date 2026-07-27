@@ -45,6 +45,10 @@
     <Reference Include="EntityFramework.SqlServer">
       <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlAgilityPack">
+      <HintPath>..\packages\HtmlAgilityPack.1.12.4\lib\Net45\HtmlAgilityPack.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Web.Infrastructure">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.2.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
@@ -102,28 +106,40 @@
     <Compile Include="Controllers\CandidateController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\DepartmentsController.cs" />
+    <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\InterviewsController.cs" />
     <Compile Include="Controllers\JobPositionsController.cs" />
     <Compile Include="Controllers\JobsController.cs" />
+    <Compile Include="Controllers\NotificationsController.cs" />
     <Compile Include="Filters\AuthorizeRoleAttribute.cs" />
+    <Compile Include="Helpers\AccountAvatarPathResolver.cs" />
     <Compile Include="Helpers\AuthSessionKeys.cs" />
     <Compile Include="Helpers\CandidateAvatarProcessor.cs" />
     <Compile Include="Helpers\CandidateFileValidator.cs" />
+    <Compile Include="Helpers\InternalAccountRolePolicy.cs" />
+    <Compile Include="Helpers\NotificationRecipientPolicy.cs" />
+    <Compile Include="Helpers\Pagination.cs" />
     <Compile Include="Helpers\PasswordHashHelper.cs" />
+    <Compile Include="Helpers\RichTextSanitizer.cs" />
+    <Compile Include="Helpers\SalaryRangePolicy.cs" />
     <Compile Include="ViewModels\Account\LoginViewModel.cs" />
     <Compile Include="ViewModels\Account\ProfileViewModel.cs" />
+    <Compile Include="ViewModels\Admin\UserManagementViewModels.cs" />
     <Compile Include="ViewModels\Applications\AdminApplicationViewModels.cs" />
     <Compile Include="ViewModels\Applications\CandidateApplicationViewModels.cs" />
     <Compile Include="ViewModels\Candidate\CandidateDashboardViewModel.cs" />
     <Compile Include="ViewModels\Candidate\CandidateProfileViewModel.cs" />
+    <Compile Include="ViewModels\Candidate\SavedJobViewModels.cs" />
     <Compile Include="ViewModels\Dashboard\DashboardViewModel.cs" />
     <Compile Include="ViewModels\Interviews\InterviewManagementViewModels.cs" />
+    <Compile Include="ViewModels\Jobs\AdminCatalogListViewModels.cs" />
     <Compile Include="ViewModels\Jobs\CandidateJobViewModels.cs" />
     <Compile Include="ViewModels\Jobs\DepartmentFormViewModel.cs" />
     <Compile Include="ViewModels\Jobs\JobFilterViewModel.cs" />
     <Compile Include="ViewModels\Jobs\JobFormViewModel.cs" />
     <Compile Include="ViewModels\Jobs\JobPositionFormViewModel.cs" />
+    <Compile Include="ViewModels\Notifications\NotificationViewModels.cs" />
     <Compile Include="Global.asax.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\ATSMiniDBContext.cs" />
@@ -136,11 +152,17 @@
     <Compile Include="Models\Interview.cs" />
     <Compile Include="Models\Job.cs" />
     <Compile Include="Models\JobPosition.cs" />
+    <Compile Include="Models\Notification.cs" />
     <Compile Include="Models\Role.cs" />
+    <Compile Include="Models\SavedJob.cs" />
     <Compile Include="Models\User.cs" />
+    <Compile Include="Services\NotificationService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap\bootstrap.min.css" />
+    <Content Include="Content\css\access-denied.css" />
+    <Content Include="Content\css\ats-ui-v2.css" />
+    <Content Include="Content\css\error-pages.css" />
     <Content Include="Content\css\site.css" />
     <Content Include="Content\images\brand\ats-mini-favicon.png" />
     <Content Include="Content\images\brand\ats-mini-symbol.png" />
@@ -153,6 +175,7 @@
     <Content Include="packages.config" />
     <Content Include="Scripts\bootstrap\bootstrap.bundle.min.js" />
     <Content Include="Scripts\app\site-interactions.js" />
+    <Content Include="Scripts\app\rich-text-editor.js" />
     <Content Include="README.md" />
     <Content Include="Views\Web.config" />
     <Content Include="Views\_ViewStart.cshtml" />
@@ -161,19 +184,24 @@
     <Content Include="Views\Account\Profile.cshtml" />
     <Content Include="Views\Account\AccessDenied.cshtml" />
     <Content Include="Views\Admin\Users.cshtml" />
-    <Content Include="Views\Applications\Create.cshtml" />
+    <Content Include="Views\Admin\UserCreate.cshtml" />
+    <Content Include="Views\Admin\UserEdit.cshtml" />
     <Content Include="Views\Applications\Details.cshtml" />
     <Content Include="Views\Applications\Index.cshtml" />
     <Content Include="Views\Applications\Review.cshtml" />
     <Content Include="Views\Applications\Status.cshtml" />
     <Content Include="Views\Candidate\Index.cshtml" />
     <Content Include="Views\Candidate\Profile.cshtml" />
+    <Content Include="Views\Candidate\SavedJobs.cshtml" />
     <Content Include="Views\Dashboard\Index.cshtml" />
     <Content Include="Views\Departments\Create.cshtml" />
     <Content Include="Views\Departments\Edit.cshtml" />
     <Content Include="Views\Departments\Index.cshtml" />
     <Content Include="Views\Departments\_Form.cshtml" />
+    <Content Include="Views\Error\Index.cshtml" />
+    <Content Include="Views\Error\NotFound.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Home\About.cshtml" />
     <Content Include="Views\Interviews\Edit.cshtml" />
     <Content Include="Views\Interviews\Index.cshtml" />
     <Content Include="Views\JobPositions\Create.cshtml" />
@@ -181,12 +209,15 @@
     <Content Include="Views\JobPositions\Index.cshtml" />
     <Content Include="Views\JobPositions\_Form.cshtml" />
     <Content Include="Views\Jobs\AdminIndex.cshtml" />
+    <Content Include="Views\Jobs\AdminPreview.cshtml" />
     <Content Include="Views\Jobs\Apply.cshtml" />
     <Content Include="Views\Jobs\Create.cshtml" />
     <Content Include="Views\Jobs\Details.cshtml" />
     <Content Include="Views\Jobs\Edit.cshtml" />
     <Content Include="Views\Jobs\Index.cshtml" />
     <Content Include="Views\Jobs\_Form.cshtml" />
+    <Content Include="Views\Notifications\Index.cshtml" />
+    <Content Include="Views\Notifications\_TopbarBell.cshtml" />
     <Content Include="Views\Shared\_AdminLayout.cshtml" />
     <Content Include="Views\Shared\_AdminTopbar.cshtml" />
     <Content Include="Views\Shared\_Alert.cshtml" />

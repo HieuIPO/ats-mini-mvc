@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
 
 namespace ATSMiniProject.ViewModels.Jobs
 {
@@ -13,11 +14,15 @@ namespace ATSMiniProject.ViewModels.Jobs
         public string Title { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập mô tả công việc.")]
+        [StringLength(50000, ErrorMessage = "Mô tả công việc có quá nhiều dữ liệu định dạng.")]
         [Display(Name = "Mô tả công việc")]
+        [AllowHtml]
         public string Description { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập yêu cầu ứng viên.")]
+        [StringLength(50000, ErrorMessage = "Yêu cầu ứng viên có quá nhiều dữ liệu định dạng.")]
         [Display(Name = "Yêu cầu ứng viên")]
+        [AllowHtml]
         public string Requirements { get; set; }
 
         [Required(ErrorMessage = "Vui lòng chọn phòng ban.")]
@@ -34,6 +39,7 @@ namespace ATSMiniProject.ViewModels.Jobs
 
         [StringLength(100)]
         [Display(Name = "Mức lương")]
+        [AllowHtml]
         public string SalaryRange { get; set; }
 
         [StringLength(150)]

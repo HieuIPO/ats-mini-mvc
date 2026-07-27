@@ -1,0 +1,62 @@
+@model ATSMiniProject.ViewModels.Admin.UserCreateViewModel
+@{
+    ViewBag.Title = "Thêm tài khoản nội bộ";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="account-editor-page">
+    <div class="page-header account-editor-header">
+        <div>
+            <a class="department-back-link" href="@Url.Action("Users", "Admin")"><span aria-hidden="true">←</span> Danh sách tài khoản</a>
+            <h1>Thêm tài khoản nội bộ</h1>
+            <p>Tạo tài khoản làm việc cho nhân sự công ty với vai trò Admin hoặc HR.</p>
+        </div>
+    </div>
+
+    <div class="account-editor-layout">
+        <section class="admin-panel account-editor-card">
+            @using (Html.BeginForm("UserCreate", "Admin", FormMethod.Post, new { @class = "account-editor-form", id = "account-create-form" }))
+            {
+                @Html.AntiForgeryToken()
+                var formErrors = ViewData.ModelState[string.Empty];
+                if (formErrors != null && formErrors.Errors.Count > 0)
+                {
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+                }
+                <div class="account-form-section">
+                    <div class="admin-form-section-heading"><span>01</span><div><h2>Thông tin đăng nhập</h2><p>Username không thể đổi sau khi tạo.</p></div></div>
+                    <div class="admin-form-grid">
+                        <div class="form-field form-field-full">@Html.LabelFor(m => m.Username)@Html.TextBoxFor(m => m.Username, new { @class = "form-control", autocomplete = "off", placeholder = "VD: hr.nguyenvan" })@Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger small" })</div>
+                        <div class="form-field">@Html.LabelFor(m => m.Password)@Html.PasswordFor(m => m.Password, new { @class = "form-control", autocomplete = "new-password" })@Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })</div>
+                        <div class="form-field">@Html.LabelFor(m => m.ConfirmPassword)@Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", autocomplete = "new-password" })@Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger small" })</div>
+                        <div class="form-field form-field-full"><small class="account-password-hint">Ít nhất 8 ký tự, gồm chữ hoa, chữ thường và chữ số.</small></div>
+                    </div>
+                </div>
+                <div class="account-form-section">
+                    <div class="admin-form-section-heading"><span>02</span><div><h2>Thông tin người dùng</h2><p>Dùng để nhận diện và liên hệ trong hệ thống.</p></div></div>
+                    <div class="admin-form-grid">
+                        <div class="form-field form-field-full">@Html.LabelFor(m => m.FullName)@Html.TextBoxFor(m => m.FullName, new { @class = "form-control", autocomplete = "name" })@Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger small" })</div>
+                        <div class="form-field">@Html.LabelFor(m => m.Email)@Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", autocomplete = "email" })@Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })</div>
+                        <div class="form-field">@Html.LabelFor(m => m.Phone)@Html.TextBoxFor(m => m.Phone, new { @class = "form-control", autocomplete = "tel" })@Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger small" })</div>
+                    </div>
+                </div>
+                <footer class="account-editor-actions"><a class="btn btn-outline-secondary" href="@Url.Action("Users", "Admin")">Hủy</a><button class="btn btn-primary" type="submit">Tạo tài khoản</button></footer>
+            }
+        </section>
+        <aside class="account-editor-aside">
+            <section class="admin-panel">
+                <span class="admin-eyebrow">Quyền truy cập nội bộ</span>
+                <div class="form-field">@Html.LabelFor(m => m.RoleId)@Html.DropDownListFor(m => m.RoleId, Model.RoleOptions, "Chọn vai trò", new { @class = "form-select", form = "account-create-form" })@Html.ValidationMessageFor(m => m.RoleId, "", new { @class = "text-danger small" })</div>
+                <div class="account-role-guide" aria-label="Mô tả vai trò">
+                    <div><strong>Admin</strong><small>Quản trị toàn bộ hệ thống và tài khoản.</small></div>
+                    <div><strong>HR</strong><small>Thực hiện nghiệp vụ tuyển dụng hằng ngày.</small></div>
+                </div>
+                <div class="account-create-access">
+                    <div><strong>Cho phép đăng nhập ngay</strong><small>Có thể tạm khóa sau từ danh sách tài khoản.</small></div>
+                    <div class="form-check form-switch">@Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input", form = "account-create-form", aria_label = "Cho phép tài khoản đăng nhập ngay" })</div>
+                </div>
+                <p class="account-aside-note">Candidate không được tạo tại đây; ứng viên sử dụng trang đăng ký công khai.</p>
+            </section>
+        </aside>
+    </div>
+</div>

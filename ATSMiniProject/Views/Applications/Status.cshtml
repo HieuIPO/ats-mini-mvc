@@ -1,65 +1,139 @@
-﻿@model ATSMiniProject.ViewModels.Applications.CandidateApplicationListViewModel
+@model ATSMiniProject.ViewModels.Applications.CandidateApplicationListViewModel
 
 @{
     ViewBag.Title = "Hồ sơ ứng tuyển";
-}
+    var totalApplications = Model.Applications.Count;
+    var activeApplications = 0;
+    var completedApplications = 0;
+    var upcomingInterviews = 0;
 
-<section class="candidate-page-band">
-    <div class="container candidate-page-band-inner">
-        <div>
-            <span class="eyebrow">Hành trình của bạn</span>
-            <h1>Hồ sơ ứng tuyển</h1>
-            <p>Theo dõi trạng thái và lịch phỏng vấn của từng vị trí tại một nơi.</p>
-        </div>
-        <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Tìm việc làm mới</a>
-    </div>
-</section>
-
-<section class="candidate-section applications-page">
-    <div class="container">
-        @if (Model.Applications.Count == 0)
+    foreach (var item in Model.Applications)
+    {
+        if (item.IsFinal)
         {
-            <div class="candidate-empty">
-                <span class="empty-symbol" aria-hidden="true">＋</span>
-                <h2>Bạn chưa nộp hồ sơ nào</h2>
-                <p>Một cơ hội phù hợp có thể đang chờ bạn trong danh sách việc làm.</p>
-                <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Khám phá việc làm</a>
-            </div>
+            completedApplications++;
         }
         else
         {
-            <div class="applications-summary">
-                <strong>@Model.Applications.Count.ToString("D2")</strong>
-                <span>hồ sơ đã nộp</span>
-            </div>
-            <div class="application-list">
-                @foreach (var application in Model.Applications)
-                {
-                    <article class="application-row">
-                        <div class="application-status-column">
-                            <span class="status-badge @(application.IsFinal ? "status-final" : null)">@application.StatusName</span>
-                            <small>Cập nhật trạng thái</small>
-                        </div>
-                        <div class="application-main">
-                            <h2><a href="@Url.Action("Details", "Applications", new { id = application.ApplicationId })">@application.JobTitle</a></h2>
-                            <p>@application.DepartmentName · @(application.Location ?? "Chưa cập nhật địa điểm")</p>
-                            <span>Đã nộp ngày @application.AppliedDate.ToString("dd/MM/yyyy HH:mm")</span>
-                        </div>
-                        <div class="application-meta">
-                            @if (application.NextInterviewDate.HasValue)
-                            {
-                                <span>Lịch phỏng vấn tiếp theo</span>
-                                <strong>@application.NextInterviewDate.Value.ToString("dd/MM/yyyy HH:mm")</strong>
-                            }
-                            else
-                            {
-                                <span>Chưa có lịch phỏng vấn</span>
-                            }
-                        </div>
-                        <a class="application-row-action" href="@Url.Action("Details", "Applications", new { id = application.ApplicationId })" aria-label="Xem chi tiết @application.JobTitle">→</a>
-                    </article>
-                }
-            </div>
+            activeApplications++;
         }
-    </div>
-</section>
+
+        if (item.NextInterviewDate.HasValue)
+        {
+            upcomingInterviews++;
+        }
+    }
+}
+
+<main class="tracking-page">
+    <header class="tracking-hero">
+        <div class="container tracking-hero-inner">
+            <div class="tracking-hero-copy">
+                <span class="tracking-kicker">Hành trình ứng tuyển</span>
+                <h1>Hồ sơ của bạn</h1>
+                <p>Theo dõi tiến trình xử lý và lịch phỏng vấn của từng vị trí trên cùng một trang.</p>
+            </div>
+            <a class="tracking-find-job" href="@Url.Action("Index", "Jobs")">
+                Khám phá việc làm
+                <span aria-hidden="true">→</span>
+            </a>
+        </div>
+    </header>
+
+    <section class="tracking-content" aria-label="Danh sách hồ sơ ứng tuyển">
+        <div class="container">
+            <dl class="tracking-overview" aria-label="Tổng quan hồ sơ">
+                <div>
+                    <dt>Tổng hồ sơ</dt>
+                    <dd>@totalApplications.ToString("D2")</dd>
+                    <small>Đã gửi trên hệ thống</small>
+                </div>
+                <div>
+                    <dt>Đang xử lý</dt>
+                    <dd>@activeApplications.ToString("D2")</dd>
+                    <small>Chưa có kết quả cuối</small>
+                </div>
+                <div>
+                    <dt>Lịch sắp tới</dt>
+                    <dd>@upcomingInterviews.ToString("D2")</dd>
+                    <small>Cuộc phỏng vấn đã hẹn</small>
+                </div>
+                <div>
+                    <dt>Đã kết thúc</dt>
+                    <dd>@completedApplications.ToString("D2")</dd>
+                    <small>Đã có kết quả cuối</small>
+                </div>
+            </dl>
+
+            @if (totalApplications == 0)
+            {
+                <section class="tracking-empty" role="status">
+                    <span aria-hidden="true">＋</span>
+                    <div>
+                        <span class="tracking-section-label">Bắt đầu hành trình</span>
+                        <h2>Bạn chưa nộp hồ sơ nào</h2>
+                        <p>Khám phá các vị trí đang mở và chọn cơ hội phù hợp với kinh nghiệm của bạn.</p>
+                    </div>
+                    <a href="@Url.Action("Index", "Jobs")">Xem việc làm đang tuyển <span aria-hidden="true">→</span></a>
+                </section>
+            }
+            else
+            {
+                <div class="tracking-list-header">
+                    <div>
+                        <span class="tracking-section-label">Hồ sơ gần đây</span>
+                        <h2>Tiến trình ứng tuyển</h2>
+                    </div>
+                    <p>Chọn một hồ sơ để xem lịch sử trạng thái, CV và thông tin phỏng vấn.</p>
+                </div>
+
+                <div class="tracking-list">
+                    @foreach (var application in Model.Applications)
+                    {
+                        <article class="tracking-item @(application.IsFinal ? "is-final" : "is-active")">
+                            <div class="tracking-item-status">
+                                <span class="tracking-status-label">Trạng thái hiện tại</span>
+                                <strong>@application.StatusName</strong>
+                            </div>
+
+                            <div class="tracking-item-main">
+                                <span class="tracking-application-id">Hồ sơ #@application.ApplicationId.ToString("D4")</span>
+                                <h3>
+                                    <a href="@Url.Action("Details", "Applications", new { id = application.ApplicationId })">@application.JobTitle</a>
+                                </h3>
+                                <p>@application.DepartmentName <span aria-hidden="true">·</span> @(application.Location ?? "Chưa cập nhật địa điểm")</p>
+                                <small>Đã nộp @application.AppliedDate.ToString("dd/MM/yyyy, HH:mm")</small>
+                            </div>
+
+                            <div class="tracking-interview @(application.NextInterviewDate.HasValue ? "has-schedule" : null)">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                                    <path d="M16 3v4M8 3v4M3 10h18"></path>
+                                </svg>
+                                <div>
+                                    @if (application.NextInterviewDate.HasValue)
+                                    {
+                                        <span>Lịch phỏng vấn tiếp theo</span>
+                                        <strong>@application.NextInterviewDate.Value.ToString("dd/MM/yyyy, HH:mm")</strong>
+                                    }
+                                    else
+                                    {
+                                        <span>Lịch phỏng vấn</span>
+                                        <strong>Chưa có lịch hẹn</strong>
+                                    }
+                                </div>
+                            </div>
+
+                            <a class="tracking-item-action"
+                               href="@Url.Action("Details", "Applications", new { id = application.ApplicationId })"
+                               aria-label="Xem chi tiết hồ sơ @application.JobTitle">
+                                Xem chi tiết
+                                <span aria-hidden="true">→</span>
+                            </a>
+                        </article>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+</main>
