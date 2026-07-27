@@ -11,9 +11,13 @@
             : "sidebar-link";
 }
 
-<aside class="admin-sidebar">
+<aside class="admin-sidebar" id="admin-sidebar">
     <div class="sidebar-brand">
-        <span class="brand-mark">ATS</span>
+        <img class="sidebar-brand-symbol"
+             src="@Url.Content("~/Content/images/brand/ats-mini-symbol.png")"
+             alt=""
+             width="512"
+             height="512" />
         <span class="brand-copy">
             <strong>ATS Mini</strong>
             <small>Hệ thống tuyển dụng</small>
@@ -22,38 +26,52 @@
 
     <nav class="sidebar-nav" aria-label="Menu quan tri">
         <div class="sidebar-section-label">Tổng quan</div>
-        <a href="@Url.Action("Index", "Dashboard")" class="@activeClass("Dashboard")">
-            <span class="sidebar-icon">D</span>
+        <a href="@Url.Action("Index", "Dashboard")" class="@activeClass("Dashboard")" title="Dashboard">
+            <span class="sidebar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z"></path></svg>
+            </span>
             <span>Dashboard</span>
         </a>
 
         <div class="sidebar-section-label">Tuyển dụng</div>
-        <a href="@Url.Action("AdminIndex", "Jobs")" class="@activeClass("Jobs")">
-            <span class="sidebar-icon">J</span>
+        <a href="@Url.Action("AdminIndex", "Jobs")" class="@activeClass("Jobs")" title="Tin tuyển dụng">
+            <span class="sidebar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 6V4h6v2m-9 0h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm-2 5h16M9 11v2h6v-2"></path></svg>
+            </span>
             <span>Tin tuyển dụng</span>
         </a>
-        <a href="@Url.Action("Index", "Departments")" class="@activeClass("Departments")">
-            <span class="sidebar-icon">D</span>
+        <a href="@Url.Action("Index", "Departments")" class="@activeClass("Departments")" title="Phòng ban">
+            <span class="sidebar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 20V8l8-4 8 4v12M8 10h2m4 0h2m-8 4h2m4 0h2m-5 6v-3h2v3"></path></svg>
+            </span>
             <span>Phòng ban</span>
         </a>
-        <a href="@Url.Action("Index", "JobPositions")" class="@activeClass("JobPositions")">
-            <span class="sidebar-icon">P</span>
+        <a href="@Url.Action("Index", "JobPositions")" class="@activeClass("JobPositions")" title="Vị trí">
+            <span class="sidebar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M5 20c.7-4 3-6 7-6s6.3 2 7 6"></path></svg>
+            </span>
             <span>Vị trí</span>
         </a>
-        <a href="@Url.Action("Index", "Applications")" class="@activeClass("Applications")">
-            <span class="sidebar-icon">A</span>
+        <a href="@Url.Action("Index", "Applications")" class="@activeClass("Applications")" title="Hồ sơ ứng viên">
+            <span class="sidebar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7V3Zm7 0v4h4M10 12h5m-5 4h5"></path></svg>
+            </span>
             <span>Hồ sơ ứng viên</span>
         </a>
-        <a href="@Url.Action("Index", "Interviews")" class="@activeClass("Interviews")">
-            <span class="sidebar-icon">I</span>
+        <a href="@Url.Action("Index", "Interviews")" class="@activeClass("Interviews")" title="Phỏng vấn">
+            <span class="sidebar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M5 5h14v15H5V5Zm3-2v4m8-4v4M5 9h14m-10 4h2m2 0h2m-6 3h2"></path></svg>
+            </span>
             <span>Phỏng vấn</span>
         </a>
 
         @if (isAdmin)
         {
             <div class="sidebar-section-label">Hệ thống</div>
-            <a href="@Url.Action("Users", "Admin")" class="@activeClass("Admin")">
-                <span class="sidebar-icon">U</span>
+            <a href="@Url.Action("Users", "Admin")" class="@activeClass("Admin")" title="Tài khoản">
+                <span class="sidebar-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm7-1a3 3 0 1 0 0-6M3 20c.5-4 2.3-6 5.5-6s5 2 5.5 6m1-7c3.3 0 5.3 2.3 5.8 6"></path></svg>
+                </span>
                 <span>Tài khoản</span>
             </a>
         }

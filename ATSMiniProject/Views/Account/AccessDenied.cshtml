@@ -1,35 +1,46 @@
 @{
-    ViewBag.Title = "Không có quyền";
-    var returnUrl = ViewBag.ReturnUrl as string;
+    Layout = null;
+    ViewBag.Title = "Bạn chưa thể mở trang này";
+
     var roleName = Session["AuthRoleName"] as string;
     var isBackOfficeUser = string.Equals(roleName, "Admin", System.StringComparison.OrdinalIgnoreCase)
         || string.Equals(roleName, "HR", System.StringComparison.OrdinalIgnoreCase);
+    var primaryUrl = isBackOfficeUser
+        ? Url.Action("Index", "Dashboard")
+        : Url.Action("Index", "Home");
 }
 
-<section class="access-denied-section">
-    <div class="access-denied-card">
-        <span class="eyebrow">403</span>
-        <h1>Không có quyền truy cập</h1>
-        <p class="text-muted">
-            Tài khoản hiện tại không được phép mở chức năng này. Nếu đây là nhầm lẫn,
-            vui lòng đăng nhập bằng tài khoản có vai trò phù hợp.
-        </p>
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewBag.Title - ATS Mini</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="@Url.Content("~/Content/images/brand/ats-mini-favicon.png")" />
+    <link href="@Url.Content("~/Content/css/access-denied.css")?v=20260726-1" rel="stylesheet" />
+</head>
+<body>
+    <a class="skip-link" href="#access-denied-content">Bỏ qua nội dung phụ</a>
 
-        @if (!string.IsNullOrWhiteSpace(returnUrl))
-        {
-            <p class="small text-muted mb-3">Đường dẫn bị chặn: <code>@returnUrl</code></p>
-        }
+    <main class="access-denied-page" id="access-denied-content">
+        <section class="access-denied-shell" aria-labelledby="access-denied-title">
+            <div class="access-denied-copy">
+                <p class="access-denied-code">403</p>
+                <h1 id="access-denied-title">Bạn chưa thể mở trang này</h1>
+                <p class="access-denied-message">
+                    Tài khoản hiện tại chưa có vai trò phù hợp để truy cập chức năng này. Bạn có thể quay về khu vực an toàn hoặc đăng nhập bằng tài khoản khác.
+                </p>
+                <div class="access-denied-actions" aria-label="Hành động tiếp theo">
+                    <a class="access-denied-button access-denied-button-primary" href="@primaryUrl">Về trang phù hợp</a>
+                    <a class="access-denied-button access-denied-button-secondary" href="@Url.Action("Login", "Account")">Đăng nhập tài khoản khác</a>
+                </div>
+            </div>
 
-        <div class="d-flex flex-wrap gap-2">
-            @if (isBackOfficeUser)
-            {
-                <a class="btn btn-primary" href="@Url.Action("Index", "Dashboard")">Về Dashboard</a>
-            }
-            else
-            {
-                <a class="btn btn-primary" href="@Url.Action("Login", "Account")">Đăng nhập lại</a>
-            }
-            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Home")">Về trang chủ</a>
-        </div>
-    </div>
-</section>
+            <div class="access-denied-visual">
+                <img src="@Url.Content("~/Content/images/errors/access-denied-door.png")"
+                     alt="" aria-hidden="true" />
+            </div>
+        </section>
+    </main>
+</body>
+</html>

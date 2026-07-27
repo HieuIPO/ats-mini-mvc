@@ -15,6 +15,8 @@ namespace ATSMiniProject.Controllers
     [AuthorizeRole("Candidate")]
     public class CandidateController : Controller
     {
+        private const int SavedJobsPageSize = 9;
+
         [HttpGet]
         public ActionResult Index()
         {
@@ -81,7 +83,8 @@ namespace ATSMiniProject.Controllers
                         Location = j.Location,
                         JobType = j.JobType,
                         SalaryRange = j.SalaryRange,
-                        Deadline = j.Deadline
+                        Deadline = j.Deadline,
+                        IsSaved = j.SavedJobs.Any(s => s.CandidateUserID == userId)
                     })
                     .ToList();
 
@@ -100,6 +103,50 @@ namespace ATSMiniProject.Controllers
                                         !string.IsNullOrWhiteSpace(user.Phone),
                     RecentApplications = recentApplications,
                     RecommendedJobs = recommendedJobs
+                });
+            }
+        }
+
+        [HttpGet]
+        public ActionResult SavedJobs(int page = 1)
+        {
+            var userId = GetCurrentUserId();
+            var today = DateTime.Today;
+
+            using (var db = new ATSMiniDBContext())
+            {
+                var query = db.SavedJobs
+                    .AsNoTracking()
+                    .Where(s => s.CandidateUserID == userId && !s.Job.IsDeleted);
+                var totalItems = query.Count();
+                var pagination = Pagination.Calculate(page, totalItems, SavedJobsPageSize);
+                var jobs = query
+                    .OrderByDescending(s => s.SavedAt)
+                    .ThenByDescending(s => s.SavedJobID)
+                    .Skip(pagination.Offset)
+                    .Take(pagination.PageSize)
+                    .Select(s => new SavedJobItemViewModel
+                    {
+                        JobId = s.JobID,
+                        Title = s.Job.Title,
+                        DepartmentName = s.Job.Department.DepartmentName,
+                        PositionName = s.Job.JobPosition.PositionName,
+                        Location = s.Job.Location,
+                        JobType = s.Job.JobType,
+                        SalaryRange = s.Job.SalaryRange,
+                        SavedAt = s.SavedAt,
+                        Deadline = s.Job.Deadline,
+                        IsActive = s.Job.IsActive,
+                        IsExpired = s.Job.Deadline.HasValue && s.Job.Deadline.Value < today
+                    })
+                    .ToList();
+
+                return View(new SavedJobListViewModel
+                {
+                    Page = pagination.Page,
+                    TotalPages = pagination.TotalPages,
+                    TotalItems = totalItems,
+                    Jobs = jobs
                 });
             }
         }

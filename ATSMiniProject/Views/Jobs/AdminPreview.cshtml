@@ -1,0 +1,110 @@
+@model ATSMiniProject.ViewModels.Jobs.JobDetailsViewModel
+@using ATSMiniProject.Helpers
+
+@{
+    ViewBag.Title = "Xem trước tin tuyển dụng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var department = String.IsNullOrWhiteSpace(Model.DepartmentName) ? "Chưa cập nhật" : Model.DepartmentName;
+    var position = String.IsNullOrWhiteSpace(Model.PositionName) ? "Chưa cập nhật" : Model.PositionName;
+    var location = String.IsNullOrWhiteSpace(Model.Location) ? "Chưa cập nhật" : Model.Location;
+    var jobType = String.IsNullOrWhiteSpace(Model.JobType) ? "Chưa cập nhật" : Model.JobType;
+    var salary = String.IsNullOrWhiteSpace(Model.SalaryRange) ? "Thỏa thuận" : Model.SalaryRange;
+    var industry = String.IsNullOrWhiteSpace(Model.Industry) ? "Chưa cập nhật" : Model.Industry;
+    var deadline = Model.Deadline.HasValue ? Model.Deadline.Value.ToString("dd/MM/yyyy") : "Không giới hạn";
+    var isExpired = Model.Deadline.HasValue && Model.Deadline.Value.Date < DateTime.Today;
+    var statusText = !Model.IsActive ? "Đã đóng" : (isExpired ? "Hết hạn" : "Đang mở");
+    var statusClass = !Model.IsActive ? "is-closed" : (isExpired ? "is-expired" : "is-open");
+}
+
+<section class="admin-job-preview">
+    <div class="admin-back-row">
+        <a href="@Url.Action("AdminIndex", "Jobs")">← Quay lại danh sách tin</a>
+    </div>
+
+    <header class="admin-job-preview-header">
+        <div class="admin-job-preview-heading">
+            <div class="admin-job-preview-kicker">
+                <span>Xem trước tin tuyển dụng</span>
+                <span class="admin-job-preview-status @statusClass">
+                    <i aria-hidden="true"></i>@statusText
+                </span>
+            </div>
+            <h1>@Model.Title</h1>
+            <p>@department · @position</p>
+        </div>
+        <div class="page-header-actions">
+            <a class="btn btn-outline-secondary" href="@Url.Action("AdminIndex", "Jobs")">Danh sách tin</a>
+            <a class="btn btn-primary" href="@Url.Action("Edit", "Jobs", new { id = Model.JobId })">Chỉnh sửa tin</a>
+        </div>
+    </header>
+
+    <div class="admin-job-preview-note" role="note">
+        <span aria-hidden="true">i</span>
+        <p><strong>Bản xem trước nội bộ.</strong> Nội dung tuyển dụng được giữ nguyên, còn các thao tác nộp hồ sơ dành cho ứng viên đã được ẩn.</p>
+    </div>
+
+    <div class="admin-job-preview-layout">
+        <article class="admin-job-preview-content">
+            <section class="admin-panel admin-job-preview-section" aria-labelledby="job-description-title">
+                <div class="admin-job-preview-section-heading">
+                    <span aria-hidden="true">01</span>
+                    <div>
+                        <p>Nội dung tuyển dụng</p>
+                        <h2 id="job-description-title">Mô tả công việc</h2>
+                    </div>
+                </div>
+                <div class="admin-job-preview-richtext">
+                    @if (String.IsNullOrWhiteSpace(Model.Description))
+                    {
+                        <p class="admin-job-preview-empty">Chưa có mô tả công việc.</p>
+                    }
+                    else
+                    {
+                        @Html.Raw(RichTextSanitizer.Sanitize(Model.Description))
+                    }
+                </div>
+            </section>
+
+            <section class="admin-panel admin-job-preview-section" aria-labelledby="job-requirements-title">
+                <div class="admin-job-preview-section-heading">
+                    <span aria-hidden="true">02</span>
+                    <div>
+                        <p>Tiêu chí sàng lọc</p>
+                        <h2 id="job-requirements-title">Yêu cầu ứng viên</h2>
+                    </div>
+                </div>
+                <div class="admin-job-preview-richtext">
+                    @if (String.IsNullOrWhiteSpace(Model.Requirements))
+                    {
+                        <p class="admin-job-preview-empty">Chưa có yêu cầu cho vị trí này.</p>
+                    }
+                    else
+                    {
+                        @Html.Raw(RichTextSanitizer.Sanitize(Model.Requirements))
+                    }
+                </div>
+            </section>
+        </article>
+
+        <aside class="admin-job-preview-aside" aria-label="Thông tin tin tuyển dụng">
+            <section class="admin-panel admin-job-preview-facts">
+                <div class="admin-panel-heading">
+                    <div>
+                        <span class="admin-eyebrow">Tổng quan</span>
+                        <h2>Thông tin vị trí</h2>
+                    </div>
+                </div>
+                <dl>
+                    <div><dt>Phòng ban</dt><dd>@department</dd></div>
+                    <div><dt>Vị trí</dt><dd>@position</dd></div>
+                    <div><dt>Địa điểm</dt><dd>@location</dd></div>
+                    <div><dt>Hình thức</dt><dd>@jobType</dd></div>
+                    <div><dt>Mức lương</dt><dd>@salary</dd></div>
+                    <div><dt>Lĩnh vực</dt><dd>@industry</dd></div>
+                    <div class="@(isExpired ? "is-expired" : null)"><dt>Hạn nộp</dt><dd>@deadline</dd></div>
+                </dl>
+            </section>
+        </aside>
+    </div>
+</section>

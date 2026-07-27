@@ -18,7 +18,9 @@ namespace ATSMiniProject.Models
         public virtual DbSet<Interview> Interviews { get; set; }
         public virtual DbSet<Job> Jobs { get; set; }
         public virtual DbSet<JobPosition> JobPositions { get; set; }
+        public virtual DbSet<Notification> Notifications { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
+        public virtual DbSet<SavedJob> SavedJobs { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -86,11 +88,22 @@ namespace ATSMiniProject.Models
             modelBuilder.Entity<JobPosition>().Property(e => e.PositionName).IsRequired().HasMaxLength(100);
             modelBuilder.Entity<JobPosition>().Property(e => e.Description).HasMaxLength(255);
 
+            modelBuilder.Entity<Notification>()
+                .ToTable("Notifications")
+                .HasKey(e => e.NotificationID);
+            modelBuilder.Entity<Notification>().Property(e => e.NotificationType).IsRequired().HasMaxLength(50);
+            modelBuilder.Entity<Notification>().Property(e => e.Title).IsRequired().HasMaxLength(150);
+            modelBuilder.Entity<Notification>().Property(e => e.Message).IsRequired().HasMaxLength(500);
+
             modelBuilder.Entity<Role>()
                 .ToTable("Roles")
                 .HasKey(e => e.RoleID);
             modelBuilder.Entity<Role>().Property(e => e.RoleName).IsRequired().HasMaxLength(50);
             modelBuilder.Entity<Role>().Property(e => e.Description).HasMaxLength(255);
+
+            modelBuilder.Entity<SavedJob>()
+                .ToTable("SavedJobs")
+                .HasKey(e => e.SavedJobID);
 
             modelBuilder.Entity<User>()
                 .ToTable("Users")
@@ -111,6 +124,18 @@ namespace ATSMiniProject.Models
             modelBuilder.Entity<Job>()
                 .HasMany(e => e.Applications)
                 .WithRequired(e => e.Job)
+                .HasForeignKey(e => e.JobID)
+                .WillCascadeOnDelete(true);
+
+            modelBuilder.Entity<SavedJob>()
+                .HasRequired(e => e.CandidateUser)
+                .WithMany(e => e.SavedJobs)
+                .HasForeignKey(e => e.CandidateUserID)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<SavedJob>()
+                .HasRequired(e => e.Job)
+                .WithMany(e => e.SavedJobs)
                 .HasForeignKey(e => e.JobID)
                 .WillCascadeOnDelete(true);
 
@@ -244,6 +269,18 @@ namespace ATSMiniProject.Models
                 .HasMany(e => e.Jobs1)
                 .WithOptional(e => e.User1)
                 .HasForeignKey(e => e.UpdatedByUserID)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<Notification>()
+                .HasRequired(e => e.RecipientUser)
+                .WithMany()
+                .HasForeignKey(e => e.RecipientUserID)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<Notification>()
+                .HasOptional(e => e.Application)
+                .WithMany()
+                .HasForeignKey(e => e.ApplicationID)
                 .WillCascadeOnDelete(false);
         }
     }

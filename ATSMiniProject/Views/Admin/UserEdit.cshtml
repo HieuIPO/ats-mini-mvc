@@ -1,0 +1,63 @@
+@model ATSMiniProject.ViewModels.Admin.UserEditViewModel
+@{
+    ViewBag.Title = "Sửa tài khoản";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="account-editor-page">
+    <div class="page-header account-editor-header"><div><a class="department-back-link" href="@Url.Action("Users", "Admin")"><span aria-hidden="true">←</span> Danh sách tài khoản</a><h1>Sửa tài khoản</h1><p>Cập nhật hồ sơ và vai trò của <strong>@@@Model.Username</strong>.</p></div></div>
+    <div class="account-editor-layout">
+        <section class="admin-panel account-editor-card">
+            @using (Html.BeginForm("UserEdit", "Admin", FormMethod.Post, new { @class = "account-editor-form" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.UserId)
+                var formErrors = ViewData.ModelState[string.Empty];
+                if (formErrors != null && formErrors.Errors.Count > 0)
+                {
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+                }
+                <div class="account-form-section">
+                    <div class="admin-form-section-heading"><span>01</span><div><h2>Thông tin người dùng</h2><p>Username được giữ cố định để bảo toàn lịch sử.</p></div></div>
+                    <div class="admin-form-grid">
+                        <div class="form-field form-field-full"><label>Tên đăng nhập</label><input class="form-control" value="@Model.Username" disabled /></div>
+                        <div class="form-field form-field-full">@Html.LabelFor(m => m.FullName)@Html.TextBoxFor(m => m.FullName, new { @class = "form-control", autocomplete = "name" })@Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger small" })</div>
+                        <div class="form-field">@Html.LabelFor(m => m.Email)@Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", autocomplete = "email" })@Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })</div>
+                        <div class="form-field">@Html.LabelFor(m => m.Phone)@Html.TextBoxFor(m => m.Phone, new { @class = "form-control", autocomplete = "tel" })@Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger small" })</div>
+                    </div>
+                </div>
+                <div class="account-form-section">
+                    <div class="admin-form-section-heading"><span>02</span><div><h2>Vai trò</h2><p>Thay đổi quyền truy cập của tài khoản.</p></div></div>
+                    <div class="form-field">
+                        @Html.LabelFor(m => m.RoleId)
+                        @if (!Model.CanChangeRole)
+                        {
+                            @Html.DropDownListFor(m => m.RoleId, Model.RoleOptions, "Chọn vai trò", new { @class = "form-select", disabled = "disabled" })
+                            @Html.HiddenFor(m => m.RoleId)
+                            <small class="account-password-hint">@(Model.IsCurrentUser ? "Bạn không thể tự thay đổi vai trò của mình." : "Vai trò Candidate được quản lý qua luồng tài khoản ứng viên.")</small>
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(m => m.RoleId, Model.RoleOptions, "Chọn vai trò", new { @class = "form-select" })
+                        }
+                        @Html.ValidationMessageFor(m => m.RoleId, "", new { @class = "text-danger small" })
+                    </div>
+                </div>
+                <footer class="account-editor-actions"><a class="btn btn-outline-secondary" href="@Url.Action("Users", "Admin")">Hủy</a><button class="btn btn-primary" type="submit">Lưu thay đổi</button></footer>
+            }
+        </section>
+        <aside class="account-editor-aside">
+            <section class="admin-panel account-access-card"><span class="admin-eyebrow">Trạng thái truy cập</span><h2>@(Model.IsLocked ? "Khóa đăng nhập" : (Model.IsActive ? "Đang hoạt động" : "Tạm khóa"))</h2><p>Đăng nhập gần nhất: @(Model.LastLoginAt.HasValue ? Model.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa đăng nhập")</p></section>
+            <section class="admin-panel account-password-card">
+                <span class="admin-eyebrow">Bảo mật</span><h2>Đặt lại mật khẩu</h2><p>Mật khẩu mới không được hiển thị hoặc ghi vào nhật ký.</p>
+                @using (Html.BeginForm("ResetUserPassword", "Admin", FormMethod.Post, new { @class = "account-reset-form", data_confirm = "true", data_confirm_title = "Đặt lại mật khẩu", data_confirm_message = "Mật khẩu hiện tại của tài khoản sẽ không còn sử dụng được.", data_confirm_action = "Đặt lại mật khẩu", data_confirm_danger = "false" }))
+                {
+                    @Html.AntiForgeryToken()@Html.Hidden("UserId", Model.UserId)
+                    <div class="form-field"><label for="NewPassword">Mật khẩu mới</label><input class="form-control" id="NewPassword" name="NewPassword" type="password" autocomplete="new-password" required minlength="8" /></div>
+                    <div class="form-field"><label for="ConfirmPassword">Xác nhận mật khẩu</label><input class="form-control" id="ConfirmPassword" name="ConfirmPassword" type="password" autocomplete="new-password" required minlength="8" /></div>
+                    <button class="btn btn-outline-primary w-100" type="submit">Đặt lại mật khẩu</button>
+                }
+            </section>
+        </aside>
+    </div>
+</div>

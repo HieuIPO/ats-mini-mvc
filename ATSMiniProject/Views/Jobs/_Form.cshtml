@@ -1,60 +1,215 @@
 @model ATSMiniProject.ViewModels.Jobs.JobFormViewModel
+@using ATSMiniProject.Helpers
+
+@{
+    var jobTypeOptions = new List<System.Web.Mvc.SelectListItem>
+    {
+        new System.Web.Mvc.SelectListItem { Text = "Toàn thời gian", Value = "Toàn thời gian" },
+        new System.Web.Mvc.SelectListItem { Text = "Bán thời gian", Value = "Bán thời gian" },
+        new System.Web.Mvc.SelectListItem { Text = "Thực tập", Value = "Thực tập" },
+        new System.Web.Mvc.SelectListItem { Text = "Hợp đồng", Value = "Hợp đồng" }
+    };
+
+    if (!String.IsNullOrWhiteSpace(Model.JobType)
+        && !jobTypeOptions.Exists(item => String.Equals(item.Value, Model.JobType, StringComparison.OrdinalIgnoreCase)))
+    {
+        jobTypeOptions.Insert(0, new System.Web.Mvc.SelectListItem
+        {
+            Text = Model.JobType + " (dữ liệu hiện tại)",
+            Value = Model.JobType
+        });
+    }
+}
 
 @Html.HiddenFor(m => m.JobID)
-@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+@Html.ValidationSummary(true, "", new { @class = "text-danger jobs-form-summary" })
 
-<div class="row g-3">
-    <div class="col-md-8">
-        @Html.LabelFor(m => m.Title, new { @class = "form-label" })
-        @Html.TextBoxFor(m => m.Title, new { @class = "form-control", placeholder = "VD: Tuyển lập trình viên ASP.NET MVC" })
-        @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+<div class="jobs-form-layout">
+    <div class="jobs-form-main">
+        <section class="jobs-form-section" aria-labelledby="job-basic-heading">
+            <header class="jobs-form-section-header">
+                <span aria-hidden="true">01</span>
+                <div>
+                    <h2 id="job-basic-heading">Thông tin tuyển dụng</h2>
+                    <p>Thông tin chính giúp ứng viên nhận biết công việc đang tuyển.</p>
+                </div>
+            </header>
+
+            <div class="jobs-form-fields">
+                <div class="jobs-form-field jobs-form-field-full">
+                    @Html.LabelFor(m => m.Title, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Title, new { @class = "form-control", placeholder = "VD: Tuyển lập trình viên ASP.NET MVC" })
+                    @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+                </div>
+                <div class="jobs-form-field">
+                    @Html.LabelFor(m => m.DepartmentID, new { @class = "form-label" })
+                    @Html.DropDownListFor(m => m.DepartmentID, (IEnumerable<SelectListItem>)ViewBag.DepartmentOptions, "Chọn phòng ban", new { @class = "form-select" })
+                    @Html.ValidationMessageFor(m => m.DepartmentID, "", new { @class = "text-danger" })
+                </div>
+                <div class="jobs-form-field">
+                    @Html.LabelFor(m => m.JobPositionID, new { @class = "form-label" })
+                    @Html.DropDownListFor(m => m.JobPositionID, (IEnumerable<SelectListItem>)ViewBag.JobPositionOptions, "Chọn vị trí", new { @class = "form-select" })
+                    @Html.ValidationMessageFor(m => m.JobPositionID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </section>
+
+        <section class="jobs-form-section" aria-labelledby="job-content-heading">
+            <header class="jobs-form-section-header">
+                <span aria-hidden="true">02</span>
+                <div>
+                    <h2 id="job-content-heading">Nội dung công việc</h2>
+                    <p>Mô tả rõ nhiệm vụ và tiêu chí để nhận được hồ sơ phù hợp hơn.</p>
+                </div>
+            </header>
+
+            <div class="jobs-form-fields">
+                <div class="jobs-form-field jobs-form-field-full">
+                    @Html.LabelFor(m => m.Description, new { @class = "form-label", id = "job-description-label" })
+                    <div class="rich-text-editor" data-rich-editor>
+                        <div class="rich-text-toolbar" role="toolbar" aria-label="Định dạng mô tả công việc">
+                            <button type="button" data-editor-command="bold" aria-label="In đậm" title="In đậm"><strong>B</strong></button>
+                            <button type="button" data-editor-command="italic" aria-label="In nghiêng" title="In nghiêng"><em>I</em></button>
+                            <span aria-hidden="true"></span>
+                            <button type="button" data-editor-block="p" aria-label="Đoạn văn" title="Đoạn văn">P</button>
+                            <button type="button" data-editor-block="h3" aria-label="Tiêu đề nhỏ" title="Tiêu đề nhỏ">H3</button>
+                            <span aria-hidden="true"></span>
+                            <button type="button" data-editor-command="insertUnorderedList" aria-label="Danh sách dấu chấm" title="Danh sách dấu chấm">•</button>
+                            <button type="button" data-editor-command="insertOrderedList" aria-label="Danh sách đánh số" title="Danh sách đánh số">1.</button>
+                            <span aria-hidden="true"></span>
+                            <button type="button" data-editor-command="undo" aria-label="Hoàn tác" title="Hoàn tác">↶</button>
+                            <button type="button" data-editor-command="redo" aria-label="Làm lại" title="Làm lại">↷</button>
+                            <button type="button" data-editor-command="removeFormat" aria-label="Xóa định dạng" title="Xóa định dạng">Tx</button>
+                        </div>
+                        <div class="rich-text-surface"
+                             contenteditable="true"
+                             role="textbox"
+                             aria-multiline="true"
+                             aria-labelledby="job-description-label"
+                             data-placeholder="Mô tả nhiệm vụ, trách nhiệm, môi trường làm việc..."
+                             data-editor-surface>@Html.Raw(RichTextSanitizer.Sanitize(Model.Description))</div>
+                        @Html.TextAreaFor(m => m.Description, new { @class = "rich-text-input", data_editor_input = "true", tabindex = "-1", aria_hidden = "true" })
+                        <div class="rich-text-footer">
+                            <span>Hỗ trợ đậm, nghiêng, tiêu đề và danh sách.</span>
+                            <span data-editor-count>0 / 20.000</span>
+                        </div>
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+                </div>
+                <div class="jobs-form-field jobs-form-field-full">
+                    @Html.LabelFor(m => m.Requirements, new { @class = "form-label", id = "job-requirements-label" })
+                    <div class="rich-text-editor" data-rich-editor>
+                        <div class="rich-text-toolbar" role="toolbar" aria-label="Định dạng yêu cầu ứng viên">
+                            <button type="button" data-editor-command="bold" aria-label="In đậm" title="In đậm"><strong>B</strong></button>
+                            <button type="button" data-editor-command="italic" aria-label="In nghiêng" title="In nghiêng"><em>I</em></button>
+                            <span aria-hidden="true"></span>
+                            <button type="button" data-editor-block="p" aria-label="Đoạn văn" title="Đoạn văn">P</button>
+                            <button type="button" data-editor-block="h3" aria-label="Tiêu đề nhỏ" title="Tiêu đề nhỏ">H3</button>
+                            <span aria-hidden="true"></span>
+                            <button type="button" data-editor-command="insertUnorderedList" aria-label="Danh sách dấu chấm" title="Danh sách dấu chấm">•</button>
+                            <button type="button" data-editor-command="insertOrderedList" aria-label="Danh sách đánh số" title="Danh sách đánh số">1.</button>
+                            <span aria-hidden="true"></span>
+                            <button type="button" data-editor-command="undo" aria-label="Hoàn tác" title="Hoàn tác">↶</button>
+                            <button type="button" data-editor-command="redo" aria-label="Làm lại" title="Làm lại">↷</button>
+                            <button type="button" data-editor-command="removeFormat" aria-label="Xóa định dạng" title="Xóa định dạng">Tx</button>
+                        </div>
+                        <div class="rich-text-surface"
+                             contenteditable="true"
+                             role="textbox"
+                             aria-multiline="true"
+                             aria-labelledby="job-requirements-label"
+                             data-placeholder="Kỹ năng, kinh nghiệm, bằng cấp, thái độ..."
+                             data-editor-surface>@Html.Raw(RichTextSanitizer.Sanitize(Model.Requirements))</div>
+                        @Html.TextAreaFor(m => m.Requirements, new { @class = "rich-text-input", data_editor_input = "true", tabindex = "-1", aria_hidden = "true" })
+                        <div class="rich-text-footer">
+                            <span>Hỗ trợ đậm, nghiêng, tiêu đề và danh sách.</span>
+                            <span data-editor-count>0 / 20.000</span>
+                        </div>
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Requirements, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </section>
     </div>
-    <div class="col-md-4">
-        @Html.LabelFor(m => m.IsActive, new { @class = "form-label d-block" })
-        <div class="form-check form-switch mt-2">
-            @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
-            <label class="form-check-label" for="IsActive">Cho phép ứng viên nộp hồ sơ</label>
-        </div>
-    </div>
-    <div class="col-md-6">
-        @Html.LabelFor(m => m.DepartmentID, new { @class = "form-label" })
-        @Html.DropDownListFor(m => m.DepartmentID, (IEnumerable<SelectListItem>)ViewBag.DepartmentID, "Chọn phòng ban", new { @class = "form-select" })
-        @Html.ValidationMessageFor(m => m.DepartmentID, "", new { @class = "text-danger" })
-    </div>
-    <div class="col-md-6">
-        @Html.LabelFor(m => m.JobPositionID, new { @class = "form-label" })
-        @Html.DropDownListFor(m => m.JobPositionID, (IEnumerable<SelectListItem>)ViewBag.JobPositionID, "Chọn vị trí", new { @class = "form-select" })
-        @Html.ValidationMessageFor(m => m.JobPositionID, "", new { @class = "text-danger" })
-    </div>
-    <div class="col-md-4">
-        @Html.LabelFor(m => m.Location, new { @class = "form-label" })
-        @Html.TextBoxFor(m => m.Location, new { @class = "form-control", placeholder = "Cao Lãnh, Đồng Tháp" })
-    </div>
-    <div class="col-md-4">
-        @Html.LabelFor(m => m.JobType, new { @class = "form-label" })
-        @Html.TextBoxFor(m => m.JobType, new { @class = "form-control", placeholder = "Toàn thời gian, Bán thời gian, Thực tập" })
-    </div>
-    <div class="col-md-4">
-        @Html.LabelFor(m => m.Deadline, new { @class = "form-label" })
-        @Html.TextBoxFor(m => m.Deadline, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-        @Html.ValidationMessageFor(m => m.Deadline, "", new { @class = "text-danger" })
-    </div>
-    <div class="col-md-6">
-        @Html.LabelFor(m => m.Industry, new { @class = "form-label" })
-        @Html.TextBoxFor(m => m.Industry, new { @class = "form-control", placeholder = "Công nghệ thông tin" })
-    </div>
-    <div class="col-md-6">
-        @Html.LabelFor(m => m.SalaryRange, new { @class = "form-label" })
-        @Html.TextBoxFor(m => m.SalaryRange, new { @class = "form-control", placeholder = "8 - 15 triệu hoặc Thoả thuận" })
-    </div>
-    <div class="col-12">
-        @Html.LabelFor(m => m.Description, new { @class = "form-label" })
-        @Html.TextAreaFor(m => m.Description, 7, 40, new { @class = "form-control", placeholder = "Mô tả nhiệm vụ, trách nhiệm, môi trường làm việc..." })
-        @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
-    </div>
-    <div class="col-12">
-        @Html.LabelFor(m => m.Requirements, new { @class = "form-label" })
-        @Html.TextAreaFor(m => m.Requirements, 6, 40, new { @class = "form-control", placeholder = "Kỹ năng, kinh nghiệm, bằng cấp, thái độ..." })
-        @Html.ValidationMessageFor(m => m.Requirements, "", new { @class = "text-danger" })
-    </div>
+
+    <aside class="jobs-form-sidebar" aria-label="Điều kiện và trạng thái tin tuyển dụng">
+        <section class="jobs-form-section" aria-labelledby="job-condition-heading">
+            <header class="jobs-form-section-header">
+                <span aria-hidden="true">03</span>
+                <div>
+                    <h2 id="job-condition-heading">Điều kiện công việc</h2>
+                    <p>Các thông tin ứng viên thường xem trước khi nộp hồ sơ.</p>
+                </div>
+            </header>
+
+            <div class="jobs-form-side-fields">
+                <div class="jobs-form-field">
+                    @Html.LabelFor(m => m.Location, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Location, new { @class = "form-control", placeholder = "Cao Lãnh, Đồng Tháp" })
+                </div>
+                <div class="jobs-form-field">
+                    @Html.LabelFor(m => m.JobType, new { @class = "form-label" })
+                    @Html.DropDownListFor(m => m.JobType, jobTypeOptions, "Chọn loại công việc", new { @class = "form-select" })
+                    <small class="form-text">Chọn một loại thống nhất để bộ lọc việc làm hoạt động chính xác.</small>
+                </div>
+                <div class="jobs-form-field">
+                    @Html.LabelFor(m => m.Deadline, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Deadline, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                    @Html.ValidationMessageFor(m => m.Deadline, "", new { @class = "text-danger" })
+                </div>
+                <div class="jobs-form-field">
+                    @Html.LabelFor(m => m.Industry, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Industry, new
+                    {
+                        @class = "form-control",
+                        list = "industry-suggestions",
+                        placeholder = "Nhập hoặc chọn lĩnh vực gợi ý",
+                        autocomplete = "off"
+                    })
+                    <datalist id="industry-suggestions">
+                        <option value="Công nghệ thông tin"></option>
+                        <option value="Kinh doanh"></option>
+                        <option value="Marketing"></option>
+                        <option value="Nhân sự"></option>
+                        <option value="Tài chính - Kế toán"></option>
+                        <option value="Thiết kế"></option>
+                        <option value="Vận hành"></option>
+                    </datalist>
+                    <small class="form-text">Bạn có thể chọn gợi ý hoặc nhập một lĩnh vực mới.</small>
+                </div>
+                <div class="jobs-form-field">
+                    @Html.LabelFor(m => m.SalaryRange, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.SalaryRange, new
+                    {
+                        @class = "form-control",
+                        type = "text",
+                        inputmode = "numeric",
+                        placeholder = "VD: 12000000 - 18000000"
+                    })
+                    <small class="form-text">Chỉ nhập số lớn hơn 0. Để trống nếu mức lương thỏa thuận.</small>
+                    @Html.ValidationMessageFor(m => m.SalaryRange, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </section>
+
+        <section class="jobs-form-section jobs-publish-section" aria-labelledby="job-publish-heading">
+            <header class="jobs-form-section-header">
+                <span aria-hidden="true">04</span>
+                <div>
+                    <h2 id="job-publish-heading">Trạng thái đăng</h2>
+                    <p>Kiểm soát thời điểm ứng viên có thể nhìn thấy và nộp hồ sơ.</p>
+                </div>
+            </header>
+
+            <div class="jobs-publish-control">
+                <div>
+                    <strong>Đang mở tuyển</strong>
+                    <small>Cho phép ứng viên nộp hồ sơ vào tin này.</small>
+                </div>
+                <div class="form-check form-switch">
+                    @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input", aria_label = "Cho phép ứng viên nộp hồ sơ" })
+                </div>
+            </div>
+        </section>
+    </aside>
 </div>

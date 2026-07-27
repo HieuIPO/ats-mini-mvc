@@ -273,6 +273,36 @@ BEGIN
 END
 GO
 
+IF OBJECT_ID(N'dbo.Notifications', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Notifications (
+        NotificationID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        RecipientUserID INT NOT NULL,
+        ApplicationID INT NULL,
+        NotificationType NVARCHAR(50) NOT NULL,
+        Title NVARCHAR(150) NOT NULL,
+        Message NVARCHAR(500) NOT NULL,
+        CreatedAt DATETIME NOT NULL CONSTRAINT DF_Notifications_CreatedAt DEFAULT GETDATE(),
+        ReadAt DATETIME NULL,
+        CONSTRAINT FK_Notifications_Recipient FOREIGN KEY (RecipientUserID) REFERENCES dbo.Users(UserID),
+        CONSTRAINT FK_Notifications_Application FOREIGN KEY (ApplicationID) REFERENCES dbo.Applications(ApplicationID)
+    );
+END
+GO
+
+IF OBJECT_ID(N'dbo.SavedJobs', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.SavedJobs (
+        SavedJobID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        CandidateUserID INT NOT NULL,
+        JobID INT NOT NULL,
+        SavedAt DATETIME NOT NULL CONSTRAINT DF_SavedJobs_SavedAt DEFAULT GETDATE(),
+        CONSTRAINT FK_SavedJobs_Candidate FOREIGN KEY (CandidateUserID) REFERENCES dbo.Users(UserID),
+        CONSTRAINT FK_SavedJobs_Job FOREIGN KEY (JobID) REFERENCES dbo.Jobs(JobID) ON DELETE CASCADE
+    );
+END
+GO
+
 /* =====================================================
    5. INDEXES
    ===================================================== */
@@ -308,6 +338,22 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Interviews_Date' AND object_id = OBJECT_ID(N'dbo.Interviews'))
     CREATE INDEX IX_Interviews_Date ON dbo.Interviews(InterviewDate, IsDeleted);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_Notifications_Application_Recipient_Type' AND object_id = OBJECT_ID(N'dbo.Notifications'))
+    CREATE UNIQUE INDEX UX_Notifications_Application_Recipient_Type
+        ON dbo.Notifications(ApplicationID, RecipientUserID, NotificationType)
+        WHERE ApplicationID IS NOT NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Notifications_Recipient_Read_Created' AND object_id = OBJECT_ID(N'dbo.Notifications'))
+    CREATE INDEX IX_Notifications_Recipient_Read_Created
+        ON dbo.Notifications(RecipientUserID, ReadAt, CreatedAt DESC);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_SavedJobs_Candidate_Job' AND object_id = OBJECT_ID(N'dbo.SavedJobs'))
+    CREATE UNIQUE INDEX UX_SavedJobs_Candidate_Job
+        ON dbo.SavedJobs(CandidateUserID, JobID);
 GO
 
 /* =====================================================

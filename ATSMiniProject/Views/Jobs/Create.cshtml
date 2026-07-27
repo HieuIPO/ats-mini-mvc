@@ -12,7 +12,11 @@
     <a class="btn btn-outline-secondary" href="@Url.Action("AdminIndex", "Jobs")">Quay lại</a>
 </div>
 
-<div class="form-card admin-form-card">
+@section scripts {
+    <script src="~/Scripts/app/rich-text-editor.js?v=20260726-1"></script>
+}
+
+<div class="form-card admin-form-card jobs-form-card">
     @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()

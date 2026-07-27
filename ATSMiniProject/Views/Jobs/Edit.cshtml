@@ -12,14 +12,18 @@
     <a class="btn btn-outline-secondary" href="@Url.Action("AdminIndex", "Jobs")">Quay lại</a>
 </div>
 
-<div class="form-card admin-form-card">
+@section scripts {
+    <script src="~/Scripts/app/rich-text-editor.js?v=20260726-1"></script>
+}
+
+<div class="form-card admin-form-card jobs-form-card">
     @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()
         @Html.Partial("_Form", Model)
         <div class="form-actions">
             <button class="btn btn-primary" type="submit">Cập nhật</button>
-            <a class="btn btn-outline-secondary" href="@Url.Action("Details", "Jobs", new { id = Model.JobID })">Xem chi tiết</a>
+            <a class="btn btn-outline-secondary" href="@Url.Action("AdminPreview", "Jobs", new { id = Model.JobID })">Xem chi tiết</a>
         </div>
     }
 </div>

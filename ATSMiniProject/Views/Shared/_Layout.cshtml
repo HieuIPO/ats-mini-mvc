@@ -4,18 +4,22 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewBag.Title - ATS Mini</title>
+    <meta name="description" content="Cổng tuyển dụng ATS Mini: tìm việc, nộp hồ sơ và theo dõi tiến trình ứng tuyển." />
+    <link rel="icon" type="image/png" sizes="64x64" href="~/Content/images/brand/ats-mini-favicon.png" />
     <link href="~/Content/bootstrap/bootstrap.min.css" rel="stylesheet" />
-    <link href="~/Content/css/site.css" rel="stylesheet" />
+    <link href="~/Content/css/site.css?v=20260727-5" rel="stylesheet" />
+    <link href="~/Content/css/ats-ui-v2.css?v=20260727-3" rel="stylesheet" />
 </head>
 <body class="public-body">
+    <a class="skip-link" href="#main-content">Bỏ qua menu</a>
     @Html.Partial("_Navbar")
-    <main class="public-main">
+    <main id="main-content" class="public-main" tabindex="-1">
         @Html.Partial("_Alert")
         @RenderBody()
     </main>
     @Html.Partial("_PublicFooter")
     <script src="~/Scripts/bootstrap/bootstrap.bundle.min.js"></script>
-    <script src="~/Scripts/app/site-interactions.js"></script>
+    <script src="~/Scripts/app/site-interactions.js?v=20260727-1"></script>
     @RenderSection("scripts", required: false)
 </body>
 </html>

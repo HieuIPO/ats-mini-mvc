@@ -24,10 +24,13 @@ namespace ATSMiniProject.Controllers
             int? statusId,
             DateTime? fromDate,
             DateTime? toDate,
+            string queue = "attention",
             int page = 1)
         {
             page = Math.Max(page, 1);
+            queue = NormalizeQueue(queue);
             var now = DateTime.Now;
+            var today = now.Date;
 
             using (var db = new ATSMiniDBContext())
             {
@@ -50,11 +53,6 @@ namespace ATSMiniProject.Controllers
                     query = query.Where(a => a.JobID == jobId.Value);
                 }
 
-                if (statusId.HasValue)
-                {
-                    query = query.Where(a => a.StatusID == statusId.Value);
-                }
-
                 if (fromDate.HasValue)
                 {
                     var from = fromDate.Value.Date;
@@ -67,18 +65,60 @@ namespace ATSMiniProject.Controllers
                     query = query.Where(a => a.AppliedDate < toExclusive);
                 }
 
+                var allCount = query.Count();
+                var attentionCount = query.Count(a => !a.ApplicationStatus.IsFinal);
+                var newCount = query.Count(a => a.ApplicationStatus.StatusName == "Mới nộp");
+                var reviewingCount = query.Count(a => a.ApplicationStatus.StatusName == "Đang xem xét");
+                var interviewCount = query.Count(a => a.ApplicationStatus.StatusName == "Mời phỏng vấn");
+                var finalCount = query.Count(a => a.ApplicationStatus.IsFinal);
+
+                if (statusId.HasValue)
+                {
+                    query = query.Where(a => a.StatusID == statusId.Value);
+                }
+                else if (queue == "attention")
+                {
+                    query = query.Where(a => !a.ApplicationStatus.IsFinal);
+                }
+                else if (queue == "new")
+                {
+                    query = query.Where(a => a.ApplicationStatus.StatusName == "Mới nộp");
+                }
+                else if (queue == "review")
+                {
+                    query = query.Where(a => a.ApplicationStatus.StatusName == "Đang xem xét");
+                }
+                else if (queue == "interview")
+                {
+                    query = query.Where(a => a.ApplicationStatus.StatusName == "Mời phỏng vấn");
+                }
+                else if (queue == "final")
+                {
+                    query = query.Where(a => a.ApplicationStatus.IsFinal);
+                }
+
                 var totalItems = query.Count();
                 var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)AdminPageSize));
                 page = Math.Min(page, totalPages);
 
-                var applications = query
-                    .OrderByDescending(a => a.AppliedDate)
-                    .ThenByDescending(a => a.ApplicationID)
+                var orderedQuery = queue == "attention" && !statusId.HasValue
+                    ? query
+                        .OrderBy(a => a.ApplicationStatus.StatusName == "Mới nộp" ? 0 :
+                                      a.ApplicationStatus.StatusName == "Đang xem xét" ? 1 :
+                                      a.ApplicationStatus.StatusName == "Mời phỏng vấn" ? 2 : 3)
+                        .ThenBy(a => a.AppliedDate)
+                        .ThenBy(a => a.ApplicationID)
+                    : query
+                        .OrderByDescending(a => a.AppliedDate)
+                        .ThenByDescending(a => a.ApplicationID);
+
+                var applications = orderedQuery
                     .Skip((page - 1) * AdminPageSize)
                     .Take(AdminPageSize)
                     .Select(a => new AdminApplicationListItemViewModel
                     {
                         ApplicationId = a.ApplicationID,
+                        CandidateUserId = a.CandidateUserID,
                         CandidateName = a.CandidateName,
                         CandidateEmail = a.CandidateEmail,
                         CandidatePhone = a.CandidatePhone,
@@ -87,6 +127,7 @@ namespace ATSMiniProject.Controllers
                         StatusName = a.ApplicationStatus.StatusName,
                         IsFinal = a.ApplicationStatus.IsFinal,
                         AppliedDate = a.AppliedDate,
+                        WaitingDays = DbFunctions.DiffDays(a.AppliedDate, now) ?? 0,
                         NextInterviewDate = a.Interviews
                             .Where(i => !i.IsDeleted && i.InterviewDate >= now)
                             .OrderBy(i => i.InterviewDate)
@@ -98,17 +139,42 @@ namespace ATSMiniProject.Controllers
                 var jobs = db.Jobs
                     .AsNoTracking()
                     .Where(j => !j.IsDeleted)
-                    .OrderByDescending(j => j.IsActive)
+                    .OrderByDescending(j => j.IsActive && (!j.Deadline.HasValue || j.Deadline.Value >= today))
+                    .ThenBy(j => j.Deadline.HasValue && j.Deadline.Value < today)
                     .ThenBy(j => j.Title)
-                    .Select(j => new { j.JobID, j.Title })
+                    .Select(j => new { j.JobID, j.Title, j.IsActive, j.Deadline })
                     .ToList()
-                    .Select(j => new SelectListItem
+                    .Select(j =>
                     {
-                        Value = j.JobID.ToString(),
-                        Text = j.Title,
-                        Selected = jobId.HasValue && j.JobID == jobId.Value
+                        var isExpired = j.Deadline.HasValue && j.Deadline.Value.Date < today;
+                        var statusLabel = isExpired
+                            ? "🟠 Hết hạn"
+                            : j.IsActive ? "🟢 Đang tuyển" : "🔴 Đã đóng";
+
+                        return new SelectListItem
+                        {
+                            Value = j.JobID.ToString(),
+                            Text = j.Title + " — " + statusLabel,
+                            Selected = jobId.HasValue && j.JobID == jobId.Value
+                        };
                     })
                     .ToList();
+
+                foreach (var application in applications)
+                {
+                    var avatarPath = GetCandidateAvatarPhysicalPath(application.CandidateUserId);
+                    if (!string.IsNullOrWhiteSpace(avatarPath) && System.IO.File.Exists(avatarPath))
+                    {
+                        application.CandidateAvatarUrl = Url.Action(
+                            "CandidateAvatar",
+                            "Applications",
+                            new
+                            {
+                                id = application.ApplicationId,
+                                v = System.IO.File.GetLastWriteTimeUtc(avatarPath).Ticks
+                            });
+                    }
+                }
 
                 var statuses = db.ApplicationStatuses
                     .AsNoTracking()
@@ -130,14 +196,76 @@ namespace ATSMiniProject.Controllers
                     StatusId = statusId,
                     FromDate = fromDate,
                     ToDate = toDate,
+                    Queue = queue,
                     Page = page,
                     TotalPages = totalPages,
                     TotalItems = totalItems,
+                    AttentionCount = attentionCount,
+                    NewCount = newCount,
+                    ReviewingCount = reviewingCount,
+                    InterviewCount = interviewCount,
+                    FinalCount = finalCount,
+                    AllCount = allCount,
                     Applications = applications,
                     Jobs = jobs,
                     Statuses = statuses
                 });
             }
+        }
+
+        [AuthorizeRole("Admin", "HR")]
+        [HttpGet]
+        public ActionResult CandidateAvatar(int id)
+        {
+            int? candidateUserId;
+            using (var db = new ATSMiniDBContext())
+            {
+                candidateUserId = db.Applications
+                    .AsNoTracking()
+                    .Where(a =>
+                        a.ApplicationID == id && !a.IsDeleted &&
+                        a.CandidateUserID.HasValue &&
+                        a.User.Role.RoleName == "Candidate")
+                    .Select(a => a.CandidateUserID)
+                    .SingleOrDefault();
+            }
+
+            var avatarPath = GetCandidateAvatarPhysicalPath(candidateUserId);
+            if (string.IsNullOrWhiteSpace(avatarPath) || !System.IO.File.Exists(avatarPath))
+            {
+                return HttpNotFound();
+            }
+
+            Response.Cache.SetCacheability(System.Web.HttpCacheability.Private);
+            Response.Cache.SetMaxAge(TimeSpan.FromDays(1));
+            return File(avatarPath, "image/jpeg");
+        }
+
+        private string GetCandidateAvatarPhysicalPath(int? candidateUserId)
+        {
+            if (!candidateUserId.HasValue)
+            {
+                return null;
+            }
+
+            return Path.Combine(
+                Server.MapPath("~/Uploads/Avatars"),
+                "candidate-" + candidateUserId.Value + ".jpg");
+        }
+
+        private static string NormalizeQueue(string queue)
+        {
+            var value = string.IsNullOrWhiteSpace(queue)
+                ? "attention"
+                : queue.Trim().ToLowerInvariant();
+
+            return value == "new" ||
+                   value == "review" ||
+                   value == "interview" ||
+                   value == "final" ||
+                   value == "all"
+                ? value
+                : "attention";
         }
 
         [AuthorizeRole("Candidate")]

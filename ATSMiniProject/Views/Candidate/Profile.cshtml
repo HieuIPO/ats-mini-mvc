@@ -2,151 +2,188 @@
 
 @{
     ViewBag.Title = "Hồ sơ cá nhân";
-    var avatarInitial = (string.IsNullOrWhiteSpace(Model.Profile.FullName)
+    var displayName = string.IsNullOrWhiteSpace(Model.Profile.FullName)
+        ? Model.Profile.Username
+        : Model.Profile.FullName;
+    var avatarInitial = (string.IsNullOrWhiteSpace(displayName)
         ? "U"
-        : Model.Profile.FullName.Substring(0, 1)).ToUpperInvariant();
+        : displayName.Substring(0, 1)).ToUpperInvariant();
 }
 
-<section class="candidate-page-band profile-page-band">
-    <div class="container candidate-page-band-inner">
-        <div>
-            <span class="eyebrow">Thông tin cá nhân</span>
-            <h1>Hồ sơ của tôi</h1>
-            <p>Quản lý thông tin liên hệ, ảnh đại diện và bảo mật tài khoản tại một nơi.</p>
+<main class="account-profile-page">
+    <section class="account-profile-hero" aria-labelledby="profile-page-title">
+        <div class="container account-profile-hero__inner">
+            <div class="account-profile-hero__copy">
+                <span class="account-profile-eyebrow">Tài khoản ứng viên</span>
+                <h1 id="profile-page-title">Hồ sơ cá nhân</h1>
+                <p>Cập nhật thông tin liên hệ, ảnh đại diện và bảo vệ tài khoản của bạn tại một nơi.</p>
+            </div>
+            <a class="account-profile-tracking-link" href="@Url.Action("Status", "Applications")">
+                <span>Xem hồ sơ đã nộp</span>
+                <span aria-hidden="true">→</span>
+            </a>
         </div>
-        <a class="btn btn-outline-light" href="@Url.Action("Status", "Applications")">Hồ sơ đã nộp</a>
-    </div>
-</section>
+    </section>
 
-<section class="candidate-section profile-page">
-    <div class="container candidate-container">
-        <div class="profile-layout">
-            <aside class="profile-identity" data-reveal>
-                <div class="profile-avatar-frame">
-                    <img class="profile-avatar-image @(Model.HasAvatar ? null : "d-none")"
-                         src="@(Model.AvatarUrl ?? string.Empty)"
-                         alt="Ảnh đại diện của @Model.Profile.FullName"
-                         data-avatar-preview />
-                    <span class="profile-avatar-fallback @(Model.HasAvatar ? "d-none" : null)"
-                          data-avatar-fallback>@avatarInitial</span>
-                </div>
-                <strong>@Model.Profile.FullName</strong>
-                <span>Ứng viên ATS Careers</span>
-
-                @using (Html.BeginForm(
-                    "UploadAvatar",
-                    "Candidate",
-                    FormMethod.Post,
-                    new { enctype = "multipart/form-data", @class = "avatar-upload-form" }))
-                {
-                    @Html.AntiForgeryToken()
-                    <input id="avatarFile"
-                           class="visually-hidden"
-                           type="file"
-                           name="avatarFile"
-                           accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-                           data-avatar-input />
-                    <label class="btn btn-outline-primary btn-sm w-100" for="avatarFile">Chọn ảnh từ máy</label>
-                    <small data-avatar-file-name>JPG hoặc PNG, tối đa 3 MB</small>
-                    <button class="btn btn-primary btn-sm w-100" type="submit">Cập nhật ảnh</button>
-                }
-
-                @if (Model.HasAvatar)
-                {
-                    using (Html.BeginForm(
-                        "RemoveAvatar",
-                        "Candidate",
-                        FormMethod.Post,
-                        new { @class = "avatar-remove-form" }))
-                    {
-                        @Html.AntiForgeryToken()
-                        <button class="btn btn-link btn-sm text-danger" type="submit">Xóa ảnh hiện tại</button>
-                    }
-                }
-
-                <div class="profile-readiness">
-                    <div><span></span></div>
-                    <small>Hồ sơ liên hệ đã sẵn sàng</small>
-                </div>
-            </aside>
-
-            <div class="profile-content-stack">
-                <section class="candidate-form-panel" data-reveal>
-                    <div class="form-panel-heading">
-                        <span class="eyebrow">Thông tin liên hệ</span>
-                        <h2>Thông tin ứng viên</h2>
-                        <p>Các thay đổi sẽ được dùng để điền nhanh cho lần ứng tuyển tiếp theo.</p>
+    <section class="account-profile-content" aria-label="Thiết lập hồ sơ">
+        <div class="container">
+            <div class="account-profile-grid">
+                <aside class="account-profile-identity" data-reveal>
+                    <div class="account-profile-avatar">
+                        <img class="account-profile-avatar__image @(Model.HasAvatar ? null : "d-none")"
+                             src="@(Model.AvatarUrl ?? string.Empty)"
+                             alt="Ảnh đại diện của @displayName"
+                             data-avatar-preview />
+                        <span class="account-profile-avatar__fallback @(Model.HasAvatar ? "d-none" : null)"
+                              aria-hidden="true"
+                              data-avatar-fallback>@avatarInitial</span>
                     </div>
-                    @using (Html.BeginForm(
-                        "Profile",
-                        "Candidate",
-                        FormMethod.Post,
-                        new { novalidate = "novalidate" }))
-                    {
-                        @Html.AntiForgeryToken()
-                        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
 
-                        <div class="mb-3">
-                            <label class="form-label">Tên đăng nhập</label>
-                            <input class="form-control" value="@Model.Profile.Username" disabled="disabled" />
-                            <div class="form-text">Tên đăng nhập không thể thay đổi.</div>
-                        </div>
-                        <div class="mb-3">
-                            @Html.LabelFor(model => model.Profile.FullName, new { @class = "form-label" })
-                            @Html.TextBoxFor(model => model.Profile.FullName, new { @class = "form-control", autocomplete = "name" })
-                            @Html.ValidationMessageFor(model => model.Profile.FullName, "", new { @class = "text-danger small" })
-                        </div>
-                        <div class="mb-3">
-                            @Html.LabelFor(model => model.Profile.Email, new { @class = "form-label" })
-                            @Html.TextBoxFor(model => model.Profile.Email, new { @class = "form-control", type = "email", autocomplete = "email" })
-                            @Html.ValidationMessageFor(model => model.Profile.Email, "", new { @class = "text-danger small" })
-                        </div>
-                        <div class="mb-4">
-                            @Html.LabelFor(model => model.Profile.Phone, new { @class = "form-label" })
-                            @Html.TextBoxFor(model => model.Profile.Phone, new { @class = "form-control", type = "tel", autocomplete = "tel" })
-                            @Html.ValidationMessageFor(model => model.Profile.Phone, "", new { @class = "text-danger small" })
-                        </div>
-                        <button class="btn btn-primary" type="submit">Lưu thông tin</button>
-                    }
-                </section>
-
-                <section class="candidate-form-panel security-panel" data-reveal>
-                    <div class="form-panel-heading">
-                        <span class="eyebrow">Bảo mật tài khoản</span>
-                        <h2>Đổi mật khẩu</h2>
-                        <p>Dùng mật khẩu riêng cho ATS Careers và không chia sẻ với người khác.</p>
+                    <div class="account-profile-identity__heading">
+                        <strong>@displayName</strong>
+                        <span>Ứng viên ATS Mini</span>
                     </div>
+
+                    <div class="account-profile-readiness">
+                        <span class="account-profile-readiness__icon" aria-hidden="true">✓</span>
+                        <div>
+                            <strong>Thông tin liên hệ đã sẵn sàng</strong>
+                            <span>Dùng để điền nhanh khi bạn ứng tuyển.</span>
+                        </div>
+                    </div>
+
                     @using (Html.BeginForm(
-                        "ChangePassword",
+                        "UploadAvatar",
                         "Candidate",
                         FormMethod.Post,
-                        new { novalidate = "novalidate" }))
+                        new { enctype = "multipart/form-data", @class = "account-profile-avatar-form" }))
                     {
                         @Html.AntiForgeryToken()
-                        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
-
-                        <div class="mb-3">
-                            @Html.LabelFor(model => model.Password.CurrentPassword, new { @class = "form-label" })
-                            @Html.PasswordFor(model => model.Password.CurrentPassword, new { @class = "form-control", autocomplete = "current-password" })
-                            @Html.ValidationMessageFor(model => model.Password.CurrentPassword, "", new { @class = "text-danger small" })
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                @Html.LabelFor(model => model.Password.NewPassword, new { @class = "form-label" })
-                                @Html.PasswordFor(model => model.Password.NewPassword, new { @class = "form-control", autocomplete = "new-password" })
-                                @Html.ValidationMessageFor(model => model.Password.NewPassword, "", new { @class = "text-danger small" })
-                            </div>
-                            <div class="col-md-6">
-                                @Html.LabelFor(model => model.Password.ConfirmPassword, new { @class = "form-label" })
-                                @Html.PasswordFor(model => model.Password.ConfirmPassword, new { @class = "form-control", autocomplete = "new-password" })
-                                @Html.ValidationMessageFor(model => model.Password.ConfirmPassword, "", new { @class = "text-danger small" })
-                            </div>
-                        </div>
-                        <div class="password-guidance">Tối thiểu 8 ký tự, có ít nhất một chữ cái và một chữ số.</div>
-                        <button class="btn btn-dark mt-3" type="submit">Đổi mật khẩu</button>
+                        <input id="avatarFile"
+                               class="visually-hidden"
+                               type="file"
+                               name="avatarFile"
+                               accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                               data-avatar-input />
+                        <label class="account-profile-file-trigger" for="avatarFile">
+                            <span aria-hidden="true">＋</span>
+                            <span>Chọn ảnh từ máy</span>
+                        </label>
+                        <small class="account-profile-file-note" data-avatar-file-name>JPG hoặc PNG, tối đa 3 MB</small>
+                        <button class="btn account-profile-primary-action" type="submit">Lưu ảnh đại diện</button>
                     }
-                </section>
+
+                    @if (Model.HasAvatar)
+                    {
+                        using (Html.BeginForm(
+                            "RemoveAvatar",
+                            "Candidate",
+                            FormMethod.Post,
+                            new { @class = "account-profile-remove-form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button class="account-profile-remove-action" type="submit">Xóa ảnh hiện tại</button>
+                        }
+                    }
+                </aside>
+
+                <div class="account-profile-main">
+                    <section class="account-profile-panel account-profile-contact" data-reveal aria-labelledby="contact-heading">
+                        <header class="account-profile-panel__header">
+                            <span class="account-profile-section-number" aria-hidden="true">01</span>
+                            <div>
+                                <span class="account-profile-eyebrow">Thông tin liên hệ</span>
+                                <h2 id="contact-heading">Thông tin ứng viên</h2>
+                                <p>Thông tin này sẽ được dùng để điền nhanh cho những lần ứng tuyển tiếp theo.</p>
+                            </div>
+                        </header>
+
+                        @using (Html.BeginForm(
+                            "Profile",
+                            "Candidate",
+                            FormMethod.Post,
+                            new { @class = "account-profile-form", novalidate = "novalidate" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                            <div class="account-profile-field account-profile-field--full">
+                                <label class="form-label" for="profileUsername">Tên đăng nhập</label>
+                                <input id="profileUsername" class="form-control account-profile-readonly" value="@Model.Profile.Username" disabled="disabled" />
+                                <span class="account-profile-help">Tên đăng nhập không thể thay đổi.</span>
+                            </div>
+
+                            <div class="account-profile-form-grid">
+                                <div class="account-profile-field">
+                                    @Html.LabelFor(model => model.Profile.FullName, new { @class = "form-label" })
+                                    @Html.TextBoxFor(model => model.Profile.FullName, new { @class = "form-control", autocomplete = "name" })
+                                    @Html.ValidationMessageFor(model => model.Profile.FullName, "", new { @class = "text-danger small" })
+                                </div>
+                                <div class="account-profile-field">
+                                    @Html.LabelFor(model => model.Profile.Phone, new { @class = "form-label" })
+                                    @Html.TextBoxFor(model => model.Profile.Phone, new { @class = "form-control", type = "tel", autocomplete = "tel" })
+                                    @Html.ValidationMessageFor(model => model.Profile.Phone, "", new { @class = "text-danger small" })
+                                </div>
+                                <div class="account-profile-field account-profile-field--wide">
+                                    @Html.LabelFor(model => model.Profile.Email, new { @class = "form-label" })
+                                    @Html.TextBoxFor(model => model.Profile.Email, new { @class = "form-control", type = "email", autocomplete = "email" })
+                                    @Html.ValidationMessageFor(model => model.Profile.Email, "", new { @class = "text-danger small" })
+                                </div>
+                            </div>
+
+                            <div class="account-profile-form-actions">
+                                <span>Mọi thay đổi chỉ áp dụng cho tài khoản của bạn.</span>
+                                <button class="btn account-profile-primary-action" type="submit">Lưu thông tin</button>
+                            </div>
+                        }
+                    </section>
+
+                    <section class="account-profile-panel account-profile-security" data-reveal aria-labelledby="security-heading">
+                        <header class="account-profile-panel__header">
+                            <span class="account-profile-section-number" aria-hidden="true">02</span>
+                            <div>
+                                <span class="account-profile-eyebrow">Bảo mật tài khoản</span>
+                                <h2 id="security-heading">Đổi mật khẩu</h2>
+                                <p>Dùng mật khẩu riêng cho ATS Mini và không chia sẻ mật khẩu với người khác.</p>
+                            </div>
+                        </header>
+
+                        @using (Html.BeginForm(
+                            "ChangePassword",
+                            "Candidate",
+                            FormMethod.Post,
+                            new { @class = "account-profile-form", novalidate = "novalidate" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                            <div class="account-profile-field account-profile-field--full">
+                                @Html.LabelFor(model => model.Password.CurrentPassword, new { @class = "form-label" })
+                                @Html.PasswordFor(model => model.Password.CurrentPassword, new { @class = "form-control", autocomplete = "current-password" })
+                                @Html.ValidationMessageFor(model => model.Password.CurrentPassword, "", new { @class = "text-danger small" })
+                            </div>
+
+                            <div class="account-profile-form-grid">
+                                <div class="account-profile-field">
+                                    @Html.LabelFor(model => model.Password.NewPassword, new { @class = "form-label" })
+                                    @Html.PasswordFor(model => model.Password.NewPassword, new { @class = "form-control", autocomplete = "new-password" })
+                                    @Html.ValidationMessageFor(model => model.Password.NewPassword, "", new { @class = "text-danger small" })
+                                </div>
+                                <div class="account-profile-field">
+                                    @Html.LabelFor(model => model.Password.ConfirmPassword, new { @class = "form-label" })
+                                    @Html.PasswordFor(model => model.Password.ConfirmPassword, new { @class = "form-control", autocomplete = "new-password" })
+                                    @Html.ValidationMessageFor(model => model.Password.ConfirmPassword, "", new { @class = "text-danger small" })
+                                </div>
+                            </div>
+
+                            <div class="account-profile-form-actions">
+                                <span>Tối thiểu 8 ký tự, có ít nhất một chữ cái và một chữ số.</span>
+                                <button class="btn account-profile-secondary-action" type="submit">Đổi mật khẩu</button>
+                            </div>
+                        }
+                    </section>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+</main>

@@ -18,6 +18,7 @@ namespace ATSMiniProject.Models
         public Job()
         {
             this.Applications = new HashSet<Application>();
+            this.SavedJobs = new HashSet<SavedJob>();
         }
     
         public int JobID { get; set; }
@@ -40,6 +41,8 @@ namespace ATSMiniProject.Models
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Application> Applications { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SavedJob> SavedJobs { get; set; }
         public virtual Department Department { get; set; }
         public virtual JobPosition JobPosition { get; set; }
         public virtual User User { get; set; }

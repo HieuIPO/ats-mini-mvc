@@ -1,4 +1,4 @@
-﻿@model ATSMiniProject.ViewModels.Applications.AdminApplicationListViewModel
+@model ATSMiniProject.ViewModels.Applications.AdminApplicationListViewModel
 
 @{
     ViewBag.Title = "Quản lý hồ sơ ứng viên";
@@ -12,52 +12,118 @@
         if (name == "Đang xem xét") return "badge-soft-primary";
         return "badge-soft-info";
     };
+
+    Func<string, string> queueUrl = value => Url.Action("Index", "Applications", new
+    {
+        keyword = Model.Keyword,
+        jobId = Model.JobId,
+        fromDate = Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : null,
+        toDate = Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : null,
+        queue = value
+    });
+
+    var queueTitle = Model.StatusId.HasValue ? "Bộ lọc trạng thái cụ thể" :
+                     Model.Queue == "new" ? "Hồ sơ mới nộp" :
+                     Model.Queue == "review" ? "Hồ sơ đang xem xét" :
+                     Model.Queue == "interview" ? "Hồ sơ chờ phỏng vấn" :
+                     Model.Queue == "final" ? "Hồ sơ đã kết thúc" :
+                     Model.Queue == "all" ? "Toàn bộ hồ sơ" : "Hàng đợi cần xử lý";
 }
 
-<div class="page-header">
+<div class="application-ops-page">
+<div class="page-header application-queue-header application-ops-header">
     <div>
         <span class="admin-eyebrow">Quản lý tuyển dụng</span>
         <h1>Hồ sơ ứng viên</h1>
-        <p>Tra cứu, đánh giá và theo dõi toàn bộ hồ sơ theo từng vị trí tuyển dụng.</p>
+        <p>Tập trung vào hồ sơ cần hành động, theo dõi thời gian chờ và xử lý theo từng giai đoạn.</p>
     </div>
     <a class="btn btn-primary" href="@Url.Action("Create", "Interviews")">Tạo lịch phỏng vấn</a>
 </div>
 
-<section class="admin-filter-panel" aria-label="Bộ lọc hồ sơ">
-    @using (Html.BeginForm("Index", "Applications", FormMethod.Get, new { @class = "admin-filter-grid application-filter-grid" }))
+<nav class="application-queue-tabs" aria-label="Hàng đợi hồ sơ ứng viên">
+    <a class="application-queue-tab @(!Model.StatusId.HasValue && Model.Queue == "attention" ? "is-active" : null)"
+       aria-current="@(!Model.StatusId.HasValue && Model.Queue == "attention" ? "page" : null)"
+       href="@queueUrl("attention")">
+        <span>Cần xử lý</span>
+        <strong>@Model.AttentionCount</strong>
+    </a>
+    <a class="application-queue-tab @(!Model.StatusId.HasValue && Model.Queue == "new" ? "is-active" : null)"
+       aria-current="@(!Model.StatusId.HasValue && Model.Queue == "new" ? "page" : null)"
+       href="@queueUrl("new")">
+        <span>Mới nộp</span>
+        <strong>@Model.NewCount</strong>
+    </a>
+    <a class="application-queue-tab @(!Model.StatusId.HasValue && Model.Queue == "review" ? "is-active" : null)"
+       aria-current="@(!Model.StatusId.HasValue && Model.Queue == "review" ? "page" : null)"
+       href="@queueUrl("review")">
+        <span>Đang xem xét</span>
+        <strong>@Model.ReviewingCount</strong>
+    </a>
+    <a class="application-queue-tab @(!Model.StatusId.HasValue && Model.Queue == "interview" ? "is-active" : null)"
+       aria-current="@(!Model.StatusId.HasValue && Model.Queue == "interview" ? "page" : null)"
+       href="@queueUrl("interview")">
+        <span>Mời phỏng vấn</span>
+        <strong>@Model.InterviewCount</strong>
+    </a>
+    <a class="application-queue-tab @(!Model.StatusId.HasValue && Model.Queue == "final" ? "is-active" : null)"
+       aria-current="@(!Model.StatusId.HasValue && Model.Queue == "final" ? "page" : null)"
+       href="@queueUrl("final")">
+        <span>Đã kết thúc</span>
+        <strong>@Model.FinalCount</strong>
+    </a>
+    <a class="application-queue-tab @(!Model.StatusId.HasValue && Model.Queue == "all" ? "is-active" : null)"
+       aria-current="@(!Model.StatusId.HasValue && Model.Queue == "all" ? "page" : null)"
+       href="@queueUrl("all")">
+        <span>Tất cả</span>
+        <strong>@Model.AllCount</strong>
+    </a>
+</nav>
+
+<section class="admin-filter-panel application-filter-panel" aria-label="Bộ lọc hồ sơ">
+    @using (Html.BeginForm("Index", "Applications", FormMethod.Get, new { @class = "application-filter-form" }))
     {
-        <div class="filter-field filter-field-wide">
-            <label for="keyword">Từ khóa</label>
-            <input id="keyword" name="keyword" class="form-control" value="@Model.Keyword" placeholder="Tên, email, điện thoại hoặc vị trí" />
+        @Html.Hidden("queue", Model.Queue)
+        <div class="application-ops-filter-heading">
+            <div>
+                <span class="application-ops-filter-kicker">Tìm kiếm &amp; sàng lọc</span>
+                <h2>Bộ lọc hồ sơ</h2>
+            </div>
+            <p>Thu hẹp danh sách theo vị trí, trạng thái và thời gian nộp.</p>
         </div>
-        <div class="filter-field">
-            <label for="jobId">Tin tuyển dụng</label>
-            @Html.DropDownList("jobId", Model.Jobs, "Tất cả tin tuyển dụng", new { @class = "form-select", id = "jobId" })
-        </div>
-        <div class="filter-field">
-            <label for="statusId">Trạng thái</label>
-            @Html.DropDownList("statusId", Model.Statuses, "Tất cả trạng thái", new { @class = "form-select", id = "statusId" })
-        </div>
-        <div class="filter-field">
-            <label for="fromDate">Từ ngày</label>
-            <input id="fromDate" name="fromDate" type="date" class="form-control" value="@(Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : null)" />
-        </div>
-        <div class="filter-field">
-            <label for="toDate">Đến ngày</label>
-            <input id="toDate" name="toDate" type="date" class="form-control" value="@(Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : null)" />
-        </div>
-        <div class="filter-actions">
-            <button class="btn btn-primary" type="submit">Áp dụng</button>
-            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Applications")">Đặt lại</a>
+        <div class="application-ops-filter-grid">
+            <div class="filter-field application-ops-search">
+                <label for="keyword">Ứng viên hoặc vị trí</label>
+                <input id="keyword" name="keyword" type="search" class="form-control" value="@Model.Keyword" placeholder="Tên, email, số điện thoại hoặc vị trí..." />
+            </div>
+            <div class="filter-field application-ops-job">
+                <label for="jobId">Tin tuyển dụng</label>
+                @Html.DropDownList("jobId", Model.Jobs, "Tất cả tin tuyển dụng", new { @class = "form-select", id = "jobId" })
+            </div>
+            <div class="filter-field application-ops-status">
+                <label for="statusId">Trạng thái hồ sơ</label>
+                @Html.DropDownList("statusId", Model.Statuses, "Tất cả trạng thái", new { @class = "form-select", id = "statusId" })
+            </div>
+            <div class="filter-field application-ops-date">
+                <label for="fromDate">Nộp từ ngày</label>
+                <input id="fromDate" name="fromDate" type="date" class="form-control" value="@(Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : null)" />
+            </div>
+            <div class="filter-field application-ops-date">
+                <label for="toDate">Nộp đến ngày</label>
+                <input id="toDate" name="toDate" type="date" class="form-control" value="@(Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : null)" />
+            </div>
+            <div class="application-ops-filter-actions">
+                <button class="btn btn-primary" type="submit">Lọc hồ sơ</button>
+                <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Applications")">Đặt lại</a>
+            </div>
         </div>
     }
 </section>
 
-<section class="ats-table-card">
-    <div class="ats-table-toolbar">
+<section class="ats-table-card application-queue-card is-visible" aria-labelledby="application-queue-heading">
+    <div class="ats-table-toolbar application-queue-toolbar">
         <div>
-            <strong>@Model.TotalItems hồ sơ</strong>
-            <span class="admin-toolbar-note">Sắp xếp theo thời điểm nộp mới nhất</span>
+            <strong id="application-queue-heading">@queueTitle · @Model.TotalItems hồ sơ</strong>
+            <span class="admin-toolbar-note">@(Model.Queue == "attention" && !Model.StatusId.HasValue ? "Ưu tiên theo giai đoạn và thời gian chờ lâu nhất" : "Sắp xếp theo thời điểm nộp mới nhất")</span>
         </div>
         <span class="admin-page-count">Trang @Model.Page / @Model.TotalPages</span>
     </div>
@@ -65,34 +131,66 @@
     @if (!Model.Applications.Any())
     {
         <div class="admin-empty-state">
-            <strong>Không tìm thấy hồ sơ phù hợp</strong>
-            <span>Hãy thay đổi điều kiện lọc hoặc kiểm tra lại dữ liệu tuyển dụng.</span>
+            <strong>Không có hồ sơ trong hàng đợi này</strong>
+            <span>Chọn một giai đoạn khác hoặc thay đổi điều kiện lọc.</span>
         </div>
     }
     else
     {
         <div class="table-responsive">
-            <table class="table ats-table align-middle">
+            <table class="table ats-table application-queue-table align-middle">
                 <thead>
                     <tr>
                         <th>Ứng viên</th>
                         <th>Vị trí ứng tuyển</th>
-                        <th>Ngày nộp</th>
-                        <th>Trạng thái</th>
-                        <th>Phỏng vấn tiếp theo</th>
-                        <th class="text-end">Thao tác</th>
+                        <th>Giai đoạn</th>
+                        <th>Thời gian chờ</th>
+                        <th class="text-end">Hành động tiếp theo</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model.Applications)
                     {
-                        <tr>
+                        var isNew = item.StatusName == "Mới nộp";
+                        var isWaiting = !item.IsFinal && item.WaitingDays >= 3;
+                        var waitingText = item.WaitingDays <= 0 ? "Hôm nay" :
+                                          item.WaitingDays == 1 ? "1 ngày" : item.WaitingDays + " ngày";
+                        var createInterview = item.StatusName == "Mời phỏng vấn" && !item.NextInterviewDate.HasValue;
+                        var actionText = item.IsFinal ? "Xem kết quả" :
+                                         createInterview ? "Tạo lịch phỏng vấn" :
+                                         isNew ? "Sàng lọc hồ sơ" : "Tiếp tục xử lý";
+                        var actionUrl = createInterview
+                            ? Url.Action("Create", "Interviews", new { applicationId = item.ApplicationId })
+                            : Url.Action("Review", "Applications", new { id = item.ApplicationId });
+
+                        <tr class="@(isNew ? "is-new" : null) @(isWaiting ? "needs-attention" : null)">
                             <td>
-                                <div class="table-primary-cell">
-                                    <span class="table-avatar">@item.CandidateName.Substring(0, 1).ToUpperInvariant()</span>
+                                <div class="table-primary-cell application-candidate-cell">
+                                    <span class="table-avatar">
+                                        @if (!string.IsNullOrWhiteSpace(item.CandidateAvatarUrl))
+                                        {
+                                            <img class="application-ops-avatar-image"
+                                                 src="@item.CandidateAvatarUrl"
+                                                 alt="" />
+                                        }
+                                        else
+                                        {
+                                            @item.CandidateName.Substring(0, 1).ToUpperInvariant()
+                                        }
+                                    </span>
                                     <span>
-                                        <strong>@item.CandidateName</strong>
-                                        <small>@item.CandidateEmail · @item.CandidatePhone</small>
+                                        <strong>
+                                            @item.CandidateName
+                                            @if (isNew)
+                                            {
+                                                <span class="application-new-indicator" title="Hồ sơ mới"><span class="visually-hidden">Hồ sơ mới</span></span>
+                                            }
+                                        </strong>
+                                        <small>Hồ sơ #@item.ApplicationId.ToString("D4")</small>
+                                        <span class="application-ops-contact">
+                                            <small>@item.CandidateEmail</small>
+                                            <small>@item.CandidatePhone</small>
+                                        </span>
                                     </span>
                                 </div>
                             </td>
@@ -101,25 +199,20 @@
                                 <small class="table-subtitle">@item.DepartmentName</small>
                             </td>
                             <td>
-                                <span>@item.AppliedDate.ToString("dd/MM/yyyy")</span>
-                                <small class="table-subtitle">@item.AppliedDate.ToString("HH:mm")</small>
-                            </td>
-                            <td>
                                 <span class="@statusClass(item.StatusName, item.IsFinal)">@item.StatusName</span>
                             </td>
-                            <td>
-                                @if (item.NextInterviewDate.HasValue)
-                                {
-                                    <strong>@item.NextInterviewDate.Value.ToString("dd/MM/yyyy")</strong>
-                                    <small class="table-subtitle">@item.NextInterviewDate.Value.ToString("HH:mm")</small>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">Chưa có lịch</span>
-                                }
+                            <td class="application-wait-cell">
+                                <strong class="@(isWaiting ? "application-wait-warning" : null)">@waitingText</strong>
+                                <small>Nộp @item.AppliedDate.ToString("dd/MM/yyyy · HH:mm")</small>
                             </td>
                             <td class="text-end">
-                                <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Review", "Applications", new { id = item.ApplicationId })">Xem hồ sơ</a>
+                                <div class="application-next-action">
+                                    @if (item.NextInterviewDate.HasValue)
+                                    {
+                                        <small>Lịch: @item.NextInterviewDate.Value.ToString("dd/MM · HH:mm")</small>
+                                    }
+                                    <a class="btn btn-sm btn-outline-primary" href="@actionUrl">@actionText</a>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -134,6 +227,7 @@
             @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
             {
                 <a class="@(pageNumber == Model.Page ? "active" : null)"
+                   aria-current="@(pageNumber == Model.Page ? "page" : null)"
                    href="@Url.Action("Index", "Applications", new
                    {
                        keyword = Model.Keyword,
@@ -141,9 +235,11 @@
                        statusId = Model.StatusId,
                        fromDate = Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : null,
                        toDate = Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : null,
+                       queue = Model.Queue,
                        page = pageNumber
                    })">@pageNumber</a>
             }
         </nav>
     }
 </section>
+</div>

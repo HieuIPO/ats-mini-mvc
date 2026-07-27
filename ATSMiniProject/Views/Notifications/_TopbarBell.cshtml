@@ -1,0 +1,45 @@
+@model ATSMiniProject.ViewModels.Notifications.NotificationTopbarViewModel
+
+<details class="admin-notification-menu">
+    <summary class="admin-notification-button"
+             aria-label="Mở thông báo@(Model.UnreadCount > 0 ? ", " + Model.UnreadCount + " chưa đọc" : string.Empty)">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+            <path d="M10 21h4"></path>
+        </svg>
+        @if (Model.UnreadCount > 0)
+        {
+            <span class="admin-notification-badge">@(Model.UnreadCount > 99 ? "99+" : Model.UnreadCount.ToString())</span>
+        }
+    </summary>
+
+    <div class="admin-notification-popover">
+        <div class="admin-notification-heading">
+            <strong>Thông báo</strong>
+            <a href="@Url.Action("Index", "Notifications")">Xem tất cả</a>
+        </div>
+
+        @if (Model.RecentItems.Count == 0)
+        {
+            <p class="admin-notification-empty">Chưa có thông báo.</p>
+        }
+        else
+        {
+            <div class="admin-notification-items">
+                @foreach (var item in Model.RecentItems)
+                {
+                    using (Html.BeginForm("Open", "Notifications", FormMethod.Post, new { @class = "admin-notification-form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("id", item.NotificationId)
+                        <button class="admin-notification-item @(item.IsRead ? string.Empty : "notification-item-unread")" type="submit">
+                            <strong>@item.Title</strong>
+                            <span>@item.Message</span>
+                            <small>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                        </button>
+                    }
+                }
+            </div>
+        }
+    </div>
+</details>

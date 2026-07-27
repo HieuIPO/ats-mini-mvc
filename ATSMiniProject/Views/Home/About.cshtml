@@ -1,0 +1,125 @@
+@{
+    ViewBag.Title = "Về ATS Mini";
+}
+
+<section class="about-hero">
+    <div class="container">
+        <div class="about-hero-grid">
+            <div class="about-hero-copy">
+                <span class="eyebrow">Về ATS Mini</span>
+                <h1>Nơi con người và cơ hội cùng phát triển</h1>
+                <p>ATS Mini xây dựng một môi trường làm việc cởi mở, nơi mỗi thành viên được trao quyền để học hỏi, thử nghiệm và tạo ra giá trị thiết thực cho khách hàng.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a class="btn btn-primary btn-lg" href="@Url.Action("Index", "Jobs")">Gia nhập đội ngũ</a>
+                    <a class="btn btn-outline-primary btn-lg" href="#van-hoa">Khám phá văn hóa</a>
+                </div>
+            </div>
+            <figure class="about-hero-media">
+                <img src="@Url.Content("~/Content/images/home-slider/ats-team-careers.png")"
+                     alt="Đội ngũ ATS Mini trao đổi công việc trong môi trường cộng tác"
+                     width="1728"
+                     height="928"
+                     decoding="async" />
+                <figcaption>
+                    <strong>Cùng làm điều có ý nghĩa</strong>
+                    <span>Tôn trọng khác biệt, chia sẻ kiến thức và tiến bộ mỗi ngày.</span>
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+</section>
+
+<section class="about-story-section">
+    <div class="container">
+        <div class="about-story-grid">
+            <header>
+                <span class="section-kicker">Câu chuyện của chúng tôi</span>
+                <h2>Một đội ngũ nhỏ với cách làm việc rõ ràng</h2>
+            </header>
+            <div class="about-story-copy">
+                <p>ATS Mini bắt đầu từ mong muốn làm cho quá trình tuyển dụng trở nên gần gũi và minh bạch hơn. Chúng tôi tin rằng trải nghiệm tốt không chỉ dành cho nhà tuyển dụng mà còn phải giúp ứng viên hiểu mình đang ở đâu trong hành trình ứng tuyển.</p>
+                <p>Vì vậy, đội ngũ tập trung vào ba điều: sản phẩm dễ sử dụng, giao tiếp thẳng thắn và quyết định dựa trên dữ liệu. Mỗi dự án là một cơ hội để các thành viên cùng học, cùng chịu trách nhiệm và cùng nhìn thấy tác động của công việc mình làm.</p>
+            </div>
+        </div>
+        <dl class="about-numbers" aria-label="Thông tin nổi bật về ATS Mini">
+            <div><dt>03</dt><dd>nhóm chuyên môn cùng phối hợp</dd></div>
+            <div><dt>01</dt><dd>quy trình tuyển dụng minh bạch</dd></div>
+            <div><dt>100%</dt><dd>vị trí được cập nhật trên hệ thống</dd></div>
+        </dl>
+    </div>
+</section>
+
+<section id="van-hoa" class="culture-section">
+    <div class="container">
+        <header class="culture-heading">
+            <span class="section-kicker">Văn hóa ATS Mini</span>
+            <h2>Cách chúng tôi làm việc cùng nhau</h2>
+            <p>Không phải khẩu hiệu treo trên tường, đây là những nguyên tắc được dùng trong từng buổi họp, quyết định và lần phản hồi.</p>
+        </header>
+        <div class="culture-grid">
+            <article class="culture-card culture-card-featured">
+                <span class="culture-index">01</span>
+                <h3>Chủ động tạo giá trị</h3>
+                <p>Mỗi thành viên hiểu mục tiêu, tự đề xuất giải pháp và chịu trách nhiệm đến cùng với kết quả.</p>
+            </article>
+            <article class="culture-card">
+                <span class="culture-index">02</span>
+                <h3>Thẳng thắn và tôn trọng</h3>
+                <p>Ý kiến khác biệt được lắng nghe. Phản hồi tập trung vào vấn đề và luôn đi cùng hướng cải thiện.</p>
+            </article>
+            <article class="culture-card">
+                <span class="culture-index">03</span>
+                <h3>Học nhanh từ thực tế</h3>
+                <p>Chúng tôi thử nghiệm có kiểm soát, đo lường kết quả và chia sẻ bài học cho cả đội.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="about-gallery-section">
+    <div class="container">
+        <div class="about-gallery">
+            <figure class="about-gallery-primary">
+                <img src="@Url.Content("~/Content/images/home-slider/team-meeting-vietnam.webp")"
+                     alt="Các thành viên ATS Mini trao đổi kế hoạch cùng nhau"
+                     width="1200"
+                     height="800"
+                     loading="lazy"
+                     decoding="async" />
+            </figure>
+            <figure>
+                <img src="@Url.Content("~/Content/images/home-slider/team-collaboration.jpg")"
+                     alt="Đội ngũ ATS Mini cùng phân tích tài liệu trong một buổi làm việc"
+                     width="1000"
+                     height="545"
+                     loading="lazy"
+                     decoding="async" />
+            </figure>
+            <div class="about-gallery-message">
+                <span>Con người tại ATS Mini</span>
+                <strong>Khác biệt trong góc nhìn, đồng lòng trong mục tiêu.</strong>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="career-alert-section career-alert-section-about">
+    <div class="container">
+        <div class="career-alert-banner">
+            <span class="career-alert-plane" aria-hidden="true">
+                <svg viewBox="0 0 180 130" focusable="false">
+                    <path d="M13 71 165 14 110 116 78 78 13 71Z"></path>
+                    <path d="m78 78 87-64-67 76"></path>
+                </svg>
+            </span>
+            <div class="career-alert-copy">
+                <span class="section-kicker">Bước tiếp theo của bạn</span>
+                <h2>Cùng ATS Mini tạo nên trải nghiệm tốt hơn</h2>
+                <p>Chọn vị trí phù hợp và bắt đầu hành trình ứng tuyển minh bạch, rõ ràng ngay hôm nay.</p>
+            </div>
+            <div class="career-alert-actions">
+                <a href="@Url.Action("Index", "Jobs")" class="btn btn-light btn-lg fw-semibold">Khám phá cơ hội</a>
+            </div>
+        </div>
+    </div>
+</section>

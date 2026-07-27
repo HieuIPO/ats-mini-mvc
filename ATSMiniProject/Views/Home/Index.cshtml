@@ -1,34 +1,338 @@
-﻿@{
+@model IEnumerable<ATSMiniProject.ViewModels.Jobs.JobCardViewModel>
+@{
     ViewBag.Title = "Trang chủ";
+    var isLoggedIn = Session["AuthUserID"] != null;
 }
 
 <section class="hero-section">
     <div class="container">
         <div class="row align-items-center g-4">
             <div class="col-lg-7">
-                <span class="eyebrow">ATS Mini</span>
-                <h1 class="hero-title">Quản lý tuyển dụng và theo dõi ứng viên rõ ràng hơn</h1>
-                <p class="hero-text">Hệ thống hỗ trợ đăng tin tuyển dụng, tiếp nhận CV, theo dõi trạng thái ứng viên và quản lý lịch phỏng vấn trong một quy trình gọn nhẹ.</p>
-                <div class="d-flex flex-wrap gap-2">
-                    <a class="btn btn-primary" href="@Url.Action("Index", "Jobs")">Xem việc đang tuyển</a>
-                    <a class="btn btn-outline-primary" href="@Url.Action("Login", "Account")">Đăng nhập HR/Admin</a>
+                <span class="eyebrow">Cơ hội tại ATS Mini</span>
+                <h1 class="hero-title">Gia nhập đội ngũ ATS Mini</h1>
+                <p class="hero-text">Khám phá các vị trí ATS Mini đang tuyển, tìm hiểu yêu cầu công việc và nộp hồ sơ trực tuyến. Mọi bước ứng tuyển được cập nhật rõ ràng trên hệ thống.</p>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a class="btn btn-primary px-4 py-2 fw-semibold" href="@Url.Action("Index", "Jobs")">Xem việc làm</a>
+                    <a class="btn btn-outline-primary px-4 py-2 fw-semibold" href="#huong-dan-ung-tuyen">Hướng dẫn ứng tuyển</a>
                 </div>
             </div>
             <div class="col-lg-5">
-                <div class="hero-panel">
-                    <div class="metric-card">
-                        <span>Tin đang mở</span>
-                        <strong>03</strong>
+                <figure class="career-hero-visual" data-home-slider aria-label="Hình ảnh môi trường làm việc">
+                    <div class="career-hero-slides">
+                        <img class="career-hero-slide is-active"
+                             src="@Url.Content("~/Content/images/home-slider/ats-team-careers.png")"
+                             alt="Nhóm nhân sự cùng trao đổi công việc bên máy tính"
+                             width="1728"
+                             height="928"
+                             fetchpriority="high"
+                             decoding="async"
+                             data-hero-slide
+                             aria-hidden="false" />
+                        <img class="career-hero-slide"
+                             src="@Url.Content("~/Content/images/home-slider/team-meeting-vietnam.webp")"
+                             alt="Nhóm nhân sự quốc tế thảo luận kế hoạch làm việc tại Việt Nam"
+                             width="1200"
+                             height="800"
+                             loading="lazy"
+                             decoding="async"
+                             data-hero-slide
+                             aria-hidden="true" />
+                        <img class="career-hero-slide"
+                             src="@Url.Content("~/Content/images/home-slider/team-collaboration.jpg")"
+                             alt="Các thành viên cùng phân tích tài liệu trong một buổi họp"
+                             width="1000"
+                             height="545"
+                             loading="lazy"
+                             decoding="async"
+                             data-hero-slide
+                             aria-hidden="true" />
+
+                        <button class="career-slider-control career-slider-previous"
+                                type="button"
+                                aria-label="Xem ảnh trước"
+                                data-slider-previous>
+                            <span aria-hidden="true">&#10094;</span>
+                        </button>
+                        <button class="career-slider-control career-slider-next"
+                                type="button"
+                                aria-label="Xem ảnh tiếp theo"
+                                data-slider-next>
+                            <span aria-hidden="true">&#10095;</span>
+                        </button>
+
+                        <div class="career-slider-indicators" role="group" aria-label="Chọn ảnh">
+                            <button class="is-active" type="button" aria-label="Hiển thị ảnh 1" aria-current="true" data-slide-to="0"></button>
+                            <button type="button" aria-label="Hiển thị ảnh 2" aria-current="false" data-slide-to="1"></button>
+                            <button type="button" aria-label="Hiển thị ảnh 3" aria-current="false" data-slide-to="2"></button>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <span>Hồ sơ mới</span>
-                        <strong>12</strong>
+                    <figcaption class="career-hero-caption">
+                        <span class="career-hero-caption-label">Gia nhập đội ngũ</span>
+                        <strong>Cùng làm việc, cùng phát triển</strong>
+                        <span>Khám phá vị trí phù hợp và bắt đầu hành trình tại ATS Mini.</span>
+                    </figcaption>
+                </figure>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section scripts {
+    <script>
+        (function () {
+            var slider = document.querySelector("[data-home-slider]");
+            if (!slider) {
+                return;
+            }
+
+            var slides = slider.querySelectorAll("[data-hero-slide]");
+            var indicators = slider.querySelectorAll("[data-slide-to]");
+            var previousButton = slider.querySelector("[data-slider-previous]");
+            var nextButton = slider.querySelector("[data-slider-next]");
+            var currentIndex = 0;
+            var timerId = null;
+
+            if (slides.length < 2) {
+                return;
+            }
+
+            function showSlide(index) {
+                currentIndex = (index + slides.length) % slides.length;
+
+                for (var i = 0; i < slides.length; i += 1) {
+                    var isCurrent = i === currentIndex;
+                    slides[i].classList.toggle("is-active", isCurrent);
+                    slides[i].setAttribute("aria-hidden", isCurrent ? "false" : "true");
+
+                    if (indicators[i]) {
+                        indicators[i].classList.toggle("is-active", isCurrent);
+                        indicators[i].setAttribute("aria-current", isCurrent ? "true" : "false");
+                    }
+                }
+            }
+
+            function stopAutoPlay() {
+                if (timerId !== null) {
+                    window.clearInterval(timerId);
+                    timerId = null;
+                }
+            }
+
+            function startAutoPlay() {
+                stopAutoPlay();
+                if (document.hidden) {
+                    return;
+                }
+
+                timerId = window.setInterval(function () {
+                    showSlide(currentIndex + 1);
+                }, 5000);
+            }
+
+            function selectSlide(index) {
+                showSlide(index);
+                startAutoPlay();
+            }
+
+            previousButton.addEventListener("click", function () {
+                selectSlide(currentIndex - 1);
+            });
+
+            nextButton.addEventListener("click", function () {
+                selectSlide(currentIndex + 1);
+            });
+
+            for (var i = 0; i < indicators.length; i += 1) {
+                indicators[i].addEventListener("click", function () {
+                    selectSlide(parseInt(this.getAttribute("data-slide-to"), 10));
+                });
+            }
+
+            document.addEventListener("visibilitychange", function () {
+                if (document.hidden) {
+                    stopAutoPlay();
+                } else {
+                    startAutoPlay();
+                }
+            });
+
+            startAutoPlay();
+        }());
+    </script>
+}
+
+<section id="huong-dan-ung-tuyen" class="process-section">
+    <div class="container">
+        <header class="process-heading">
+            <span class="process-kicker">Quy trình dành cho ứng viên</span>
+            <h2 class="process-section-title">Ứng tuyển chỉ trong 3 bước</h2>
+            <p class="process-section-lead">Từ lúc tìm vị trí phù hợp đến khi nhận lịch phỏng vấn, bạn có thể theo dõi mọi cập nhật ngay trên ATS Mini.</p>
+        </header>
+
+        <ol class="process-flow">
+            <li class="process-step">
+                <article class="process-card">
+                    <div class="process-card-top">
+                        <span class="process-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" focusable="false">
+                                <path d="M4.75 4.75h9.5v9.5h-9.5z"></path>
+                                <path d="M8 8h3M8 11h2"></path>
+                                <circle cx="15.5" cy="15.5" r="3.25"></circle>
+                                <path d="m18 18 2.25 2.25"></path>
+                            </svg>
+                        </span>
+                        <span class="process-number">Bước 01</span>
                     </div>
-                    <div class="metric-card">
-                        <span>Lịch phỏng vấn</span>
-                        <strong>04</strong>
+                    <span class="process-label">Khám phá cơ hội</span>
+                    <h3 class="process-title">Chọn vị trí phù hợp</h3>
+                    <p class="process-desc">Đọc mô tả công việc, yêu cầu chuyên môn và thời hạn nhận hồ sơ trước khi ứng tuyển.</p>
+                    <a class="process-link" href="@Url.Action("Index", "Jobs")">
+                        Xem việc làm <span aria-hidden="true">&rarr;</span>
+                    </a>
+                </article>
+            </li>
+
+            <li class="process-step">
+                <article class="process-card">
+                    <div class="process-card-top">
+                        <span class="process-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" focusable="false">
+                                <path d="M6.25 3.75h8l3.5 3.5v13H6.25z"></path>
+                                <path d="M14.25 3.75v3.5h3.5M12 17V10M9.25 12.75 12 10l2.75 2.75"></path>
+                            </svg>
+                        </span>
+                        <span class="process-number">Bước 02</span>
                     </div>
-                </div>
+                    <span class="process-label">Nộp hồ sơ</span>
+                    <h3 class="process-title">Gửi hồ sơ trực tuyến</h3>
+                    <p class="process-desc">Tạo tài khoản, điền thông tin liên hệ và tải CV định dạng PDF, DOC hoặc DOCX lên hệ thống.</p>
+                    <a class="process-link" href="@Url.Action("Register", "Account")">
+                        Tạo hồ sơ <span aria-hidden="true">&rarr;</span>
+                    </a>
+                </article>
+            </li>
+
+            <li class="process-step">
+                <article class="process-card">
+                    <div class="process-card-top">
+                        <span class="process-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" focusable="false">
+                                <path d="M5 4.75h14v14.5H5zM8 2.75v4M16 2.75v4M5 9h14"></path>
+                                <path d="m9 14 2 2 4-4"></path>
+                            </svg>
+                        </span>
+                        <span class="process-number">Bước 03</span>
+                    </div>
+                    <span class="process-label">Nhận cập nhật</span>
+                    <h3 class="process-title">Theo dõi kết quả</h3>
+                    <p class="process-desc">Kiểm tra trạng thái xử lý hồ sơ và lịch phỏng vấn ngay sau khi bộ phận tuyển dụng cập nhật.</p>
+                    <a class="process-link" href="@(isLoggedIn ? Url.Action("Status", "Applications") : Url.Action("Login", "Account", new { returnUrl = Url.Action("Status", "Applications") }))">
+                        Theo dõi hồ sơ <span aria-hidden="true">&rarr;</span>
+                    </a>
+                </article>
+            </li>
+        </ol>
+    </div>
+</section>
+
+<section class="featured-jobs-section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <h2 class="mb-0 fw-bold">Việc làm đang tuyển</h2>
+            <a href="@Url.Action("Index", "Jobs")" class="text-decoration-none fw-semibold">Xem tất cả &rarr;</a>
+        </div>
+        @if (Model != null && Model.Any())
+        {
+            <div class="row g-4">
+                @foreach (var job in Model.Take(3))
+                {
+                    <div class="col-md-4">
+                        <div class="job-card">
+                            <div class="job-card-top">
+                                <span class="job-type">@job.JobType</span>
+                                @if (job.Deadline.HasValue)
+                                {
+                                    <span class="job-deadline">Hạn: @job.Deadline.Value.ToString("dd/MM/yyyy")</span>
+                                }
+                            </div>
+                            <h2 class="h5 mb-2">
+                                <a href="@Url.Action("Details", "Jobs", new { id = job.JobId })" class="text-decoration-none text-dark">
+                                    @job.Title
+                                </a>
+                            </h2>
+                            <div class="job-department mb-3">@job.DepartmentName • @job.Location</div>
+                            <a href="@Url.Action("Details", "Jobs", new { id = job.JobId })" class="btn btn-outline-primary btn-sm w-100 fw-semibold">Xem chi tiết</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="candidate-empty">
+                <h2 class="h5">Hiện chưa có tin tuyển dụng nào đang mở.</h2>
+                <p>Vui lòng quay lại sau nhé!</p>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="benefits-section">
+    <div class="container">
+        <div class="benefits-layout">
+            <header class="benefits-heading">
+                <span class="section-kicker">Phúc lợi</span>
+                <h2>Làm việc tại ATS Mini có gì đáng mong đợi?</h2>
+                <p>Những chính sách thiết thực để mỗi thành viên yên tâm phát triển chuyên môn và duy trì nhịp sống cân bằng.</p>
+                <a href="@Url.Action("Index", "Jobs")">Xem các vị trí đang mở <span aria-hidden="true">&rarr;</span></a>
+            </header>
+            <div class="benefits-list">
+                <article class="benefit-item">
+                    <span class="benefit-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32"><path d="M16 28S5 22 5 12a6 6 0 0 1 11-3 6 6 0 0 1 11 3c0 10-11 16-11 16Z"></path><path d="M11 16h3l2-4 2 8 2-4h3"></path></svg>
+                    </span>
+                    <div><h3>Chăm sóc sức khỏe</h3><p>Khám sức khỏe định kỳ, ngày nghỉ phép và các hoạt động giúp đội ngũ duy trì thể chất lẫn tinh thần.</p></div>
+                </article>
+                <article class="benefit-item">
+                    <span class="benefit-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32"><path d="M5 25V12l11-6 11 6v13"></path><path d="M10 25v-8h12v8M3 25h26"></path></svg>
+                    </span>
+                    <div><h3>Môi trường làm việc linh hoạt</h3><p>Không gian cộng tác cởi mở, công cụ làm việc đầy đủ và cách phối hợp tập trung vào hiệu quả.</p></div>
+                </article>
+                <article class="benefit-item">
+                    <span class="benefit-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32"><path d="M6 25V9h20v16"></path><path d="m10 20 4-4 3 3 6-7M4 25h24"></path></svg>
+                    </span>
+                    <div><h3>Phát triển nghề nghiệp</h3><p>Mục tiêu rõ ràng, phản hồi định kỳ và cơ hội tham gia các dự án phù hợp với định hướng cá nhân.</p></div>
+                </article>
+                <article class="benefit-item">
+                    <span class="benefit-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32"><circle cx="11" cy="11" r="4"></circle><circle cx="22" cy="12" r="3"></circle><path d="M4 26c0-6 3-9 7-9s7 3 7 9M18 19c5-2 9 1 9 7"></path></svg>
+                    </span>
+                    <div><h3>Kết nối đội ngũ</h3><p>Các buổi chia sẻ nội bộ, hoạt động cộng đồng và chương trình gắn kết được tổ chức xuyên suốt năm.</p></div>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="career-alert-section">
+    <div class="container">
+        <div class="career-alert-banner">
+            <span class="career-alert-plane" aria-hidden="true">
+                <svg viewBox="0 0 180 130" focusable="false">
+                    <path d="M13 71 165 14 110 116 78 78 13 71Z"></path>
+                    <path d="m78 78 87-64-67 76"></path>
+                </svg>
+            </span>
+            <div class="career-alert-copy">
+                <span class="section-kicker">Cơ hội mới đang chờ bạn</span>
+                <h2>Đừng bỏ lỡ vị trí phù hợp</h2>
+                <p>Khám phá danh sách việc làm đang mở hoặc tạo hồ sơ để sẵn sàng ứng tuyển khi gặp đúng cơ hội.</p>
+            </div>
+            <div class="career-alert-actions">
+                <a href="@Url.Action("Index", "Jobs")" class="btn btn-light btn-lg fw-semibold">Xem việc làm mới</a>
+                <a href="@Url.Action("Register", "Account")" class="btn btn-outline-light btn-lg fw-semibold">Tạo hồ sơ</a>
             </div>
         </div>
     </div>

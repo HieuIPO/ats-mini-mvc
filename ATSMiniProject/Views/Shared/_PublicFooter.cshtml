@@ -1,33 +1,37 @@
-﻿<footer class="public-footer">
+<footer class="public-footer">
     <div class="container">
-        <div class="row gy-4 align-items-start">
+        <div class="row gy-4">
             <div class="col-lg-5">
-                <a class="public-footer-brand" href="@Url.Action("Index", "Home")">
-                    <span class="public-brand-mark">A</span>
-                    <span>ATS Mini</span>
+                <a class="public-footer-brand" href="@Url.Action("Index", "Home")" aria-label="ATS Mini - Trang chủ">
+                    <img class="public-footer-symbol"
+                         src="@Url.Content("~/Content/images/brand/ats-mini-symbol.png")"
+                         alt=""
+                         width="512"
+                         height="512" />
+                    <span class="fw-bold">ATS Mini</span>
                 </a>
-                <p class="public-footer-text">Nơi ứng viên khám phá cơ hội, nộp hồ sơ an toàn và theo dõi hành trình tuyển dụng một cách minh bạch.</p>
+                <p class="public-footer-text mt-3">Cổng tuyển dụng chính thức của ATS Mini. Tìm vị trí phù hợp, nộp CV và theo dõi tiến trình trên cùng một hệ thống.</p>
             </div>
             <div class="col-6 col-lg-2">
                 <h2>Khám phá</h2>
                 <a href="@Url.Action("Index", "Home")">Trang chủ</a>
-                <a href="@Url.Action("Index", "Jobs")">Việc làm đang tuyển</a>
-                <a href="@Url.Action("Login", "Account", new { returnUrl = Url.Action("Status", "Applications") })">Theo dõi hồ sơ</a>
+                <a href="@Url.Action("About", "Home")">Về ATS Mini</a>
+                <a href="@Url.Action("Index", "Jobs")">Việc làm</a>
+                <a href="@Url.Action("Index", "Home")#huong-dan-ung-tuyen">Hướng dẫn ứng tuyển</a>
             </div>
             <div class="col-6 col-lg-2">
-                <h2>Ứng viên</h2>
-                <a href="@Url.Action("Register", "Account")">Tạo tài khoản</a>
-                <a href="@Url.Action("Login", "Account")">Đăng nhập</a>
-                <a href="@Url.Action("Profile", "Candidate")">Hồ sơ cá nhân</a>
+                <h2>Tài khoản</h2>
+                <a href="@Url.Action("Register", "Account")">Tạo hồ sơ</a>
+                <a href="@Url.Action("Login", "Account", new { returnUrl = Url.Action("Status", "Applications") })">Theo dõi hồ sơ</a>
+                <a href="@Url.Action("Login", "Account")">Đăng nhập HR</a>
             </div>
             <div class="col-lg-3">
                 <h2>Liên hệ tuyển dụng</h2>
-                <p class="public-footer-text mb-0">Phòng Nhân sự ATS Mini<br />hr@ats.local<br />Thứ Hai - Thứ Sáu, 08:00 - 17:00</p>
+                <p class="public-footer-text mb-0">Phòng Nhân sự ATS Mini<br />Email: hr@ats.local<br />Hotline: 1900 1234</p>
             </div>
         </div>
-        <div class="public-footer-bottom">
-            <span>© @DateTime.Now.Year ATS Mini</span>
-            <span>Hệ thống quản lý tuyển dụng và ứng viên</span>
+        <div class="public-footer-bottom d-flex justify-content-between align-items-center mt-4 pt-3">
+            <span>© @DateTime.Now.Year ATS Mini. Cổng tuyển dụng nội bộ doanh nghiệp.</span>
         </div>
     </div>
 </footer>

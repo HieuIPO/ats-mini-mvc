@@ -4,22 +4,39 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewBag.Title - ATS Mini</title>
+    <meta name="description" content="Không gian quản trị tuyển dụng ATS Mini dành cho HR và Admin." />
+    <link rel="icon" type="image/png" sizes="64x64" href="~/Content/images/brand/ats-mini-favicon.png" />
     <link href="~/Content/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="~/Content/css/site.css" rel="stylesheet" />
+    <link href="~/Content/css/ats-ui-v2.css?v=20260727-1" rel="stylesheet" />
 </head>
 <body class="admin-body">
+    <a class="skip-link" href="#admin-content">Bỏ qua menu quản trị</a>
     <div class="admin-shell">
         @Html.Partial("_Sidebar")
         <div class="admin-main">
             @Html.Partial("_AdminTopbar")
-            <main class="admin-content">
+            <main id="admin-content" class="admin-content" tabindex="-1">
                 @Html.Partial("_Alert")
                 @RenderBody()
             </main>
         </div>
     </div>
+    <dialog class="ats-confirm-dialog" data-confirm-dialog aria-labelledby="ats-confirm-title" aria-describedby="ats-confirm-message">
+        <div class="ats-confirm-panel">
+            <span class="ats-confirm-icon" aria-hidden="true">!</span>
+            <div>
+                <h2 id="ats-confirm-title" data-confirm-title>Xác nhận thao tác</h2>
+                <p id="ats-confirm-message" data-confirm-message>Bạn có chắc chắn muốn thực hiện thao tác này?</p>
+            </div>
+            <div class="ats-confirm-actions">
+                <button class="btn btn-outline-secondary" type="button" data-confirm-cancel>Hủy</button>
+                <button class="btn btn-danger" type="button" data-confirm-submit>Xác nhận</button>
+            </div>
+        </div>
+    </dialog>
     <script src="~/Scripts/bootstrap/bootstrap.bundle.min.js"></script>
-    <script src="~/Scripts/app/site-interactions.js"></script>
+    <script src="~/Scripts/app/site-interactions.js?v=20260726-2"></script>
     @RenderSection("scripts", required: false)
 </body>
 </html>

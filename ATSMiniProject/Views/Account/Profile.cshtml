@@ -3,70 +3,243 @@
     ViewBag.Title = "Thông tin cá nhân";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     var initial = string.IsNullOrWhiteSpace(Model.FullName) ? "U" : Model.FullName.Substring(0, 1).ToUpperInvariant();
+    var hasAvatar = !string.IsNullOrWhiteSpace(Model.AvatarPath);
+    var avatarUrl = hasAvatar ? Url.Content(Model.AvatarPath) : string.Empty;
 }
 
-<div class="page-header">
-    <div>
+<div class="profile-page-shell">
+    <nav class="profile-breadcrumb" aria-label="Điều hướng phân cấp">
+        <a href="@Url.Action("Index", "Dashboard")">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+            Dashboard
+        </a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Thông tin cá nhân</span>
+    </nav>
+
+    <header class="profile-page-header">
         <h1>Thông tin cá nhân</h1>
-        <p>Cập nhật thông tin liên hệ và tải ảnh đại diện hiển thị trên thanh quản trị.</p>
-    </div>
-    <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Dashboard")">Về Dashboard</a>
-</div>
+        <p>Cập nhật thông tin liên hệ và ảnh đại diện hiển thị trên thanh quản trị.</p>
+    </header>
 
-<div class="profile-layout">
-    <aside class="profile-preview">
-        @if (!string.IsNullOrWhiteSpace(Model.AvatarPath))
-        {
-            <img class="profile-avatar-preview avatar-image" src="@Url.Content(Model.AvatarPath)" alt="Ảnh đại diện" />
-        }
-        else
-        {
-            <div class="profile-avatar-preview">@initial</div>
-        }
-        <h2>@Model.FullName</h2>
-        <p>@Model.Username · @Model.RoleName</p>
-        <div class="profile-contact">
-            <span>@Model.Email</span>
-            <span>@(string.IsNullOrWhiteSpace(Model.Phone) ? "Chưa cập nhật số điện thoại" : Model.Phone)</span>
-        </div>
-    </aside>
+    <div class="profile-layout">
+        <aside class="profile-preview" aria-labelledby="profile-preview-name">
+            <div class="profile-identity">
+                <label class="profile-avatar-action" for="AvatarFile" data-avatar-trigger tabindex="0" role="button" aria-label="Thay đổi ảnh đại diện" aria-describedby="avatar-help avatar-error">
+                    @if (hasAvatar)
+                    {
+                        <img class="profile-avatar-preview avatar-image" src="@avatarUrl" alt="Ảnh đại diện của @Model.FullName" data-profile-avatar-image />
+                        <span class="profile-avatar-preview" aria-hidden="true" data-profile-avatar-fallback hidden>@initial</span>
+                    }
+                    else
+                    {
+                        <img class="profile-avatar-preview avatar-image" alt="Xem trước ảnh đại diện" data-profile-avatar-image hidden />
+                        <span class="profile-avatar-preview" aria-hidden="true" data-profile-avatar-fallback>@initial</span>
+                    }
+                    <span class="profile-avatar-edit-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"></path><circle cx="12" cy="13" r="3.25"></circle></svg>
+                    </span>
+                </label>
+                <span class="profile-avatar-hint" id="avatar-help">Nhấp vào ảnh để thay đổi</span>
+                <h2 id="profile-preview-name">@Model.FullName</h2>
+                <span class="profile-role-badge">@Model.RoleName</span>
 
-    <div class="form-card admin-form-card">
-        @using (Html.BeginForm("Profile", "Account", FormMethod.Post, new { enctype = "multipart/form-data" }))
-        {
-            @Html.AntiForgeryToken()
-            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-            @Html.HiddenFor(m => m.Username)
-            @Html.HiddenFor(m => m.RoleName)
-            @Html.HiddenFor(m => m.AvatarPath)
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    @Html.LabelFor(m => m.FullName, new { @class = "form-label" })
-                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-control" })
-                    @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+                <div class="profile-avatar-selection" data-avatar-selection hidden>
+                    <div>
+                        <strong data-avatar-file-name>Chưa chọn ảnh mới</strong>
+                        <span data-avatar-file-size></span>
+                    </div>
+                    <button type="button" data-avatar-remove aria-label="Bỏ ảnh vừa chọn">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+                    </button>
                 </div>
-                <div class="col-md-6">
-                    @Html.LabelFor(m => m.Email, new { @class = "form-label" })
-                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email" })
-                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
-                </div>
-                <div class="col-md-6">
-                    @Html.LabelFor(m => m.Phone, new { @class = "form-label" })
-                    @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "VD: 0900000002" })
-                    @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
-                </div>
-                <div class="col-md-6">
-                    @Html.LabelFor(m => m.AvatarFile, new { @class = "form-label" })
-                    <input class="form-control" type="file" id="AvatarFile" name="AvatarFile" accept=".jpg,.jpeg,.png,.gif" />
-                    <div class="form-text">Chấp nhận JPG, PNG, GIF. Dung lượng tối đa 2MB.</div>
-                </div>
+                <span class="text-danger profile-avatar-error" id="avatar-error" data-avatar-error role="alert">@Html.ValidationMessageFor(m => m.AvatarFile, "")</span>
             </div>
 
-            <div class="form-actions">
-                <button class="btn btn-primary" type="submit">Lưu thông tin</button>
-                <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Dashboard")">Huỷ</a>
+            <div class="profile-contact" aria-label="Thông tin liên hệ">
+                <div class="profile-contact-row">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4z"></path><path d="m4 7 8 6 8-6"></path></svg>
+                    <div>
+                        <span>Email</span>
+                        <a href="mailto:@Model.Email">@Model.Email</a>
+                    </div>
+                </div>
+                <div class="profile-contact-row">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 4h3l1.5 4-2 1.5a15 15 0 0 0 4.5 4.5l1.5-2 4 1.5v3A2.5 2.5 0 0 1 17.5 19C10.6 19 5 13.4 5 6.5A2.5 2.5 0 0 1 7.5 4z"></path></svg>
+                    <div>
+                        <span>Số điện thoại</span>
+                        <strong>@(string.IsNullOrWhiteSpace(Model.Phone) ? "Chưa cập nhật" : Model.Phone)</strong>
+                    </div>
+                </div>
             </div>
-        }
+        </aside>
+
+        <section class="form-card admin-form-card profile-form-card" aria-labelledby="profile-form-title">
+            <div class="profile-form-heading">
+                <h2 id="profile-form-title">Chỉnh sửa thông tin</h2>
+                <p>Cập nhật thông tin liên hệ và ảnh đại diện của bạn.</p>
+            </div>
+
+            @using (Html.BeginForm("Profile", "Account", FormMethod.Post, new { enctype = "multipart/form-data", @class = "profile-form", data_profile_form = "true" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "text-danger profile-validation-summary" })
+                @Html.HiddenFor(m => m.Username)
+                @Html.HiddenFor(m => m.RoleName)
+                @Html.HiddenFor(m => m.AvatarPath)
+                <label class="visually-hidden" for="AvatarFile">Chọn ảnh đại diện</label>
+                <input class="profile-file-input" type="file" id="AvatarFile" name="AvatarFile" accept=".jpg,.jpeg,.png,.gif" data-avatar-input aria-describedby="avatar-help avatar-error" />
+
+                <div class="profile-fields">
+                    <div class="profile-field">
+                        @Html.LabelFor(m => m.FullName, new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", autocomplete = "name", aria_describedby = "FullName-error" })
+                        @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger", id = "FullName-error" })
+                    </div>
+
+                    <div class="profile-field">
+                        @Html.LabelFor(m => m.Email, new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", autocomplete = "email", aria_describedby = "Email-error" })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger", id = "Email-error" })
+                    </div>
+
+                    <div class="profile-field profile-field-half">
+                        @Html.LabelFor(m => m.Phone, new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "VD: 0900000002", autocomplete = "tel", inputmode = "tel", aria_describedby = "Phone-error" })
+                        @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger", id = "Phone-error" })
+                    </div>
+
+                </div>
+
+                <div class="form-actions profile-form-actions">
+                    <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Dashboard")" data-profile-cancel>Hủy</a>
+                    <button class="btn btn-primary" type="submit" data-profile-submit>
+                        <span class="profile-submit-spinner" aria-hidden="true"></span>
+                        <span data-profile-submit-label>Lưu thay đổi</span>
+                        <span class="visually-hidden" data-profile-loading-copy>Đang lưu...</span>
+                    </button>
+                </div>
+            }
+        </section>
     </div>
 </div>
+
+@section scripts {
+    <script>
+        (function () {
+            "use strict";
+
+            var form = document.querySelector("[data-profile-form]");
+            var input = document.querySelector("[data-avatar-input]");
+            var avatarTrigger = document.querySelector("[data-avatar-trigger]");
+            var avatarImage = document.querySelector("[data-profile-avatar-image]");
+            var avatarFallback = document.querySelector("[data-profile-avatar-fallback]");
+            var selection = document.querySelector("[data-avatar-selection]");
+            var fileName = document.querySelector("[data-avatar-file-name]");
+            var fileSize = document.querySelector("[data-avatar-file-size]");
+            var removeButton = document.querySelector("[data-avatar-remove]");
+            var error = document.querySelector("[data-avatar-error]");
+            var submitButton = document.querySelector("[data-profile-submit]");
+            var submitLabel = document.querySelector("[data-profile-submit-label]");
+            var objectUrl = null;
+            var originalAvatarUrl = avatarImage ? avatarImage.getAttribute("src") : "";
+            var allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+            var maximumBytes = 2 * 1024 * 1024;
+
+            if (!form || !input || !avatarTrigger || !avatarImage || !avatarFallback) {
+                return;
+            }
+
+            function clearObjectUrl() {
+                if (objectUrl) {
+                    URL.revokeObjectURL(objectUrl);
+                    objectUrl = null;
+                }
+            }
+
+            function resetSelection() {
+                clearObjectUrl();
+                input.value = "";
+                if (originalAvatarUrl) {
+                    avatarImage.src = originalAvatarUrl;
+                    avatarImage.hidden = false;
+                    avatarFallback.hidden = true;
+                } else {
+                    avatarImage.removeAttribute("src");
+                    avatarImage.hidden = true;
+                    avatarFallback.hidden = false;
+                }
+                selection.hidden = true;
+                fileName.textContent = "Chưa chọn ảnh mới";
+                fileSize.textContent = "";
+                error.textContent = "";
+                avatarTrigger.classList.remove("has-error", "has-file");
+            }
+
+            function showError(message) {
+                resetSelection();
+                error.textContent = message;
+                avatarTrigger.classList.add("has-error");
+            }
+
+            function showFile(file) {
+                if (!file) {
+                    resetSelection();
+                    return;
+                }
+                if (allowedTypes.indexOf(file.type) === -1) {
+                    showError("Định dạng ảnh không hợp lệ. Vui lòng chọn tệp JPG, PNG hoặc GIF.");
+                    return;
+                }
+                if (file.size > maximumBytes) {
+                    showError("Ảnh đại diện không được vượt quá 2MB.");
+                    return;
+                }
+
+                clearObjectUrl();
+                objectUrl = URL.createObjectURL(file);
+                avatarImage.src = objectUrl;
+                avatarImage.hidden = false;
+                avatarFallback.hidden = true;
+                fileName.textContent = file.name;
+                fileSize.textContent = (file.size / 1024).toFixed(file.size >= 1024 * 100 ? 0 : 1) + " KB";
+                selection.hidden = false;
+                error.textContent = "";
+                avatarTrigger.classList.remove("has-error");
+                avatarTrigger.classList.add("has-file");
+            }
+
+            input.addEventListener("change", function () {
+                showFile(input.files && input.files[0]);
+            });
+
+            avatarTrigger.addEventListener("keydown", function (event) {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    input.click();
+                }
+            });
+
+            removeButton.addEventListener("click", function () {
+                resetSelection();
+                avatarTrigger.focus();
+            });
+
+            form.addEventListener("submit", function (event) {
+                if (form.getAttribute("data-submitting") === "true") {
+                    event.preventDefault();
+                    return;
+                }
+                if (!form.checkValidity()) {
+                    return;
+                }
+                form.setAttribute("data-submitting", "true");
+                submitButton.disabled = true;
+                submitButton.setAttribute("aria-busy", "true");
+                submitLabel.textContent = "Đang lưu...";
+            });
+
+            window.addEventListener("beforeunload", clearObjectUrl);
+        }());
+    </script>
+}

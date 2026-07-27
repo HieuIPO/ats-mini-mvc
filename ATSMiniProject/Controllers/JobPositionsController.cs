@@ -12,9 +12,10 @@ namespace ATSMiniProject.Controllers
     [AuthorizeRole("Admin", "HR")]
     public class JobPositionsController : Controller
     {
+        private const int PageSize = 12;
         private readonly ATSMiniDBContext db = new ATSMiniDBContext();
 
-        public ActionResult Index(string keyword)
+        public ActionResult Index(string keyword, int page = 1)
         {
             var query = db.JobPositions.Where(p => !p.IsDeleted);
 
@@ -24,8 +25,33 @@ namespace ATSMiniProject.Controllers
                 query = query.Where(p => p.PositionName.Contains(trimmed) || p.Description.Contains(trimmed));
             }
 
-            ViewBag.Keyword = keyword;
-            return View(query.OrderByDescending(p => p.IsActive).ThenBy(p => p.PositionName).ToList());
+            var totalItems = query.Count();
+            var pagination = Pagination.Calculate(page, totalItems, PageSize);
+            var items = query
+                .OrderByDescending(p => p.IsActive)
+                .ThenBy(p => p.PositionName)
+                .ThenBy(p => p.JobPositionID)
+                .Skip(pagination.Offset)
+                .Take(pagination.PageSize)
+                .Select(p => new JobPositionListItemViewModel
+                {
+                    JobPositionID = p.JobPositionID,
+                    PositionName = p.PositionName,
+                    Description = p.Description,
+                    IsActive = p.IsActive
+                })
+                .ToList();
+
+            return View(new JobPositionListViewModel
+            {
+                Keyword = keyword,
+                Page = pagination.Page,
+                TotalPages = pagination.TotalPages,
+                TotalItems = pagination.TotalItems,
+                FirstItem = pagination.FirstItem,
+                LastItem = pagination.LastItem,
+                Items = items
+            });
         }
 
         [HttpGet]

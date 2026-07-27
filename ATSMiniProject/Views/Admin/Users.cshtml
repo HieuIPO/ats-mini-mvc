@@ -1,17 +1,189 @@
+@model ATSMiniProject.ViewModels.Admin.UserManagementListViewModel
 @{
     ViewBag.Title = "Tài khoản";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var systemTotal = Model.ActiveCount + Model.InactiveCount + Model.LockedCount;
+    var hasFilters = !String.IsNullOrWhiteSpace(Model.Keyword) || Model.RoleId.HasValue || Model.Status != "all";
 }
 
-<div class="page-header">
+<div class="page-header account-page-header">
     <div>
+        <span class="admin-eyebrow">Quản trị hệ thống</span>
         <h1>Tài khoản</h1>
-        <p>Phần quản lý tài khoản thuộc Thành viên 1. Trang tạm được thêm để menu không bị lỗi.</p>
+        <p>Theo dõi tài khoản hệ thống; tài khoản mới tại đây chỉ dành cho nhân sự nội bộ.</p>
     </div>
+    <a class="btn btn-primary" href="@Url.Action("UserCreate", "Admin")">Thêm nhân sự nội bộ</a>
 </div>
 
-<div class="placeholder-card">
-    <h2>Đang chờ module tài khoản</h2>
-    <p>Khi Thành viên 1 hoàn thiện, trang này sẽ quản lý người dùng, vai trò và trạng thái tài khoản.</p>
-    <a class="btn btn-primary" href="@Url.Action("Index", "Dashboard")">Về Dashboard</a>
-</div>
+<section class="account-metrics" aria-label="Tổng quan tài khoản">
+    <article>
+        <span>Tổng tài khoản</span>
+        <strong>@systemTotal</strong>
+        <small>Tất cả người dùng trong hệ thống</small>
+    </article>
+    <article>
+        <span>Đang hoạt động</span>
+        <strong>@Model.ActiveCount</strong>
+        <small>Có thể đăng nhập bình thường</small>
+    </article>
+    <article>
+        <span>Tạm khóa</span>
+        <strong>@Model.InactiveCount</strong>
+        <small>Đã bị Admin dừng truy cập</small>
+    </article>
+    <article>
+        <span>Khóa đăng nhập</span>
+        <strong>@Model.LockedCount</strong>
+        <small>Do đăng nhập sai nhiều lần</small>
+    </article>
+</section>
+
+<section class="ats-table-card account-table-card" aria-labelledby="account-results-heading">
+    <div class="ats-table-toolbar account-filter-toolbar">
+        @using (Html.BeginForm("Users", "Admin", FormMethod.Get, new { @class = "account-filter-form", role = "search" }))
+        {
+            <div class="account-search-field">
+                <label class="visually-hidden" for="account-keyword">Tìm tài khoản</label>
+                @Html.TextBoxFor(model => model.Keyword, new { @class = "form-control", id = "account-keyword", placeholder = "Tên, username, email hoặc số điện thoại..." })
+            </div>
+            <div>
+                <label class="visually-hidden" for="account-role">Vai trò</label>
+                @Html.DropDownListFor(model => model.RoleId, Model.RoleOptions, "Tất cả vai trò", new { @class = "form-select", id = "account-role" })
+            </div>
+            <div>
+                <label class="visually-hidden" for="account-status">Trạng thái</label>
+                <select class="form-select" id="account-status" name="status">
+                    <option value="all" @(Model.Status == "all" ? "selected" : null)>Tất cả trạng thái</option>
+                    <option value="active" @(Model.Status == "active" ? "selected" : null)>Đang hoạt động</option>
+                    <option value="inactive" @(Model.Status == "inactive" ? "selected" : null)>Tạm khóa</option>
+                    <option value="locked" @(Model.Status == "locked" ? "selected" : null)>Khóa đăng nhập</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" type="submit">Lọc</button>
+            if (hasFilters)
+            {
+                <a class="btn btn-link account-filter-reset" href="@Url.Action("Users", "Admin")">Xóa lọc</a>
+            }
+        }
+    </div>
+
+    <div class="departments-results-meta" aria-live="polite">
+        <div>
+            <strong id="account-results-heading">@Model.TotalItems tài khoản</strong>
+            <span>@(hasFilters ? "phù hợp với bộ lọc" : "trong danh sách hiện tại")</span>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table ats-table account-table align-middle">
+            <thead>
+                <tr>
+                    <th>Người dùng</th>
+                    <th>Liên hệ</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Đăng nhập gần nhất</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Users.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="departments-empty-cell">
+                            <div class="departments-empty-state" role="status">
+                                <span class="departments-empty-icon" aria-hidden="true">⌕</span>
+                                <strong>Không tìm thấy tài khoản</strong>
+                                <p>Thử thay đổi từ khóa, vai trò hoặc trạng thái đang lọc.</p>
+                                <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Users", "Admin")">Xem tất cả tài khoản</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td>
+                                <div class="account-user-cell">
+                                    @if (!string.IsNullOrWhiteSpace(user.AvatarUrl))
+                                    {
+                                        <img class="account-user-avatar"
+                                             src="@Url.Content(user.AvatarUrl)"
+                                             alt="Ảnh đại diện của @user.FullName" />
+                                    }
+                                    else
+                                    {
+                                        <span class="account-user-initial" aria-hidden="true">@(String.IsNullOrWhiteSpace(user.FullName) ? "?" : user.FullName.Substring(0, 1).ToUpperInvariant())</span>
+                                    }
+                                    <div>
+                                        <strong>@user.FullName</strong>
+                                        <small>@@@user.Username @(user.IsCurrentUser ? "· Bạn" : "")</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="account-contact">@user.Email</span>
+                                <small class="table-subtitle">@(String.IsNullOrWhiteSpace(user.Phone) ? "Chưa có số điện thoại" : user.Phone)</small>
+                            </td>
+                            <td><span class="account-role-badge role-@user.RoleName.ToLowerInvariant()">@user.RoleName</span></td>
+                            <td>
+                                @if (!user.IsActive)
+                                {
+                                    <span class="badge-soft-neutral">Tạm khóa</span>
+                                }
+                                else if (user.IsLocked)
+                                {
+                                    <span class="badge-soft-warning">Khóa đăng nhập</span>
+                                    <small class="table-subtitle">Đến @user.LockedUntil.Value.ToString("dd/MM HH:mm")</small>
+                                }
+                                else
+                                {
+                                    <span class="badge-soft-success">Đang hoạt động</span>
+                                }
+                            </td>
+                            <td>@(user.LastLoginAt.HasValue ? user.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa đăng nhập")</td>
+                            <td>
+                                <div class="account-row-actions">
+                                    <a class="btn btn-outline-primary btn-sm" href="@Url.Action("UserEdit", "Admin", new { id = user.UserId })">Sửa</a>
+                                    @if (!user.IsCurrentUser)
+                                    {
+                                        var command = !user.IsActive ? "activate" : (user.IsLocked ? "unlock" : "deactivate");
+                                        var actionLabel = !user.IsActive ? "Mở" : (user.IsLocked ? "Mở khóa" : "Tạm khóa");
+                                        using (Html.BeginForm("UpdateUserAccess", "Admin", FormMethod.Post, new
+                                        {
+                                            @class = "d-inline",
+                                            data_confirm = "true",
+                                            data_confirm_title = actionLabel + " tài khoản",
+                                            data_confirm_message = "Thay đổi quyền truy cập của tài khoản " + user.Username + ".",
+                                            data_confirm_action = actionLabel,
+                                            data_confirm_danger = command == "deactivate" ? "true" : "false"
+                                        }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            @Html.Hidden("id", user.UserId)
+                                            @Html.Hidden("command", command)
+                                            <button class="btn @(command == "deactivate" ? "btn-outline-danger" : "btn-outline-secondary") btn-sm" type="submit">@actionLabel</button>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="admin-pagination" aria-label="Phân trang tài khoản">
+            @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+            {
+                <a class="@(pageNumber == Model.Page ? "active" : null)"
+                   href="@Url.Action("Users", "Admin", new { keyword = Model.Keyword, roleId = Model.RoleId, status = Model.Status, page = pageNumber })">@pageNumber</a>
+            }
+        </nav>
+    }
+</section>

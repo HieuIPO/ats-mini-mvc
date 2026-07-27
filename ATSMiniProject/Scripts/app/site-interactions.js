@@ -222,11 +222,298 @@
         });
     }
 
+    function initializeCvFileName() {
+        var input = document.querySelector("[data-cv-input]");
+        var fileName = document.querySelector("[data-cv-file-name]");
+        if (!input || !fileName) {
+            return;
+        }
+
+        input.addEventListener("change", function () {
+            var file = input.files && input.files[0];
+            fileName.textContent = file ? file.name : "Chưa chọn tệp";
+        });
+    }
+
+    function initializeAutoDismissAlerts() {
+        var alerts = document.querySelectorAll("[data-auto-dismiss=\"true\"]");
+        alerts.forEach(function (alertElement) {
+            window.setTimeout(function () {
+                if (!document.body.contains(alertElement)) {
+                    return;
+                }
+
+                if (window.bootstrap && window.bootstrap.Alert) {
+                    window.bootstrap.Alert.getOrCreateInstance(alertElement).close();
+                } else {
+                    alertElement.remove();
+                }
+            }, 5000);
+        });
+    }
+
+    function initializeAdminSidebar() {
+        var shell = document.querySelector(".admin-shell");
+        var toggle = document.querySelector("[data-sidebar-toggle]");
+        if (!shell || !toggle) {
+            return;
+        }
+
+        var storageKey = "ats-admin-sidebar-collapsed";
+        var isCollapsed = false;
+        try {
+            isCollapsed = window.localStorage.getItem(storageKey) === "true";
+        } catch (error) {
+            isCollapsed = false;
+        }
+
+        function applyState() {
+            shell.classList.toggle("sidebar-collapsed", isCollapsed);
+            toggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+            toggle.setAttribute("aria-label", isCollapsed ? "Mở rộng thanh chức năng" : "Thu gọn thanh chức năng");
+            toggle.title = isCollapsed ? "Mở rộng thanh chức năng" : "Thu gọn thanh chức năng";
+        }
+
+        toggle.addEventListener("click", function () {
+            isCollapsed = !isCollapsed;
+            applyState();
+            try {
+                window.localStorage.setItem(storageKey, String(isCollapsed));
+            } catch (error) {
+                return;
+            }
+        });
+
+        applyState();
+    }
+
+    function initializeActionMenus() {
+        var menus = Array.prototype.slice.call(document.querySelectorAll(".job-actions-dropdown"));
+        if (!menus.length) {
+            return;
+        }
+
+        menus.forEach(function (menu) {
+            menu.addEventListener("toggle", function () {
+                if (!menu.open) {
+                    return;
+                }
+
+                menus.forEach(function (otherMenu) {
+                    if (otherMenu !== menu) {
+                        otherMenu.removeAttribute("open");
+                    }
+                });
+            });
+        });
+
+        document.addEventListener("click", function (event) {
+            if (event.target.closest(".job-actions-dropdown")) {
+                return;
+            }
+
+            menus.forEach(function (menu) {
+                menu.removeAttribute("open");
+            });
+        });
+    }
+
+    function initializeConfirmDialogs() {
+        var dialog = document.querySelector("[data-confirm-dialog]");
+        if (!dialog) {
+            return;
+        }
+
+        var title = dialog.querySelector("[data-confirm-title]");
+        var message = dialog.querySelector("[data-confirm-message]");
+        var cancelButton = dialog.querySelector("[data-confirm-cancel]");
+        var submitButton = dialog.querySelector("[data-confirm-submit]");
+        var pendingForm = null;
+        var approvedForm = null;
+
+        function closeDialog() {
+            pendingForm = null;
+            if (typeof dialog.close === "function") {
+                dialog.close();
+            } else {
+                dialog.removeAttribute("open");
+            }
+        }
+
+        document.addEventListener("submit", function (event) {
+            var form = event.target;
+            if (!form.matches("[data-confirm=\"true\"]")) {
+                return;
+            }
+
+            if (approvedForm === form) {
+                approvedForm = null;
+                return;
+            }
+
+            event.preventDefault();
+            pendingForm = form;
+            title.textContent = form.getAttribute("data-confirm-title") || "Xác nhận thao tác";
+            message.textContent = form.getAttribute("data-confirm-message") || "Bạn có chắc chắn muốn thực hiện thao tác này?";
+            submitButton.textContent = form.getAttribute("data-confirm-action") || "Xác nhận";
+            submitButton.classList.toggle("btn-danger", form.getAttribute("data-confirm-danger") === "true");
+            submitButton.classList.toggle("btn-primary", form.getAttribute("data-confirm-danger") !== "true");
+
+            if (typeof dialog.showModal === "function") {
+                dialog.showModal();
+            } else {
+                dialog.setAttribute("open", "open");
+            }
+            cancelButton.focus();
+        });
+
+        cancelButton.addEventListener("click", closeDialog);
+        dialog.addEventListener("cancel", function () {
+            pendingForm = null;
+        });
+        submitButton.addEventListener("click", function () {
+            if (!pendingForm) {
+                return;
+            }
+
+            var form = pendingForm;
+            approvedForm = form;
+            closeDialog();
+            if (typeof form.requestSubmit === "function") {
+                form.requestSubmit();
+            } else {
+                form.submit();
+            }
+        });
+    }
+
+    function savedJobButtons(form) {
+        var buttons = Array.prototype.slice.call(form.querySelectorAll(".job-save-button"));
+        if (form.id) {
+            buttons = buttons.concat(Array.prototype.slice.call(
+                document.querySelectorAll('[form="' + form.id + '"]')
+            ));
+        }
+
+        return buttons;
+    }
+
+    function updateSavedJobButton(button, saved) {
+        var jobTitle = button.getAttribute("data-job-title") || "tin tuyển dụng";
+        var visibleLabel = saved ? "Bỏ lưu" : "Lưu tin";
+        button.classList.toggle("is-saved", saved);
+        button.setAttribute("aria-pressed", saved ? "true" : "false");
+        button.setAttribute("aria-label", visibleLabel + " " + jobTitle);
+        button.setAttribute("title", visibleLabel);
+
+        var hiddenLabel = button.querySelector(".visually-hidden");
+        if (hiddenLabel) {
+            hiddenLabel.textContent = visibleLabel;
+        }
+    }
+
+    function announceSavedJob(message, isError) {
+        var feedback = document.querySelector("[data-saved-job-feedback]");
+        if (!feedback) {
+            feedback = document.createElement("div");
+            feedback.className = "job-save-feedback";
+            feedback.setAttribute("data-saved-job-feedback", "");
+            feedback.setAttribute("role", "status");
+            feedback.setAttribute("aria-live", "polite");
+            document.body.appendChild(feedback);
+        }
+
+        feedback.classList.toggle("is-error", Boolean(isError));
+        feedback.textContent = message;
+        feedback.classList.add("is-visible");
+        window.clearTimeout(feedback.hideTimer);
+        feedback.hideTimer = window.setTimeout(function () {
+            feedback.classList.remove("is-visible");
+        }, 2200);
+    }
+
+    function initializeSavedJobForms() {
+        if (!window.fetch) {
+            return;
+        }
+
+        document.addEventListener("submit", function (event) {
+            var form = event.target;
+            if (!form.matches("[data-saved-job-form]") || form.getAttribute("data-busy") === "true") {
+                return;
+            }
+
+            event.preventDefault();
+            form.setAttribute("data-busy", "true");
+            var buttons = savedJobButtons(form);
+            buttons.forEach(function (button) {
+                button.disabled = true;
+                button.classList.add("is-loading");
+                button.setAttribute("aria-busy", "true");
+            });
+
+            fetch(form.action, {
+                method: "POST",
+                body: new FormData(form),
+                credentials: "same-origin",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "application/json"
+                }
+            }).then(function (response) {
+                if (!response.ok) {
+                    throw new Error("Saved job request failed.");
+                }
+
+                return response.json();
+            }).then(function (result) {
+                var saved = Boolean(result.saved);
+                form.action = saved
+                    ? form.getAttribute("data-unsave-url")
+                    : form.getAttribute("data-save-url");
+                buttons.forEach(function (button) {
+                    updateSavedJobButton(button, saved);
+                });
+
+                if (!saved && form.getAttribute("data-remove-card-on-unsave") === "true") {
+                    var card = form.closest(".candidate-saved-job-card");
+                    if (card) {
+                        card.remove();
+                        var count = document.querySelector("[data-saved-jobs-count]");
+                        if (count) {
+                            var currentCount = parseInt(count.textContent, 10);
+                            count.textContent = Number.isNaN(currentCount)
+                                ? document.querySelectorAll(".candidate-saved-job-card").length
+                                : Math.max(0, currentCount - 1);
+                        }
+                    }
+                }
+
+                announceSavedJob(saved ? "Đã lưu tin tuyển dụng" : "Đã bỏ lưu tin tuyển dụng", false);
+            }).catch(function () {
+                announceSavedJob("Không thể cập nhật tin đã lưu. Vui lòng thử lại.", true);
+            }).then(function () {
+                form.removeAttribute("data-busy");
+                buttons.forEach(function (button) {
+                    button.disabled = false;
+                    button.classList.remove("is-loading");
+                    button.removeAttribute("aria-busy");
+                });
+            });
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         initializePasswordToggles();
         initializeHeroCarousel();
         initializeScrollReveal();
         initializeAvatarPreview();
         initializeNavbarAvatar();
+        initializeCvFileName();
+        initializeAutoDismissAlerts();
+        initializeAdminSidebar();
+        initializeActionMenus();
+        initializeConfirmDialogs();
+        initializeSavedJobForms();
     });
 }());
