@@ -413,41 +413,41 @@ WHERE r.RoleName = N'Candidate'
 GO
 
 INSERT INTO dbo.Departments (DepartmentName, Description, CreatedByUserID)
-SELECT N'Phong Cong nghe thong tin', N'Phu trach phat trien phan mem va he thong', u.UserID
+SELECT N'Phòng Công nghệ thông tin', N'Phụ trách phát triển phần mềm và hệ thống', u.UserID
 FROM dbo.Users u
 WHERE u.Username = N'admin'
-  AND NOT EXISTS (SELECT 1 FROM dbo.Departments WHERE DepartmentName = N'Phong Cong nghe thong tin');
+  AND NOT EXISTS (SELECT 1 FROM dbo.Departments WHERE DepartmentName = N'Phòng Công nghệ thông tin');
 
 INSERT INTO dbo.Departments (DepartmentName, Description, CreatedByUserID)
-SELECT N'Phong Kinh doanh', N'Phu trach ban hang va cham soc khach hang', u.UserID
+SELECT N'Phòng Kinh doanh', N'Phụ trách bán hàng và chăm sóc khách hàng', u.UserID
 FROM dbo.Users u
 WHERE u.Username = N'admin'
-  AND NOT EXISTS (SELECT 1 FROM dbo.Departments WHERE DepartmentName = N'Phong Kinh doanh');
+  AND NOT EXISTS (SELECT 1 FROM dbo.Departments WHERE DepartmentName = N'Phòng Kinh doanh');
 
 INSERT INTO dbo.Departments (DepartmentName, Description, CreatedByUserID)
-SELECT N'Phong Nhan su', N'Phu trach tuyen dung va hanh chinh', u.UserID
+SELECT N'Phòng Nhân sự', N'Phụ trách tuyển dụng và hành chính', u.UserID
 FROM dbo.Users u
 WHERE u.Username = N'admin'
-  AND NOT EXISTS (SELECT 1 FROM dbo.Departments WHERE DepartmentName = N'Phong Nhan su');
+  AND NOT EXISTS (SELECT 1 FROM dbo.Departments WHERE DepartmentName = N'Phòng Nhân sự');
 GO
 
 INSERT INTO dbo.JobPositions (PositionName, Description, CreatedByUserID)
-SELECT N'Lap trinh vien Web', N'Phat trien ung dung web bang ASP.NET/C#', u.UserID
+SELECT N'Lập trình viên Web', N'Phát triển ứng dụng web bằng ASP.NET/C#', u.UserID
 FROM dbo.Users u
 WHERE u.Username = N'admin'
-  AND NOT EXISTS (SELECT 1 FROM dbo.JobPositions WHERE PositionName = N'Lap trinh vien Web');
+  AND NOT EXISTS (SELECT 1 FROM dbo.JobPositions WHERE PositionName = N'Lập trình viên Web');
 
 INSERT INTO dbo.JobPositions (PositionName, Description, CreatedByUserID)
-SELECT N'Chuyen vien kinh doanh', N'Tim kiem va cham soc khach hang', u.UserID
+SELECT N'Chuyên viên kinh doanh', N'Tìm kiếm và chăm sóc khách hàng', u.UserID
 FROM dbo.Users u
 WHERE u.Username = N'admin'
-  AND NOT EXISTS (SELECT 1 FROM dbo.JobPositions WHERE PositionName = N'Chuyen vien kinh doanh');
+  AND NOT EXISTS (SELECT 1 FROM dbo.JobPositions WHERE PositionName = N'Chuyên viên kinh doanh');
 
 INSERT INTO dbo.JobPositions (PositionName, Description, CreatedByUserID)
-SELECT N'Thuc tap sinh nhan su', N'Ho tro cong tac tuyen dung va ho so nhan su', u.UserID
+SELECT N'Thực tập sinh nhân sự', N'Hỗ trợ công tác tuyển dụng và hồ sơ nhân sự', u.UserID
 FROM dbo.Users u
 WHERE u.Username = N'admin'
-  AND NOT EXISTS (SELECT 1 FROM dbo.JobPositions WHERE PositionName = N'Thuc tap sinh nhan su');
+  AND NOT EXISTS (SELECT 1 FROM dbo.JobPositions WHERE PositionName = N'Thực tập sinh nhân sự');
 GO
 
 INSERT INTO dbo.ApplicationStatuses (StatusName, Description, DisplayOrder, IsFinal)
@@ -520,9 +520,9 @@ SELECT N'Tuyen lap trinh vien ASP.NET MVC',
        N'Biet C#, ASP.NET MVC, SQL Server. Co kien thuc HTML, CSS, JavaScript.',
        d.DepartmentID, p.JobPositionID, N'Cong nghe thong tin', N'8 - 15 trieu', N'Cao Lanh, Dong Thap', N'Full-time', DATEADD(DAY, 30, CAST(GETDATE() AS DATE)), u.UserID, 1
 FROM dbo.Departments d
-JOIN dbo.JobPositions p ON p.PositionName = N'Lap trinh vien Web'
+JOIN dbo.JobPositions p ON p.PositionName = N'Lập trình viên Web'
 JOIN dbo.Users u ON u.Username = N'hr01'
-WHERE d.DepartmentName = N'Phong Cong nghe thong tin'
+WHERE d.DepartmentName = N'Phòng Công nghệ thông tin'
   AND NOT EXISTS (SELECT 1 FROM dbo.Jobs WHERE Title = N'Tuyen lap trinh vien ASP.NET MVC');
 
 INSERT INTO dbo.Jobs (Title, Description, Requirements, DepartmentID, JobPositionID, Industry, SalaryRange, Location, JobType, Deadline, CreatedByUserID, IsActive)
@@ -531,9 +531,9 @@ SELECT N'Tuyen chuyen vien kinh doanh',
        N'Giao tiep tot, nang dong, co kha nang lam viec nhom.',
        d.DepartmentID, p.JobPositionID, N'Kinh doanh', N'7 - 12 trieu', N'Can Tho', N'Full-time', DATEADD(DAY, 25, CAST(GETDATE() AS DATE)), u.UserID, 1
 FROM dbo.Departments d
-JOIN dbo.JobPositions p ON p.PositionName = N'Chuyen vien kinh doanh'
+JOIN dbo.JobPositions p ON p.PositionName = N'Chuyên viên kinh doanh'
 JOIN dbo.Users u ON u.Username = N'hr01'
-WHERE d.DepartmentName = N'Phong Kinh doanh'
+WHERE d.DepartmentName = N'Phòng Kinh doanh'
   AND NOT EXISTS (SELECT 1 FROM dbo.Jobs WHERE Title = N'Tuyen chuyen vien kinh doanh');
 
 INSERT INTO dbo.Jobs (Title, Description, Requirements, DepartmentID, JobPositionID, Industry, SalaryRange, Location, JobType, Deadline, CreatedByUserID, IsActive)
@@ -542,9 +542,9 @@ SELECT N'Tuyen thuc tap sinh nhan su',
        N'Sinh vien nam 3 hoac nam 4, can than, biet dung Word/Excel co ban.',
        d.DepartmentID, p.JobPositionID, N'Nhan su', N'Ho tro 2 - 4 trieu', N'Cao Lanh, Dong Thap', N'Internship', DATEADD(DAY, 20, CAST(GETDATE() AS DATE)), u.UserID, 1
 FROM dbo.Departments d
-JOIN dbo.JobPositions p ON p.PositionName = N'Thuc tap sinh nhan su'
+JOIN dbo.JobPositions p ON p.PositionName = N'Thực tập sinh nhân sự'
 JOIN dbo.Users u ON u.Username = N'hr01'
-WHERE d.DepartmentName = N'Phong Nhan su'
+WHERE d.DepartmentName = N'Phòng Nhân sự'
   AND NOT EXISTS (SELECT 1 FROM dbo.Jobs WHERE Title = N'Tuyen thuc tap sinh nhan su');
 GO
 
