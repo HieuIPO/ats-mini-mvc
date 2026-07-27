@@ -1,4 +1,4 @@
--- ATSMiniDB_StudentPlus - full schema and data export
+-- Full ATS - schema and sanitized demo data export
 -- Generated: 2026-07-27
 -- Requires SQL Server 2019 (15.x) or newer.
 -- Safety: this script stops if the target database already exists; it never overwrites an existing database.
